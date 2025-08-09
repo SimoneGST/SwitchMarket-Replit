@@ -9,6 +9,8 @@ interface RequestCardProps {
     priceMin: number;
     priceMax: number;
     location: string;
+    actionRadius?: number;
+    deliveryPreference?: string;
     status: string;
     createdAt: string;
   };
@@ -22,7 +24,7 @@ export default function RequestCard({ request }: RequestCardProps) {
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">{request.title}</h3>
             <p className="text-slate-600 text-sm mb-3 line-clamp-2">{request.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
               <span className="flex items-center">
                 <i className="fas fa-euro-sign mr-1"></i>
                 €{request.priceMin} - €{request.priceMax}
@@ -31,6 +33,22 @@ export default function RequestCard({ request }: RequestCardProps) {
                 <i className="fas fa-map-marker-alt mr-1"></i>
                 {request.location}
               </span>
+              {request.actionRadius && (
+                <span className="flex items-center">
+                  <i className="fas fa-road mr-1"></i>
+                  {request.actionRadius}km
+                </span>
+              )}
+              {request.deliveryPreference && (
+                <span className="flex items-center">
+                  <i className={`fas ${
+                    request.deliveryPreference === 'pickup' ? 'fa-walking' :
+                    request.deliveryPreference === 'delivery' ? 'fa-truck' : 'fa-arrows-alt'
+                  } mr-1`}></i>
+                  {request.deliveryPreference === 'pickup' ? 'Ritiro' :
+                   request.deliveryPreference === 'delivery' ? 'Spedizione' : 'Flessibile'}
+                </span>
+              )}
               <span className="flex items-center">
                 <i className="fas fa-calendar mr-1"></i>
                 {new Date(request.createdAt).toLocaleDateString('it-IT')}

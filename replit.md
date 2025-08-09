@@ -8,6 +8,14 @@ Switch Market is an AI-powered local marketplace platform that connects buyers a
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates
+
+### Raggio di Azione e Modalità di Consegna (09/08/2025)
+- Aggiunto campo `actionRadius` alle richieste per specificare il raggio massimo di spostamento (in km)
+- Aggiunto campo `deliveryPreference` con opzioni: pickup (ritiro), delivery (spedizione), both (entrambe)
+- Interfaccia utente aggiornata per mostrare queste informazioni nelle carte richieste
+- Sistema di onboarding completato per distinguere clienti e negozianti
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -28,8 +36,8 @@ Preferred communication style: Simple, everyday language.
 - **Primary Database**: PostgreSQL via Neon serverless
 - **Schema Management**: Drizzle migrations with schema defined in shared directory
 - **Key Entities**:
-  - Users (mandatory for Replit Auth)
-  - Requests (buyer purchase requests)
+  - Users (mandatory for Replit Auth with userType, business verification fields)
+  - Requests (buyer purchase requests with actionRadius and deliveryPreference)
   - Offers (seller responses to requests)
   - Conversations and Messages (communication between parties)
   - Sessions (authentication state)

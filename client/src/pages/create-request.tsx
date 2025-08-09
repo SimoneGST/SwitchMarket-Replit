@@ -22,6 +22,8 @@ export default function CreateRequest() {
     priceMin: "",
     priceMax: "",
     location: "",
+    actionRadius: 10,
+    deliveryPreference: "both",
     attributes: [] as any[],
     keywords: [] as string[],
   });
@@ -167,6 +169,65 @@ export default function CreateRequest() {
                   />
                   <i className="fas fa-map-marker-alt text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                 </div>
+              </div>
+
+              <div className="border border-slate-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Raggio di azione</label>
+                <p className="text-xs text-slate-500 mb-3">Quanto sei disposto a spostarti per ritirare il prodotto?</p>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={requestData.actionRadius}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, actionRadius: parseInt(e.target.value) || 10 }))}
+                      className="w-20"
+                    />
+                    <span className="text-sm text-slate-600">km dalla mia posizione</span>
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    I negozianti entro questo raggio vedranno la tua richiesta
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-slate-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Modalità di consegna</label>
+                <Select 
+                  value={requestData.deliveryPreference} 
+                  onValueChange={(value) => setRequestData(prev => ({ ...prev, deliveryPreference: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Come vuoi ricevere il prodotto?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pickup">
+                      <div className="flex items-center">
+                        <i className="fas fa-walking mr-2"></i>
+                        Ritiro in negozio
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="delivery">
+                      <div className="flex items-center">
+                        <i className="fas fa-truck mr-2"></i>
+                        Spedizione a casa
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="both">
+                      <div className="flex items-center">
+                        <i className="fas fa-both mr-2"></i>
+                        Entrambe le opzioni
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 mt-2">
+                  {requestData.deliveryPreference === 'pickup' && 'Andrò a ritirare il prodotto di persona'}
+                  {requestData.deliveryPreference === 'delivery' && 'Preferisco ricevere il prodotto a casa'}
+                  {requestData.deliveryPreference === 'both' && 'Sono flessibile su entrambe le modalità'}
+                </p>
               </div>
             </div>
 
