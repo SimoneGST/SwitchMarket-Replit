@@ -11,6 +11,7 @@ interface RequestCardProps {
     location: string;
     actionRadius?: number;
     deliveryPreference?: string;
+    urgencyLevel?: string;
     status: string;
     createdAt: string;
   };
@@ -33,10 +34,10 @@ export default function RequestCard({ request }: RequestCardProps) {
                 <i className="fas fa-map-marker-alt mr-1"></i>
                 {request.location}
               </span>
-              {request.actionRadius && (
+              {request.actionRadius && (request.deliveryPreference === 'pickup' || request.deliveryPreference === 'both') && (
                 <span className="flex items-center">
-                  <i className="fas fa-road mr-1"></i>
-                  {request.actionRadius}km
+                  <i className="fas fa-walking mr-1"></i>
+                  Ritiro {request.actionRadius}km
                 </span>
               )}
               {request.deliveryPreference && (
@@ -45,8 +46,20 @@ export default function RequestCard({ request }: RequestCardProps) {
                     request.deliveryPreference === 'pickup' ? 'fa-walking' :
                     request.deliveryPreference === 'delivery' ? 'fa-truck' : 'fa-arrows-alt'
                   } mr-1`}></i>
-                  {request.deliveryPreference === 'pickup' ? 'Ritiro' :
-                   request.deliveryPreference === 'delivery' ? 'Spedizione' : 'Flessibile'}
+                  {request.deliveryPreference === 'pickup' ? 'Solo Ritiro' :
+                   request.deliveryPreference === 'delivery' ? 'Solo Spedizione' : 'Ritiro + Spedizione'}
+                </span>
+              )}
+              {request.urgencyLevel && (request.deliveryPreference === 'delivery' || request.deliveryPreference === 'both') && (
+                <span className="flex items-center">
+                  <i className={`fas ${
+                    request.urgencyLevel === '24h' ? 'fa-bolt text-red-500' :
+                    request.urgencyLevel === '48h' ? 'fa-truck-fast text-orange-500' : 'fa-clock text-green-500'
+                  } mr-1`}></i>
+                  <span className={request.urgencyLevel === '24h' ? 'text-red-600' : request.urgencyLevel === '48h' ? 'text-orange-600' : 'text-green-600'}>
+                    {request.urgencyLevel === '24h' ? 'Express 24h' :
+                     request.urgencyLevel === '48h' ? 'Veloce 48h' : 'Standard'}
+                  </span>
                 </span>
               )}
               <span className="flex items-center">

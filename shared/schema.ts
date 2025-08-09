@@ -59,8 +59,9 @@ export const requests = pgTable("requests", {
   location: text("location").notNull(),
   latitude: decimal("latitude", { precision: 10, scale: 8 }),
   longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  actionRadius: integer("action_radius").notNull().default(10), // km di raggio massimo per ritiro/spedizione
+  actionRadius: integer("action_radius").notNull().default(10), // km di raggio massimo SOLO per ritiro
   deliveryPreference: varchar("delivery_preference", { length: 20 }).default("both"), // pickup, delivery, both
+  urgencyLevel: varchar("urgency_level", { length: 20 }).default("few_days"), // 24h, 48h, few_days (solo per delivery)
   status: varchar("status", { length: 20 }).notNull().default("open"), // open, negotiating, closed
   attributes: jsonb("attributes"), // Array of key-value pairs for product attributes
   keywords: text("keywords").array(),

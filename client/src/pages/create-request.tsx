@@ -24,6 +24,7 @@ export default function CreateRequest() {
     location: "",
     actionRadius: 10,
     deliveryPreference: "both",
+    urgencyLevel: "few_days",
     attributes: [] as any[],
     keywords: [] as string[],
   });
@@ -171,27 +172,33 @@ export default function CreateRequest() {
                 </div>
               </div>
 
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Raggio di azione</label>
-                <p className="text-xs text-slate-500 mb-3">Quanto sei disposto a spostarti per ritirare il prodotto?</p>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={requestData.actionRadius}
-                      onChange={(e) => setRequestData(prev => ({ ...prev, actionRadius: parseInt(e.target.value) || 10 }))}
-                      className="w-20"
-                    />
-                    <span className="text-sm text-slate-600">km dalla mia posizione</span>
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    <i className="fas fa-info-circle mr-1"></i>
-                    I negozianti entro questo raggio vedranno la tua richiesta
+              {/* Raggio di azione - solo per ritiro */}
+              {(requestData.deliveryPreference === 'pickup' || requestData.deliveryPreference === 'both') && (
+                <div className="border border-slate-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <i className="fas fa-walking mr-2"></i>
+                    Raggio di azione per ritiro
+                  </label>
+                  <p className="text-xs text-slate-500 mb-3">Quanto sei disposto a spostarti per ritirare il prodotto?</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={requestData.actionRadius}
+                        onChange={(e) => setRequestData(prev => ({ ...prev, actionRadius: parseInt(e.target.value) || 10 }))}
+                        className="w-20"
+                      />
+                      <span className="text-sm text-slate-600">km dalla mia posizione</span>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      <i className="fas fa-info-circle mr-1"></i>
+                      I negozianti entro questo raggio vedranno la tua richiesta per il ritiro
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="border border-slate-200 rounded-lg p-4">
                 <label className="block text-sm font-medium text-slate-700 mb-2">Modalità di consegna</label>
@@ -225,10 +232,70 @@ export default function CreateRequest() {
                 </Select>
                 <p className="text-xs text-slate-500 mt-2">
                   {requestData.deliveryPreference === 'pickup' && 'Andrò a ritirare il prodotto di persona'}
-                  {requestData.deliveryPreference === 'delivery' && 'Preferisco ricevere il prodotto a casa'}
+                  {requestData.deliveryPreference === 'delivery' && 'Preferisco ricevere il prodotto a casa tramite servizio di consegna'}
                   {requestData.deliveryPreference === 'both' && 'Sono flessibile su entrambe le modalità'}
                 </p>
               </div>
+
+              {/* Grado di urgenza - solo per spedizione a casa */}
+              {(requestData.deliveryPreference === 'delivery' || requestData.deliveryPreference === 'both') && (
+                <div className="border border-slate-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <i className="fas fa-clock mr-2"></i>
+                    Grado di urgenza per spedizione
+                  </label>
+                  <p className="text-xs text-slate-500 mb-3">Quando ti serve il prodotto a casa?</p>
+                  <Select 
+                    value={requestData.urgencyLevel} 
+                    onValueChange={(value) => setRequestData(prev => ({ ...prev, urgencyLevel: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona urgenza" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">
+                        <div className="flex items-center">
+                          <i className="fas fa-bolt mr-2 text-red-500"></i>
+                          <div>
+                            <div className="font-medium">Entro 24 ore</div>
+                            <div className="text-xs text-slate-500">Servizio espresso</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="48h">
+                        <div className="flex items-center">
+                          <i className="fas fa-truck-fast mr-2 text-orange-500"></i>
+                          <div>
+                            <div className="font-medium">Entro 48 ore</div>
+                            <div className="text-xs text-slate-500">Consegna veloce</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="few_days">
+                        <div className="flex items-center">
+                          <i className="fas fa-calendar mr-2 text-green-500"></i>
+                          <div>
+                            <div className="font-medium">Qualche giorno</div>
+                            <div className="text-xs text-slate-500">Consegna standard</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-xs text-slate-500 mt-2">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    {requestData.urgencyLevel === '24h' && 'Costo maggiore per consegna express tramite servizi terzi (es. Deliveroo, Glovo)'}
+                    {requestData.urgencyLevel === '48h' && 'Costo intermedio per consegna veloce tramite corrieri locali'}
+                    {requestData.urgencyLevel === 'few_days' && 'Costo standard per consegna normale - supporta mission locale'}
+                  </div>
+                  
+                  {/* Nota per sviluppo futuro: Integrazione API servizi di consegna */}
+                  <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-50 rounded border-l-4 border-blue-200">
+                    <i className="fas fa-lightbulb mr-1"></i>
+                    <strong>In sviluppo:</strong> Integrazione diretta con servizi di consegna per preventivi automatici
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 pt-6 border-t border-slate-200">

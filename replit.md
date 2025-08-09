@@ -13,8 +13,11 @@ Preferred communication style: Simple, everyday language.
 ### Raggio di Azione e Modalità di Consegna (09/08/2025)
 - Aggiunto campo `actionRadius` alle richieste per specificare il raggio massimo di spostamento (in km)
 - Aggiunto campo `deliveryPreference` con opzioni: pickup (ritiro), delivery (spedizione), both (entrambe)
-- Interfaccia utente aggiornata per mostrare queste informazioni nelle carte richieste
+- **Nuovo**: Aggiunto campo `urgencyLevel` per gradi di urgenza nelle spedizioni: 24h, 48h, few_days
+- **Logica migliorata**: Raggio di azione si applica SOLO al ritiro, non alla spedizione a casa
+- Interfaccia utente aggiornata per gestire logica condizionale tra ritiro e spedizione
 - Sistema di onboarding completato per distinguere clienti e negozianti
+- Preparazione per integrazione servizi di consegna terzi (tipo Deliveroo) mantenendo missione locale
 
 ## System Architecture
 
