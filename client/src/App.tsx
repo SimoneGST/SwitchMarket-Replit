@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
-import Home from "@/pages/home";
+import Onboarding from "@/pages/onboarding";
+import CustomerDashboard from "@/pages/customer-dashboard";
+import MerchantDashboard from "@/pages/merchant-dashboard";
 import BrowseRequests from "@/pages/browse-requests";
 import CreateRequest from "@/pages/create-request";
 import Messages from "@/pages/messages";
@@ -14,17 +16,26 @@ import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  // Check if user needs onboarding
+  const needsOnboarding = isAuthenticated && user && !user.userType;
 
   return (
     <div className="min-h-full">
-      {isAuthenticated && <Header />}
+      {isAuthenticated && !needsOnboarding && <Header />}
       <Switch>
         {isLoading || !isAuthenticated ? (
           <Route path="/" component={Landing} />
+        ) : needsOnboarding ? (
+          <Route path="/" component={Onboarding} />
         ) : (
           <>
-            <Route path="/" component={Home} />
+            {user?.userType === 'customer' ? (
+              <Route path="/" component={CustomerDashboard} />
+            ) : (
+              <Route path="/" component={MerchantDashboard} />
+            )}
             <Route path="/browse" component={BrowseRequests} />
             <Route path="/create" component={CreateRequest} />
             <Route path="/messages" component={Messages} />
@@ -32,7 +43,7 @@ function Router() {
         )}
         <Route component={NotFound} />
       </Switch>
-      {isAuthenticated && <MobileNav />}
+      {isAuthenticated && !needsOnboarding && <MobileNav />}
     </div>
   );
 }

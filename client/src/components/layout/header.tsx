@@ -7,6 +7,11 @@ export default function Header() {
   const { user } = useAuth();
 
   const isActive = (path: string) => location === path;
+  
+  // Define colors based on user type
+  const themeColor = user?.userType === 'customer' ? 'green' : 'blue';
+  const primaryColor = user?.userType === 'customer' ? 'text-green-600' : 'text-blue-600';
+  const borderColor = user?.userType === 'customer' ? 'border-green-600' : 'border-blue-600';
 
   return (
     <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
@@ -14,35 +19,46 @@ export default function Header() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <i className="fas fa-exchange-alt text-primary text-2xl mr-2"></i>
+              <i className={`fas fa-exchange-alt ${primaryColor} text-2xl mr-2`}></i>
               <span className="text-xl font-bold text-slate-900">Switch Market</span>
             </Link>
             <div className="hidden md:ml-10 md:flex space-x-8">
               <Link href="/">
                 <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
                   isActive('/') 
-                    ? 'text-primary border-primary' 
+                    ? `${primaryColor} ${borderColor}` 
                     : 'text-slate-500 hover:text-slate-700 border-transparent'
                 }`}>
-                  Home
+                  {user?.userType === 'customer' ? 'Dashboard' : 'Attività'}
                 </button>
               </Link>
               <Link href="/browse">
                 <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
                   isActive('/browse') 
-                    ? 'text-primary border-primary' 
+                    ? `${primaryColor} ${borderColor}` 
                     : 'text-slate-500 hover:text-slate-700 border-transparent'
                 }`}>
-                  Sfoglia Richieste
+                  {user?.userType === 'customer' ? 'Cerca Prodotti' : 'Trova Richieste'}
                 </button>
               </Link>
-              <Link href="/create">
+              {user?.userType === 'customer' && (
+                <Link href="/create">
+                  <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
+                    isActive('/create') 
+                      ? `${primaryColor} ${borderColor}` 
+                      : 'text-slate-500 hover:text-slate-700 border-transparent'
+                  }`}>
+                    Parla con Clemente
+                  </button>
+                </Link>
+              )}
+              <Link href="/messages">
                 <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
-                  isActive('/create') 
-                    ? 'text-primary border-primary' 
+                  isActive('/messages') 
+                    ? `${primaryColor} ${borderColor}` 
                     : 'text-slate-500 hover:text-slate-700 border-transparent'
                 }`}>
-                  Pubblica Richiesta
+                  Messaggi
                 </button>
               </Link>
             </div>
