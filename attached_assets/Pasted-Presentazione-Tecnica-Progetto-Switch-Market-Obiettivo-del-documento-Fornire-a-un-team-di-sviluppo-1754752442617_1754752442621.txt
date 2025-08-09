@@ -1,0 +1,122 @@
+Presentazione Tecnica: Progetto Switch Market
+Obiettivo del documento: Fornire a un team di sviluppo una comprensione completa della visione, dell'architettura e del flusso operativo di Switch Market, per garantire un allineamento totale e uno sviluppo coerente.
+
+1. Visione e Missione: Il "Perché"
+Switch Market non è un altro marketplace. La nostra missione è costruire la prima piattaforma di commercio locale "AI-First" in Italia. La nostra vittoria non consiste nel listare prodotti, ma nel re-immaginare l'esperienza di ricerca e vendita.
+
+Il cuore del progetto sono due assistenti AI:
+
+Clemente (per l'Acquirente): Un consulente personale che trasforma un bisogno vago in una "richiesta perfetta" attraverso un dialogo intelligente. Elimina lo stress della ricerca.
+
+Leonardo (per il Negoziante): Un copilota gestionale che automatizza la creazione di offerte e la gestione delle interazioni. Sostituisce la complessità di un e-commerce.
+
+2. Architettura e Stack Tecnologico
+L'architettura è progettata per essere scalabile, manutenibile e moderna, seguendo il principio di un backend "intelligente" e un frontend "leggero".
+
+Frontend:
+
+Framework: React (con Vite per la build).
+
+Styling: Tailwind CSS. Vige una regola ferrea di "No Inline Styles".
+
+Principio: I componenti React gestiscono la UI e lo stato locale. Tutta la logica di business complessa è delegata al backend.
+
+Backend:
+
+Piattaforma: Google Firebase (end-to-end).
+
+Database: Firestore (NoSQL, real-time).
+
+Logica di Business: Cloud Functions v2 (Callable Functions per le interazioni client-server).
+
+Autenticazione: Firebase Authentication.
+
+Storage: Firebase Storage per gli allegati (immagini, etc.).
+
+Intelligenza Artificiale:
+
+Modello: Google Gemini API, orchestrato tramite le nostre Cloud Functions.
+
+3. Il Flusso Dati Fondamentale: La "Scheda Richiesta"
+Il successo del matching dipende interamente dalla qualità dei dati che raccogliamo. La "scheda richiesta" è l'artefatto più importante del nostro sistema. È strutturata a strati per massimizzare le informazioni.
+
+Strato 1: Dati Essenziali (Input Utente)
+Sono i dati grezzi forniti dall'utente, la nostra fonte di verità.
+
+{
+  "buyerId": "uid_dell_acquirente",
+  "buyerInfo": {
+    "displayName": "Mario Rossi",
+    "location": "Firebase GeoPoint(lat, lon)",
+    "addressText": "Via Roma 1, Milano, MI"
+  },
+  "rawDescription": "Testo originale dell'utente...",
+  "attachments": [
+    { "type": "image", "url": "..." },
+    { "type": "barcode", "value": "..." }
+  ]
+}
+
+Strato 2: Dati Strutturati (Il Lavoro di Clemente)
+Qui avviene la magia. Clemente analizza i dati grezzi e li trasforma in un formato strutturato, ottimizzato per il matching.
+
+"requestDetails": {
+  "title": "Cerco iPhone 13 Pro 256GB Grafite, ottime condizioni",
+  "intent": "buy_used_trade_in",
+  "category": { "main": "Elettronica", "sub": "Telefonia", "leaf": "Smartphone" },
+  "priceRange": { "min": 600, "max": 750, "type": "negotiable" },
+  "attributes": [
+    { "key": "Marca", "value": "Apple", "weight": 1.0, "required": true },
+    { "key": "Modello", "value": "iPhone 13 Pro", "weight": 1.0, "required": true },
+    { "key": "Colore", "value": "Grafite", "weight": 0.6, "required": false }
+  ],
+  "keywords": ["iphone", "apple", "permuta", "usato garantito"]
+}
+
+Nota per gli sviluppatori: Gli attributes con i loro weight e flag required sono il carburante principale per l'algoritmo di matching.
+
+Strato 3: Metadati di Contesto
+Questi campi gestiscono il ciclo di vita della richiesta.
+
+{
+  "status": "open", // open, matching, negotiating, closed_accepted
+  "createdAt": "timestamp",
+  "expiresAt": "timestamp",
+  "offersCount": 0,
+  "viewsCount": 0
+}
+
+4. Flusso Operativo End-to-End
+Onboarding (Frontend/Backend): L'utente dialoga con Clemente (ClementeOnboarding.jsx). Ogni messaggio viene inviato alla Cloud Function askClemente, che gestisce la conversazione con Gemini e restituisce la risposta e i dati estratti.
+
+Creazione Richiesta (Backend): Al termine della chat, il frontend chiama la Cloud Function createRequest con i dati finali. La funzione valida i dati e crea il documento su Firestore secondo la struttura a 3 strati.
+
+Matching (Backend): La creazione del documento innesca (onWrite) la Cloud Function calculateCompatibilityScores. Questa funzione:
+
+Recupera i profili dei negozianti pertinenti.
+
+Calcola un punteggio di affinità basato su location, category, keywords e attributes.
+
+Popola una sotto-collezione /requests/{reqId}/potentialMatches.
+
+Interazione (Frontend/Backend):
+
+Il negoziante vede le richieste pertinenti sulla sua MerchantDashboard.jsx.
+
+Può avviare una chat, gestita da un componente unificato <ChatInterface /> che comunica con una Cloud Function sendMessage.
+
+All'interno della chat, può inviare una FormalOffer (un componente UI speciale che scrive un oggetto strutturato nel DB).
+
+Transazione (Frontend/Backend):
+
+L'acquirente accetta l'offerta.
+
+Questo triggera una Cloud Function createPaymentIntent per integrare un gateway di pagamento (es. Stripe).
+
+Il frontend mostra un CheckoutForm per completare il pagamento.
+
+Feedback (Frontend/Backend):
+
+Dopo la transazione, gli utenti possono lasciare una recensione.
+
+Una Cloud Function onReviewCreate aggiorna la valutazione media sui p
