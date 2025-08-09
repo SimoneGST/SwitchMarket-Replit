@@ -188,75 +188,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clemente AI simulation endpoint
+  // Clemente AI endpoint with Gemini
   app.post('/api/clemente/chat', isAuthenticated, async (req: any, res) => {
     try {
       const { message, context } = req.body;
+      const { clementeChat } = await import('./gemini');
       
-      // Simulate AI response based on message content
-      let response = "Mi dispiace, non ho capito bene. Puoi essere più specifico?";
-      let extractedData = {};
-      
-      if (message.toLowerCase().includes('iphone')) {
-        response = "Perfetto! Vedo che stai cercando un iPhone. Puoi dirmi il modello specifico e la capacità di storage che preferisci?";
-        extractedData = {
-          category: "Elettronica",
-          subcategory: "Telefonia",
-          keywords: ["iphone", "apple", "smartphone"]
-        };
-      } else if (message.toLowerCase().includes('bicicletta')) {
-        response = "Interessante! Che tipo di bicicletta stai cercando? Da città, mountain bike, da corsa?";
-        extractedData = {
-          category: "Sport e Tempo Libero",
-          subcategory: "Ciclismo",
-          keywords: ["bicicletta", "bike", "ciclismo"]
-        };
-      } else if (message.match(/\d+gb/i)) {
-        response = "Ottimo! Ho notato che hai specificato la capacità di storage. Hai un budget in mente per questo acquisto?";
-        const storage = message.match(/(\d+)gb/i)?.[1];
-        extractedData = {
-          attributes: [
-            { key: "Storage", value: `${storage}GB`, weight: 0.8, required: false }
-          ]
-        };
-      } else if (message.match(/€?\d+/)) {
-        response = "Perfetto! Ho preso nota del budget. Hai preferenze per il colore o le condizioni del prodotto?";
-        const prices = message.match(/€?(\d+)/g);
-        if (prices && prices.length >= 2) {
-          extractedData = {
-            priceMin: parseInt(prices[0].replace('€', '')),
-            priceMax: parseInt(prices[1].replace('€', ''))
-          };
-        }
-      } else if (message.toLowerCase().includes('colore') || message.toLowerCase().includes('grafite') || message.toLowerCase().includes('nero') || message.toLowerCase().includes('bianco')) {
-        response = "Ottimo! Ho aggiornato le tue preferenze. Quale città o zona ti interessa per la ricerca?";
-        const colors = ['grafite', 'nero', 'bianco', 'blu', 'rosso'];
-        const foundColor = colors.find(color => message.toLowerCase().includes(color));
-        if (foundColor) {
-          extractedData = {
-            attributes: [
-              { key: "Colore", value: foundColor, weight: 0.6, required: false }
-            ]
-          };
-        }
-      } else if (message.toLowerCase().includes('milano') || message.toLowerCase().includes('roma') || message.toLowerCase().includes('torino')) {
-        response = "Perfetto! Ho tutti i dettagli necessari per creare la tua richiesta. Dai un'occhiata all'anteprima a destra e dimmi se va bene così!";
-        const cities = ['Milano', 'Roma', 'Torino'];
-        const foundCity = cities.find(city => message.toLowerCase().includes(city.toLowerCase()));
-        if (foundCity) {
-          extractedData = {
-            location: `${foundCity}, Italia`
-          };
-        }
-      }
-      
-      res.json({
-        response,
-        extractedData,
-        isComplete: message.toLowerCase().includes('milano') || message.toLowerCase().includes('roma') || message.toLowerCase().includes('torino')
-      });
+      const result = await clementeChat(message, context);
+      res.json(result);
     } catch (error) {
       console.error("Error processing Clemente chat:", error);
+      res.status(500).json({ message: "Failed to process chat" });
+    }
+  });
+
+  // Leonardo AI endpoint for merchants
+  app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const { message, context } = req.body;
+      const { leonardoChat } = await import('./gemini');
+      
+      const result = await leonardoChat(message, context);
+      res.json(result);
+    } catch (error) {
+      console.error("Error processing Leonardo chat:", error);
       res.status(500).json({ message: "Failed to process chat" });
     }
   });

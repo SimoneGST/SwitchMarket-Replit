@@ -18,6 +18,9 @@ Preferred communication style: Simple, everyday language.
 - Interfaccia utente aggiornata per gestire logica condizionale tra ritiro e spedizione
 - Sistema di onboarding completato per distinguere clienti e negozianti
 - Preparazione per integrazione servizi di consegna terzi (tipo Deliveroo) mantenendo missione locale
+- **Integrazione AI avanzata**: Clemente ora usa Google Gemini per conversazioni naturali e specifiche tecniche
+- **Leonardo AI**: Nuovo assistente per negozianti con consigli su prezzi e strategie di vendita
+- API Gemini configurata per analisi intelligente delle richieste e estrazione dati strutturati
 
 ## System Architecture
 
