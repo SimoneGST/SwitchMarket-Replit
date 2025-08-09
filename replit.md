@@ -21,6 +21,9 @@ Preferred communication style: Simple, everyday language.
 - **Integrazione AI avanzata**: Clemente ora usa Google Gemini per conversazioni naturali e specifiche tecniche
 - **Leonardo AI**: Nuovo assistente per negozianti con consigli su prezzi e strategie di vendita
 - API Gemini configurata per analisi intelligente delle richieste e estrazione dati strutturati
+- **Upload File**: Pulsante allega per inoltrare foto e documenti agli assistenti AI
+- **Comandi Vocali**: Microfono integrato per dettare messaggi usando riconoscimento vocale italiano
+- Object Storage configurato per gestione sicura degli allegati
 
 ## System Architecture
 

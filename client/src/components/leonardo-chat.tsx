@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
+import { ObjectUploader } from "./ObjectUploader";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 interface LeonardoChatProps {
   onSuggestion?: (suggestion: any) => void;
@@ -109,22 +111,73 @@ export default function LeonardoChat({ onSuggestion }: LeonardoChatProps) {
 
       {/* Input Form */}
       <div className="border-t border-slate-200 p-4">
-        <form onSubmit={handleSubmit} className="flex gap-3">
-          <Input
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Chiedimi consigli per vendere meglio..."
-            disabled={chatMutation.isPending}
-            className="flex-1"
+        <div className="flex gap-2 items-end mb-2">
+          <div className="flex-1">
+            <Input
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Chiedimi consigli per vendere meglio..."
+              disabled={chatMutation.isPending}
+            />
+          </div>
+          
+          {/* File Upload Button */}
+          <ObjectUploader
+            maxNumberOfFiles={5}
+            maxFileSize={50485760}
+            onGetUploadParameters={async () => {
+              const response = await fetch('/api/objects/upload', {
+                method: 'POST',
+                credentials: 'include'
+              });
+              const data = await response.json();
+              return { method: 'PUT' as const, url: data.uploadURL };
+            }}
+            onComplete={(result) => {
+              result.successful.forEach(file => {
+                const fileName = file.name;
+                
+                setMessages(prev => [...prev, {
+                  role: 'user',
+                  content: `📎 File allegato: ${fileName}`
+                }]);
+                
+                // Send file info to Leonardo
+                setTimeout(() => {
+                  chatMutation.mutate({
+                    message: `Ho allegato il file: ${fileName}. Puoi aiutarmi ad analizzarlo per la vendita?`,
+                    context: { messages: messages.slice(-5) }
+                  });
+                }, 100);
+              });
+            }}
+            buttonClassName="px-3"
+          >
+            <i className="fas fa-paperclip"></i>
+          </ObjectUploader>
+
+          {/* Voice Recorder Button */}
+          <VoiceRecorder
+            onTranscription={(text) => {
+              setInputMessage(text);
+            }}
+            onError={(error) => {
+              console.error('Voice error:', error);
+            }}
+            className="px-3"
           />
+
           <Button 
-            type="submit" 
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit(e);
+            }}
             disabled={chatMutation.isPending || !inputMessage.trim()}
-            className="bg-blue-500 hover:bg-blue-600 px-6"
+            className="bg-blue-500 hover:bg-blue-600 px-4"
           >
             <i className="fas fa-paper-plane"></i>
           </Button>
-        </form>
+        </div>
       </div>
     </div>
   );

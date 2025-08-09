@@ -6,7 +6,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export async function clementeChat(message: string, context: any = {}): Promise<{
+export async function clementeChat(message: string, context: any = {}, attachedFiles: any[] = []): Promise<{
   response: string;
   extractedData: any;
   isComplete: boolean;
@@ -57,7 +57,11 @@ Rispondi SEMPRE in formato JSON:
 
 CONTESTO PRECEDENTE: ${JSON.stringify(context)}
 
+${attachedFiles.length > 0 ? `FILE ALLEGATI: ${attachedFiles.map(f => f.name).join(', ')}` : ''}
+
 MESSAGGIO UTENTE: ${message}
+
+${attachedFiles.length > 0 ? 'NOTA: Analizza i file allegati per fornire consigli più precisi sui prodotti richiesti.' : ''}
 
 Rispondi aiutando l'utente e estraendo i dati pertinenti.`;
 
@@ -70,7 +74,21 @@ Rispondi aiutando l'utente e estraendo i dati pertinenti.`;
           type: "object",
           properties: {
             response: { type: "string" },
-            extractedData: { type: "object" },
+            extractedData: { 
+              type: "object",
+              properties: {
+                category: { type: "string" },
+                title: { type: "string" },
+                description: { type: "string" },
+                priceMin: { type: "number" },
+                priceMax: { type: "number" },
+                location: { type: "string" },
+                attributes: { type: "array" },
+                deliveryPreference: { type: "string" },
+                urgencyLevel: { type: "string" },
+                actionRadius: { type: "number" }
+              }
+            },
             isComplete: { type: "boolean" }
           },
           required: ["response", "extractedData", "isComplete"]
@@ -99,7 +117,7 @@ Rispondi aiutando l'utente e estraendo i dati pertinenti.`;
   }
 }
 
-export async function leonardoChat(message: string, context: any = {}): Promise<{
+export async function leonardoChat(message: string, context: any = {}, attachedFiles: any[] = []): Promise<{
   response: string;
   suggestions: any[];
 }> {
@@ -128,7 +146,12 @@ Fornisci sempre consigli pratici e basati su conoscenza reale del mercato.`;
       contents: `${systemPrompt}
 
 CONTESTO: ${JSON.stringify(context)}
-MESSAGGIO: ${message}`
+
+${attachedFiles.length > 0 ? `FILE ALLEGATI: ${attachedFiles.map(f => f.name).join(', ')}` : ''}
+
+MESSAGGIO: ${message}
+
+${attachedFiles.length > 0 ? 'NOTA: Analizza i file allegati per fornire consigli di vendita più specifici e strategie mirate.' : ''}`
     });
 
     return {

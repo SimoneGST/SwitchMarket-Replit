@@ -216,6 +216,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // File upload for AI assistants
+  app.post('/api/objects/upload', isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import('./objectStorage');
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  // Serve uploaded files
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import('./objectStorage');
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving file:", error);
+      res.status(404).json({ message: "File not found" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/queryClient";
+import { ObjectUploader } from "./ObjectUploader";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 interface ClementeChatProps {
   onDataUpdate: (data: any) => void;
@@ -142,18 +144,66 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
 
       {/* Chat Input */}
       <div className="p-4 border-t border-slate-200">
-        <div className="flex gap-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Scrivi la tua risposta..."
-            className="flex-1"
+        <div className="flex gap-2 items-end mb-2">
+          <div className="flex-1">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Scrivi un messaggio a Clemente..."
+            />
+          </div>
+          
+          {/* File Upload Button */}
+          <ObjectUploader
+            maxNumberOfFiles={5}
+            maxFileSize={50485760}
+            onGetUploadParameters={async () => {
+              const response = await fetch('/api/objects/upload', {
+                method: 'POST',
+                credentials: 'include'
+              });
+              const data = await response.json();
+              return { method: 'PUT' as const, url: data.uploadURL };
+            }}
+            onComplete={(result) => {
+              result.successful.forEach(file => {
+                const fileName = file.name;
+                const fileUrl = file.uploadURL;
+                
+                setMessages(prev => [...prev, {
+                  id: Date.now().toString(),
+                  content: `📎 File allegato: ${fileName}`,
+                  isAI: false,
+                  timestamp: new Date()
+                }]);
+                
+                // Send file info to AI
+                setTimeout(() => {
+                  chatMutation.mutate(`Ho allegato il file: ${fileName}. Puoi analizzarlo per aiutarmi con la richiesta?`);
+                }, 100);
+              });
+            }}
+            buttonClassName="px-3"
+          >
+            <i className="fas fa-paperclip"></i>
+          </ObjectUploader>
+
+          {/* Voice Recorder Button */}
+          <VoiceRecorder
+            onTranscription={(text) => {
+              setNewMessage(text);
+            }}
+            onError={(error) => {
+              console.error('Voice error:', error);
+            }}
+            className="px-3"
           />
+
           <Button 
             onClick={handleSendMessage}
             disabled={chatMutation.isPending || !newMessage.trim()}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90 px-4"
           >
             <i className="fas fa-paper-plane"></i>
           </Button>
