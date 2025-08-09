@@ -1,0 +1,79 @@
+# Switch Market - AI-First Local Marketplace
+
+## Overview
+
+Switch Market is an AI-powered local marketplace platform that connects buyers and sellers through intelligent assistants. The system features two main AI assistants: Clemente (for buyers) and Leonardo (for sellers). Built as a full-stack web application, it leverages React for the frontend, Express.js for the backend, and PostgreSQL with Drizzle ORM for data persistence.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript, bundled using Vite for fast development
+- **Styling**: Tailwind CSS with shadcn/ui component library for consistent design
+- **State Management**: TanStack Query for server state management and caching
+- **Routing**: Wouter for lightweight client-side routing
+- **UI Components**: Radix UI primitives with custom styling via class-variance-authority
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js framework
+- **Language**: TypeScript with ES modules
+- **Database ORM**: Drizzle ORM for type-safe database interactions
+- **Authentication**: Replit Auth integration with session-based authentication
+- **Session Storage**: PostgreSQL-based session store using connect-pg-simple
+
+### Database Design
+- **Primary Database**: PostgreSQL via Neon serverless
+- **Schema Management**: Drizzle migrations with schema defined in shared directory
+- **Key Entities**:
+  - Users (mandatory for Replit Auth)
+  - Requests (buyer purchase requests)
+  - Offers (seller responses to requests)
+  - Conversations and Messages (communication between parties)
+  - Sessions (authentication state)
+
+### API Architecture
+- **Pattern**: RESTful API with Express routes
+- **Data Validation**: Zod schemas for request/response validation
+- **Error Handling**: Centralized error middleware with proper HTTP status codes
+- **Request Logging**: Custom middleware for API call tracking
+
+### Authentication & Authorization
+- **Provider**: Replit Auth with OpenID Connect
+- **Session Management**: Express sessions with PostgreSQL backing store
+- **Security**: HTTP-only cookies, CSRF protection, secure session configuration
+- **User Management**: Automatic user creation/update via auth middleware
+
+### File Structure & Organization
+- **Monorepo Structure**: Shared schema between client and server
+- **Client Directory**: React application with component-based architecture
+- **Server Directory**: Express API with modular route handling
+- **Shared Directory**: Common TypeScript types and database schema
+- **Asset Management**: Vite-based asset handling with path aliases
+
+## External Dependencies
+
+### Core Infrastructure
+- **Database**: Neon PostgreSQL serverless database
+- **Authentication**: Replit Auth service for user management
+- **Build Tools**: Vite for frontend bundling, esbuild for backend compilation
+
+### Frontend Libraries
+- **UI Framework**: React with shadcn/ui component system
+- **Styling**: Tailwind CSS with PostCSS processing
+- **Icons**: Font Awesome for iconography
+- **Data Fetching**: TanStack Query for API state management
+- **Form Handling**: React Hook Form with Zod validation
+
+### Backend Dependencies
+- **Database**: Drizzle ORM with Neon serverless driver
+- **Session Storage**: connect-pg-simple for PostgreSQL session store
+- **Validation**: Zod for runtime type checking
+- **Utilities**: date-fns for date manipulation, memoizee for caching
+
+### Development Tools
+- **Type Checking**: TypeScript compiler with strict configuration
+- **Linting & Formatting**: Built-in Vite dev server with hot reload
+- **Environment**: Replit-specific plugins for development experience
