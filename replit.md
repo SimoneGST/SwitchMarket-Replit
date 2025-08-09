@@ -24,6 +24,12 @@ Preferred communication style: Simple, everyday language.
 - **Upload File**: Pulsante allega per inoltrare foto e documenti agli assistenti AI
 - **Comandi Vocali**: Microfono integrato per dettare messaggi usando riconoscimento vocale italiano
 - Object Storage configurato per gestione sicura degli allegati
+- **Sistema Integrazioni Gestionali**: Connessione con i maggiori software gestionali italiani
+- **Supporto Fatture in Cloud**: API completa per sincronizzazione prodotti e giacenze
+- **Supporto Danea EasyFatt**: Integrazione con gestionale desktop via API REST  
+- **Supporto TeamSystem**: Connessione con suite gestionale enterprise
+- **Sincronizzazione Automatica**: Aggiornamento prodotti in tempo reale o programmato
+- **Pulsante "Collega Gestionale"**: Accesso diretto dalla dashboard negoziante
 
 ## System Architecture
 

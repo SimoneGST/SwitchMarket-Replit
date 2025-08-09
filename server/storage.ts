@@ -4,6 +4,9 @@ import {
   offers,
   conversations,
   messages,
+  integrations,
+  products,
+  syncLogs,
   type User,
   type UpsertUser,
   type Request,
@@ -14,6 +17,12 @@ import {
   type InsertConversation,
   type Message,
   type InsertMessage,
+  type Integration,
+  type InsertIntegration,
+  type Product,
+  type InsertProduct,
+  type SyncLog,
+  type InsertSyncLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -53,6 +62,21 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
   getConversationMessages(conversationId: string): Promise<Message[]>;
   markMessagesAsRead(conversationId: string, userId: string): Promise<void>;
+
+  // Integration operations
+  getIntegrationsByUserId(userId: string): Promise<Integration[]>;
+  getIntegrationById(id: number): Promise<Integration | undefined>;
+  createIntegration(integration: InsertIntegration): Promise<Integration>;
+  updateIntegration(id: number, data: Partial<InsertIntegration>): Promise<void>;
+
+  // Product operations
+  getProductsByUserId(userId: string): Promise<Product[]>;
+  getProductByExternalId(integrationId: number, externalId: string): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, data: Partial<InsertProduct>): Promise<void>;
+
+  // Sync log operations
+  createSyncLog(syncLog: InsertSyncLog): Promise<SyncLog>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -250,6 +274,54 @@ export class DatabaseStorage implements IStorage {
           eq(messages.isRead, false)
         )
       );
+  }
+  // Integration operations
+  async getIntegrationsByUserId(userId: string): Promise<Integration[]> {
+    return await db.select().from(integrations).where(eq(integrations.userId, userId));
+  }
+
+  async getIntegrationById(id: number): Promise<Integration | undefined> {
+    const [integration] = await db.select().from(integrations).where(eq(integrations.id, id));
+    return integration;
+  }
+
+  async createIntegration(integration: InsertIntegration): Promise<Integration> {
+    const [created] = await db.insert(integrations).values(integration).returning();
+    return created;
+  }
+
+  async updateIntegration(id: number, data: Partial<InsertIntegration>): Promise<void> {
+    await db.update(integrations).set(data).where(eq(integrations.id, id));
+  }
+
+  // Product operations
+  async getProductsByUserId(userId: string): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.userId, userId));
+  }
+
+  async getProductByExternalId(integrationId: number, externalId: string): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(
+      and(
+        eq(products.integrationId, integrationId),
+        eq(products.externalId, externalId)
+      )
+    );
+    return product;
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [created] = await db.insert(products).values(product).returning();
+    return created;
+  }
+
+  async updateProduct(id: number, data: Partial<InsertProduct>): Promise<void> {
+    await db.update(products).set(data).where(eq(products.id, id));
+  }
+
+  // Sync log operations
+  async createSyncLog(syncLog: InsertSyncLog): Promise<SyncLog> {
+    const [created] = await db.insert(syncLogs).values(syncLog).returning();
+    return created;
   }
 }
 

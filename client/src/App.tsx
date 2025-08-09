@@ -11,6 +11,7 @@ import CustomerDashboard from "@/pages/customer-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
 import BrowseRequests from "@/pages/browse-requests";
 import CreateRequest from "@/pages/create-request";
+import IntegrationSetup from "@/pages/integration-setup";
 import Messages from "@/pages/messages";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -38,6 +39,7 @@ function Router() {
             )}
             <Route path="/browse" component={BrowseRequests} />
             <Route path="/create" component={CreateRequest} />
+            <Route path="/integration-setup" component={IntegrationSetup} />
             <Route path="/messages" component={Messages} />
           </>
         )}

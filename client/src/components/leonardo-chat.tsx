@@ -134,7 +134,7 @@ export default function LeonardoChat({ onSuggestion }: LeonardoChatProps) {
               return { method: 'PUT' as const, url: data.uploadURL };
             }}
             onComplete={(result) => {
-              result.successful.forEach(file => {
+              result.successful?.forEach(file => {
                 const fileName = file.name;
                 
                 setMessages(prev => [...prev, {

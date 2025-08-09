@@ -242,6 +242,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Gestionale Integration Routes
+  
+  // Get user integrations
+  app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const integrations = await storage.getIntegrationsByUserId(userId);
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ message: "Failed to fetch integrations" });
+    }
+  });
+
+  // Test integration connection
+  app.post('/api/integrations/test', isAuthenticated, async (req: any, res) => {
+    try {
+      const { gestionaleType, apiKey, companyId, baseUrl } = req.body;
+      const { createGestionaleService } = await import('./integrations/gestionaleService');
+      
+      const mockIntegration = {
+        id: 0,
+        userId: req.user.claims.sub,
+        gestionaleType,
+        apiKey,
+        companyId,
+        baseUrl,
+        isActive: true,
+        syncFrequency: 'daily',
+        lastSync: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const service = createGestionaleService(mockIntegration);
+      const isConnected = await service.testConnection();
+      
+      if (isConnected) {
+        res.json({ success: true, message: "Connessione riuscita" });
+      } else {
+        res.status(400).json({ success: false, message: "Connessione fallita - verifica le credenziali" });
+      }
+    } catch (error) {
+      console.error("Error testing integration:", error);
+      res.status(500).json({ message: "Errore nel test della connessione" });
+    }
+  });
+
+  // Create new integration
+  app.post('/api/integrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const integrationData = {
+        ...req.body,
+        userId,
+      };
+      
+      const integration = await storage.createIntegration(integrationData);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error creating integration:", error);
+      res.status(500).json({ message: "Failed to create integration" });
+    }
+  });
+
+  // Sync integration data
+  app.post('/api/integrations/:id/sync', isAuthenticated, async (req: any, res) => {
+    try {
+      const integrationId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const integration = await storage.getIntegrationById(integrationId);
+      if (!integration || integration.userId !== userId) {
+        return res.status(404).json({ message: "Integration not found" });
+      }
+
+      const { createGestionaleService } = await import('./integrations/gestionaleService');
+      const { syncIntegrationProducts } = await import('./integrations/syncService');
+      
+      const service = createGestionaleService(integration);
+      await syncIntegrationProducts(integration, service, storage);
+      
+      res.json({ success: true, message: "Sincronizzazione avviata" });
+    } catch (error) {
+      console.error("Error syncing integration:", error);
+      res.status(500).json({ message: "Errore durante la sincronizzazione" });
+    }
+  });
+
+  // Get products
+  app.get('/api/products', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const products = await storage.getProductsByUserId(userId);
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

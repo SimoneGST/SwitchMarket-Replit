@@ -9,6 +9,7 @@ import {
   integer,
   decimal,
   boolean,
+  serial,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -192,6 +193,96 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Gestionale Integration Schema
+export const integrations = pgTable("integrations", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  gestionaleType: varchar("gestionale_type", { length: 50 }).notNull(), // 'fattureincloud', 'danea', 'zucchetti', 'teamsystem'
+  apiKey: varchar("api_key").notNull(),
+  companyId: varchar("company_id"),
+  baseUrl: varchar("base_url"),
+  isActive: boolean("is_active").default(true),
+  syncFrequency: varchar("sync_frequency", { length: 20 }).default('daily'), // 'realtime', 'hourly', 'daily'
+  lastSync: timestamp("last_sync"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  integrationId: integer("integration_id").references(() => integrations.id, { onDelete: "cascade" }),
+  externalId: varchar("external_id"), // ID nel gestionale esterno
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }),
+  brand: varchar("brand", { length: 100 }),
+  sku: varchar("sku", { length: 100 }),
+  barcode: varchar("barcode", { length: 50 }),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
+  quantity: integer("quantity").default(0),
+  minQuantity: integer("min_quantity").default(0),
+  unit: varchar("unit", { length: 20 }).default('pz'), // pz, kg, lt, mq, etc
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default('22.00'),
+  isActive: boolean("is_active").default(true),
+  images: text("images").array(), // URLs delle immagini
+  attributes: jsonb("attributes"), // Attributi personalizzati
+  syncStatus: varchar("sync_status", { length: 20 }).default('synced'), // 'synced', 'pending', 'error'
+  lastSyncAt: timestamp("last_sync_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const syncLogs = pgTable("sync_logs", {
+  id: serial("id").primaryKey(),
+  integrationId: integer("integration_id").notNull().references(() => integrations.id, { onDelete: "cascade" }),
+  syncType: varchar("sync_type", { length: 50 }).notNull(), // 'products', 'inventory', 'orders'
+  status: varchar("status", { length: 20 }).notNull(), // 'success', 'error', 'partial'
+  recordsProcessed: integer("records_processed").default(0),
+  recordsSuccess: integer("records_success").default(0),
+  recordsError: integer("records_error").default(0),
+  errorDetails: text("error_details"),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Relations
+export const integrationRelations = relations(integrations, ({ one, many }) => ({
+  user: one(users, {
+    fields: [integrations.userId],
+    references: [users.id],
+  }),
+  products: many(products),
+  syncLogs: many(syncLogs),
+}));
+
+export const productRelations = relations(products, ({ one }) => ({
+  user: one(users, {
+    fields: [products.userId],
+    references: [users.id],
+  }),
+  integration: one(integrations, {
+    fields: [products.integrationId],
+    references: [integrations.id],
+  }),
+}));
+
+export const syncLogRelations = relations(syncLogs, ({ one }) => ({
+  integration: one(integrations, {
+    fields: [syncLogs.integrationId],
+    references: [integrations.id],
+  }),
+}));
+
+// Types
+export type Integration = typeof integrations.$inferSelect;
+export type InsertIntegration = typeof integrations.$inferInsert;
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = typeof products.$inferInsert;
+export type SyncLog = typeof syncLogs.$inferSelect;
+export type InsertSyncLog = typeof syncLogs.$inferInsert;
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 export type Request = typeof requests.$inferSelect;
 export type InsertOffer = z.infer<typeof insertOfferSchema>;
