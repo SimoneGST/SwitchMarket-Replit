@@ -63,6 +63,12 @@ export default function MerchantDashboard() {
                 Collega Gestionale
               </Button>
             </Link>
+            <Link href="/copilot-dashboard">
+              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
+                <i className="fas fa-robot mr-2"></i>
+                Copilot Leonardo
+              </Button>
+            </Link>
             <Link href="/messages">
               <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
                 <i className="fas fa-message mr-2"></i>

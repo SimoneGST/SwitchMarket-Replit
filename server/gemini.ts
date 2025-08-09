@@ -6,6 +6,20 @@ if (!process.env.GEMINI_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+export async function generateText(prompt: string): Promise<string> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    return response.text || "Unable to generate response";
+  } catch (error) {
+    console.error("Error generating text:", error);
+    return "Error generating response";
+  }
+}
+
 export async function clementeChat(message: string, context: any = {}, attachedFiles: any[] = []): Promise<{
   response: string;
   extractedData: any;

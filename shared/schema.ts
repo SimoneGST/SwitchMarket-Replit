@@ -276,6 +276,68 @@ export const syncLogRelations = relations(syncLogs, ({ one }) => ({
   }),
 }));
 
+// Copilot configurations table
+export const copilotConfigs = pgTable("copilot_configs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  businessHours: jsonb("business_hours").default({
+    monday: { enabled: true, start: "09:00", end: "18:00" },
+    tuesday: { enabled: true, start: "09:00", end: "18:00" },
+    wednesday: { enabled: true, start: "09:00", end: "18:00" },
+    thursday: { enabled: true, start: "09:00", end: "18:00" },
+    friday: { enabled: true, start: "09:00", end: "18:00" },
+    saturday: { enabled: true, start: "09:00", end: "13:00" },
+    sunday: { enabled: false, start: "09:00", end: "18:00" }
+  }).notNull(),
+  autoResponses: jsonb("auto_responses").default({
+    greeting: "Ciao! Sono Leonardo, l'assistente di {businessName}. Come posso aiutarti oggi?",
+    unavailable: "Al momento non sono disponibile. Ti risponderò appena possibile!",
+    closing: "Grazie per averci contattato! Ti ricontatteremo presto."
+  }).notNull(),
+  maxConcurrentChats: integer("max_concurrent_chats").default(5).notNull(),
+  responseDelay: integer("response_delay").default(2000).notNull(), // milliseconds
+  personalitySettings: jsonb("personality_settings").default({
+    tone: "professionale", // professionale, amichevole, informale
+    expertise: "generale", // generale, tecnico, commerciale
+    proactivity: "medio" // basso, medio, alto
+  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Copilot chat sessions table
+export const copilotSessions = pgTable("copilot_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  merchantId: varchar("merchant_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  customerId: varchar("customer_id").references(() => users.id).notNull(),
+  requestId: integer("request_id").references(() => requests.id),
+  status: varchar("status", { length: 20 }).default("active").notNull(), // active, completed, transferred, abandoned
+  isAiHandled: boolean("is_ai_handled").default(true).notNull(),
+  handoverReason: text("handover_reason"),
+  satisfaction: integer("satisfaction"), // 1-5 rating
+  summary: text("summary"),
+  totalMessages: integer("total_messages").default(0),
+  aiMessages: integer("ai_messages").default(0),
+  humanMessages: integer("human_messages").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Copilot analytics table
+export const copilotAnalytics = pgTable("copilot_analytics", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  date: varchar("date", { length: 10 }).notNull(),
+  totalChats: integer("total_chats").default(0),
+  completedChats: integer("completed_chats").default(0),
+  transferredChats: integer("transferred_chats").default(0),
+  averageResponseTime: integer("average_response_time").default(0), // seconds
+  customerSatisfaction: decimal("customer_satisfaction", { precision: 3, scale: 2 }), // average rating
+  totalRevenue: decimal("total_revenue", { precision: 10, scale: 2 }).default("0"),
+  conversionsCount: integer("conversions_count").default(0),
+});
+
 // Types
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = typeof integrations.$inferInsert;
@@ -283,6 +345,14 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 export type SyncLog = typeof syncLogs.$inferSelect;
 export type InsertSyncLog = typeof syncLogs.$inferInsert;
+
+export type CopilotConfig = typeof copilotConfigs.$inferSelect;
+export type InsertCopilotConfig = typeof copilotConfigs.$inferInsert;
+export type CopilotSession = typeof copilotSessions.$inferSelect;
+export type InsertCopilotSession = typeof copilotSessions.$inferInsert;
+export type CopilotAnalytics = typeof copilotAnalytics.$inferSelect;
+export type InsertCopilotAnalytics = typeof copilotAnalytics.$inferInsert;
+
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 export type Request = typeof requests.$inferSelect;
 export type InsertOffer = z.infer<typeof insertOfferSchema>;

@@ -7,6 +7,9 @@ import {
   integrations,
   products,
   syncLogs,
+  copilotConfigs,
+  copilotSessions,
+  copilotAnalytics,
   type User,
   type UpsertUser,
   type Request,
@@ -23,6 +26,12 @@ import {
   type InsertProduct,
   type SyncLog,
   type InsertSyncLog,
+  type CopilotConfig,
+  type InsertCopilotConfig,
+  type CopilotSession,
+  type InsertCopilotSession,
+  type CopilotAnalytics,
+  type InsertCopilotAnalytics,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -77,6 +86,21 @@ export interface IStorage {
 
   // Sync log operations
   createSyncLog(syncLog: InsertSyncLog): Promise<SyncLog>;
+
+  // Copilot operations
+  getCopilotConfig(userId: string): Promise<CopilotConfig | undefined>;
+  createCopilotConfig(config: InsertCopilotConfig): Promise<CopilotConfig>;
+  updateCopilotConfig(userId: string, data: Partial<InsertCopilotConfig>): Promise<void>;
+  
+  // Copilot session operations
+  createCopilotSession(session: InsertCopilotSession): Promise<CopilotSession>;
+  getCopilotSession(id: string): Promise<CopilotSession | undefined>;
+  updateCopilotSession(id: string, data: Partial<InsertCopilotSession>): Promise<void>;
+  getMerchantActiveSessions(merchantId: string): Promise<CopilotSession[]>;
+  
+  // Analytics operations
+  getCopilotAnalytics(userId: string, date: string): Promise<CopilotAnalytics | undefined>;
+  upsertCopilotAnalytics(analytics: InsertCopilotAnalytics): Promise<CopilotAnalytics>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -322,6 +346,67 @@ export class DatabaseStorage implements IStorage {
   async createSyncLog(syncLog: InsertSyncLog): Promise<SyncLog> {
     const [created] = await db.insert(syncLogs).values(syncLog).returning();
     return created;
+  }
+
+  // Copilot operations
+  async getCopilotConfig(userId: string): Promise<CopilotConfig | undefined> {
+    const [config] = await db.select().from(copilotConfigs).where(eq(copilotConfigs.userId, userId));
+    return config;
+  }
+
+  async createCopilotConfig(config: InsertCopilotConfig): Promise<CopilotConfig> {
+    const [created] = await db.insert(copilotConfigs).values(config).returning();
+    return created;
+  }
+
+  async updateCopilotConfig(userId: string, data: Partial<InsertCopilotConfig>): Promise<void> {
+    await db.update(copilotConfigs)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(copilotConfigs.userId, userId));
+  }
+
+  // Copilot session operations
+  async createCopilotSession(session: InsertCopilotSession): Promise<CopilotSession> {
+    const [created] = await db.insert(copilotSessions).values(session).returning();
+    return created;
+  }
+
+  async getCopilotSession(id: string): Promise<CopilotSession | undefined> {
+    const [session] = await db.select().from(copilotSessions).where(eq(copilotSessions.id, id));
+    return session;
+  }
+
+  async updateCopilotSession(id: string, data: Partial<InsertCopilotSession>): Promise<void> {
+    await db.update(copilotSessions).set(data).where(eq(copilotSessions.id, id));
+  }
+
+  async getMerchantActiveSessions(merchantId: string): Promise<CopilotSession[]> {
+    return await db.select().from(copilotSessions)
+      .where(and(
+        eq(copilotSessions.merchantId, merchantId),
+        eq(copilotSessions.status, 'active')
+      ));
+  }
+
+  // Analytics operations
+  async getCopilotAnalytics(userId: string, date: string): Promise<CopilotAnalytics | undefined> {
+    const [analytics] = await db.select().from(copilotAnalytics)
+      .where(and(
+        eq(copilotAnalytics.userId, userId),
+        eq(copilotAnalytics.date, date)
+      ));
+    return analytics;
+  }
+
+  async upsertCopilotAnalytics(analytics: InsertCopilotAnalytics): Promise<CopilotAnalytics> {
+    const [upserted] = await db.insert(copilotAnalytics)
+      .values(analytics)
+      .onConflictDoUpdate({
+        target: [copilotAnalytics.userId, copilotAnalytics.date],
+        set: analytics
+      })
+      .returning();
+    return upserted;
   }
 }
 

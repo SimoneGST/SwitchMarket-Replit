@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertRequestSchema, insertOfferSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
+import { copilotService } from "./copilotService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -340,6 +341,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // ===== COPILOT ROUTES =====
+  
+  // Get or create copilot configuration
+  app.get('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let config = await storage.getCopilotConfig(userId);
+      
+      if (!config) {
+        // Crea configurazione di default
+        const user = await storage.getUser(userId);
+        config = await storage.createCopilotConfig({
+          userId,
+          isEnabled: true,
+          businessHours: {
+            monday: { enabled: true, start: "09:00", end: "18:00" },
+            tuesday: { enabled: true, start: "09:00", end: "18:00" },
+            wednesday: { enabled: true, start: "09:00", end: "18:00" },
+            thursday: { enabled: true, start: "09:00", end: "18:00" },
+            friday: { enabled: true, start: "09:00", end: "18:00" },
+            saturday: { enabled: true, start: "09:00", end: "13:00" },
+            sunday: { enabled: false, start: "09:00", end: "18:00" }
+          },
+          autoResponses: {
+            greeting: `Ciao! Sono Leonardo, l'assistente di ${user?.businessName || user?.firstName}. Come posso aiutarti oggi?`,
+            unavailable: "Al momento non sono disponibile. Ti risponderò appena possibile!",
+            closing: "Grazie per averci contattato! Ti ricontatteremo presto."
+          },
+          maxConcurrentChats: 5,
+          responseDelay: 2000,
+          personalitySettings: {
+            tone: "professionale",
+            expertise: "generale", 
+            proactivity: "medio"
+          }
+        });
+      }
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching copilot config:", error);
+      res.status(500).json({ message: "Failed to fetch copilot config" });
+    }
+  });
+
+  // Update copilot configuration
+  app.put('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateCopilotConfig(userId, req.body);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating copilot config:", error);
+      res.status(500).json({ message: "Failed to update copilot config" });
+    }
+  });
+
+  // Check copilot availability
+  app.get('/api/copilot/availability/:merchantId', async (req, res) => {
+    try {
+      const merchantId = req.params.merchantId;
+      const isAvailable = await copilotService.isCopilotAvailable(merchantId);
+      res.json({ available: isAvailable });
+    } catch (error) {
+      console.error("Error checking copilot availability:", error);
+      res.status(500).json({ message: "Failed to check availability" });
+    }
+  });
+
+  // Initialize copilot session
+  app.post('/api/copilot/session', isAuthenticated, async (req: any, res) => {
+    try {
+      const customerId = req.user.claims.sub;
+      const { merchantId, requestId } = req.body;
+      
+      const session = await copilotService.initializeSession(merchantId, customerId, requestId);
+      res.json(session);
+    } catch (error) {
+      console.error("Error initializing copilot session:", error);
+      res.status(500).json({ message: "Failed to initialize session" });
+    }
+  });
+
+  // Generate copilot response
+  app.post('/api/copilot/message', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId, message } = req.body;
+      
+      const response = await copilotService.generateResponse(sessionId, message);
+      res.json(response);
+    } catch (error) {
+      console.error("Error generating copilot response:", error);
+      res.status(500).json({ message: "Failed to generate response" });
+    }
+  });
+
+  // Transfer to human
+  app.post('/api/copilot/transfer', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId, reason } = req.body;
+      
+      await copilotService.transferToHuman(sessionId, reason);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error transferring to human:", error);
+      res.status(500).json({ message: "Failed to transfer to human" });
+    }
+  });
+
+  // Complete copilot session
+  app.post('/api/copilot/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId, satisfaction, summary } = req.body;
+      
+      await copilotService.completeSession(sessionId, satisfaction, summary);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error completing copilot session:", error);
+      res.status(500).json({ message: "Failed to complete session" });
+    }
+  });
+
+  // Get merchant active sessions
+  app.get('/api/copilot/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const merchantId = req.user.claims.sub;
+      const sessions = await storage.getMerchantActiveSessions(merchantId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching active sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+
+  // Get copilot analytics
+  app.get('/api/copilot/analytics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const days = parseInt(req.query.days as string) || 7;
+      
+      const stats = await copilotService.getPerformanceStats(userId, days);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching copilot analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // ===== LEONARDO CHAT API =====
+  app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const { message, context, attachedFiles } = req.body;
+      
+      const { leonardoChat } = await import('./gemini');
+      const response = await leonardoChat(message, context, attachedFiles || []);
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error in Leonardo chat:", error);
+      res.status(500).json({ message: "Failed to process chat" });
     }
   });
 
