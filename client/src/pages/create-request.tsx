@@ -133,14 +133,15 @@ export default function CreateRequest() {
     
     try {
       // Usa l'API backend per mantenere la memoria della conversazione
-      const response = await apiRequest("POST", "/api/clemente/chat", {
+      const apiResponse = await apiRequest("POST", "/api/clemente/chat", {
         message: chatInput,
         context: {
           conversationHistory: [...chatMessages, userMessage]
         }
       });
       
-      console.log('🔍 Response completa:', response);
+      const response = await apiResponse.json();
+      console.log('🔍 Response JSON completa:', response);
       console.log('🔍 response.response:', response.response);
       console.log('🔍 response.response.text:', response.response?.text);
       const responseText = response.response?.text || '';
