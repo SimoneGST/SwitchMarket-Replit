@@ -229,7 +229,7 @@ export default function Landing() {
               <CardContent className="pt-6">
                 <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 p-2">
                   <img 
-                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-full h-full object-contain"
                   />
@@ -302,19 +302,12 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
+      <footer className="bg-slate-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <img 
-                src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
-                alt="Switch Market Logo" 
-                className="h-8 w-auto mr-2"
-              />
-              <span className="text-xl font-bold">Switch Market</span>
-            </div>
+            <h3 className="text-xl font-bold mb-2">Switch Market</h3>
             <p className="text-slate-400 mb-4">
-              Il marketplace locale intelligente powered by AI
+              Il marketplace locale intelligente
             </p>
             <div className="flex justify-center space-x-6 text-slate-400">
               <span className="text-sm">Privacy Policy</span>
