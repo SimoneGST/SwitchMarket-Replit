@@ -162,8 +162,6 @@ export class DatabaseStorage implements IStorage {
     status?: string;
     search?: string;
   }): Promise<Request[]> {
-    let query = db.select().from(requests);
-    
     const conditions = [];
     
     if (filters?.category) {
@@ -199,10 +197,13 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      return await db.select().from(requests)
+        .where(and(...conditions))
+        .orderBy(desc(requests.createdAt));
+    } else {
+      return await db.select().from(requests)
+        .orderBy(desc(requests.createdAt));
     }
-    
-    return await query.orderBy(desc(requests.createdAt));
   }
 
   async getUserRequests(userId: string): Promise<Request[]> {
