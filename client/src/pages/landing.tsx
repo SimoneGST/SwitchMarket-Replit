@@ -243,16 +243,25 @@ export default function Landing() {
 
             <Card className="text-center p-6 hover:shadow-lg transition-all duration-200 border-0 bg-blue-50">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 p-2">
-                  <img 
-                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                    alt="Clemente AI" 
-                    className="w-full h-full object-contain"
-                  />
+                <div className="flex justify-center items-center mb-4 space-x-2">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center p-1">
+                    <img 
+                      src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                      alt="Clemente AI" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center p-1">
+                    <img 
+                      src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                      alt="Leonardo AI" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Assistente Clemente</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Assistenti Intelligenti per guidarti</h3>
                 <p className="text-slate-600 text-sm">
-                  Clemente ti aiuta a creare richieste perfette
+                  Clemente e Leonardo utilizzano intelligenza artificiale avanzata per personalizzare la tua esperienza. Ti guidano passo dopo passo, comprendono le tue esigenze e ti consigliano le soluzioni migliori per ogni situazione.
                 </p>
               </CardContent>
             </Card>
