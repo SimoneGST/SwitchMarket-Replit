@@ -10,46 +10,47 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     const neverShowKey = `neverShowIntro_${character}`;
     const neverShow = localStorage.getItem(neverShowKey) === 'true';
     
-    // Check if user has seen this character's intro before (for current session)
-    const introKey = `hasSeenIntro_${character}`;
-    const seen = localStorage.getItem(introKey) === 'true';
-    setHasSeenIntro(seen);
+    // Check how many times user has seen the intro
+    const introCountKey = `introCount_${character}`;
+    const introCount = parseInt(localStorage.getItem(introCountKey) || '0');
+    setHasSeenIntro(introCount > 0);
     
-    console.log('🎬 CharacterIntro Debug:', {
-      character,
-      neverShow,
-      seen,
-      shouldShow: !neverShow && !seen
-    });
+    // Show intro for first 3 visits unless permanently disabled
+    const shouldShow = !neverShow && introCount < 3;
     
-    // Only show intro if not permanently disabled and not seen in current session
-    if (!neverShow && !seen) {
-      console.log('⏰ Avvio timer per mostrare intro di', character);
+    if (shouldShow) {
       const timer = setTimeout(() => {
-        console.log('🎭 Attivando showIntro per', character);
         setShowIntro(true);
-      }, 1000); // Aumentato il delay per dare tempo al componente di caricarsi
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [character, forceReset]);
 
   const completeIntro = () => {
-    const introKey = `hasSeenIntro_${character}`;
-    localStorage.setItem(introKey, 'true');
+    // Incrementa il contatore delle visualizzazioni
+    const introCountKey = `introCount_${character}`;
+    const currentCount = parseInt(localStorage.getItem(introCountKey) || '0');
+    localStorage.setItem(introCountKey, (currentCount + 1).toString());
+    
     setShowIntro(false);
     setHasSeenIntro(true);
   };
 
   const resetIntro = () => {
-    const introKey = `hasSeenIntro_${character}`;
+    const introCountKey = `introCount_${character}`;
     const neverShowKey = `neverShowIntro_${character}`;
-    localStorage.removeItem(introKey);
+    localStorage.removeItem(introCountKey);
     localStorage.removeItem(neverShowKey);
     setHasSeenIntro(false);
     setShowIntro(false);
-    console.log('🔄 Reset intro per', character);
-    // Triggera il re-check
     setForceReset(prev => prev + 1);
+  };
+
+  const neverShowAgain = () => {
+    // Imposta permanentemente per non mostrare più
+    const neverShowKey = `neverShowIntro_${character}`;
+    localStorage.setItem(neverShowKey, 'true');
+    setShowIntro(false);
   };
 
   const startIntro = () => {
@@ -61,6 +62,7 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     hasSeenIntro,
     completeIntro,
     resetIntro,
-    startIntro
+    startIntro,
+    neverShowAgain
   };
 }

@@ -26,16 +26,14 @@ export default function CreateRequest() {
   const [mode, setMode] = useState<'chat' | 'manual'>('chat');
   const [clemente] = useState(() => new ClementeAI());
   
-  // Character intro state - mostrato al primo accesso
-  const { showIntro, completeIntro, resetIntro } = useCharacterIntro('clemente');
+  // Character intro state - mostrato per i primi 3 accessi
+  const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('clemente');
   
-  // Debug: forza reset dell'intro per test
-  useEffect(() => {
-    // Pulisce localStorage per forzare animazione ogni volta (solo per debugging)
-    localStorage.removeItem('hasSeenIntro_clemente');
-    localStorage.removeItem('neverShowIntro_clemente');
-    console.log('🧹 Pulito localStorage per debugging');
-  }, []);
+  // Solo per sviluppo - in produzione rimuovere questo useEffect
+  // useEffect(() => {
+  //   localStorage.removeItem('introCount_clemente');
+  //   localStorage.removeItem('neverShowIntro_clemente');
+  // }, []);
   
   // Stati per chat con Clemente
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -941,6 +939,7 @@ export default function CreateRequest() {
           character="clemente"
           show={showIntro}
           onComplete={completeIntro}
+          onNeverShow={neverShowAgain}
         />
       </div>
     </main>

@@ -18,7 +18,7 @@ export default function MerchantDashboard() {
     queryKey: ["/api/offers/my"],
   });
 
-  const { showIntro, completeIntro } = useCharacterIntro('leonardo');
+  const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('leonardo');
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -29,6 +29,7 @@ export default function MerchantDashboard() {
             character="leonardo"
             show={showIntro}
             onComplete={completeIntro}
+            onNeverShow={neverShowAgain}
           />
         </div>
       )}

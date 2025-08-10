@@ -47,12 +47,8 @@ export default function CharacterIntro({ character, onComplete, onNeverShow, sho
   const char = characterData[character];
 
   useEffect(() => {
-    console.log('👀 CharacterIntro show changed:', { character, show, showDialog });
     if (show) {
-      // Start the intro sequence
-      console.log('🎬 Avvio sequenza intro per', character);
       const timer = setTimeout(() => {
-        console.log('💬 Attivando dialog per', character);
         setShowDialog(true);
       }, 800);
       return () => clearTimeout(timer);

@@ -12,7 +12,7 @@ export default function CustomerDashboard() {
     queryKey: ["/api/requests/my"],
   });
   
-  const { showIntro, completeIntro, resetIntro } = useCharacterIntro('clemente');
+  const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('clemente');
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -23,6 +23,7 @@ export default function CustomerDashboard() {
             character="clemente"
             show={showIntro}
             onComplete={completeIntro}
+            onNeverShow={neverShowAgain}
           />
         </div>
       )}
