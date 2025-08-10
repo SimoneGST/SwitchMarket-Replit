@@ -163,7 +163,11 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
     <Card className="w-full h-[600px] flex flex-col">
       <CardHeader className="border-b bg-blue-50">
         <CardTitle className="flex items-center gap-2 text-blue-600">
-          <Bot className="w-5 h-5" />
+          <img 
+            src="/attached_assets/leonardo_avatar_1754845138372.png" 
+            alt="Leonardo AI" 
+            className="w-5 h-5"
+          />
           Chat con Leonardo
           {sessionId && <span className="text-xs bg-blue-100 px-2 py-1 rounded">Copilot Attivo</span>}
         </CardTitle>
@@ -185,7 +189,15 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
                     ? 'bg-green-100 text-green-600'
                     : 'bg-blue-100 text-blue-600'
                 }>
-                  {message.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  {message.sender === 'user' ? (
+                    <User className="w-4 h-4" />
+                  ) : (
+                    <img 
+                      src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                      alt="Leonardo AI" 
+                      className="w-4 h-4 object-contain"
+                    />
+                  )}
                 </AvatarFallback>
               </Avatar>
 
@@ -212,8 +224,12 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
           {isLoading && (
             <div className="flex items-start gap-3">
               <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-blue-100 text-blue-600">
-                  <Bot className="w-4 h-4" />
+                <AvatarFallback className="bg-blue-100 text-blue-600 p-1">
+                  <img 
+                    src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                    alt="Leonardo AI" 
+                    className="w-full h-full object-contain"
+                  />
                 </AvatarFallback>
               </Avatar>
               <div className="bg-gray-100 rounded-2xl px-4 py-2">

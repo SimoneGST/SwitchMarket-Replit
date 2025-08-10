@@ -101,11 +101,20 @@ export default function CopilotDashboard() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 mb-8 text-white">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Copilot Leonardo</h1>
-            <p className="text-blue-100">
-              Gestisci le conversazioni automatiche con i clienti
-            </p>
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 p-2">
+              <img 
+                src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                alt="Leonardo AI" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Copilot Leonardo</h1>
+              <p className="text-blue-100">
+                Gestisci le conversazioni automatiche con i clienti
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Badge variant={config?.isEnabled ? "default" : "secondary"} className="px-4 py-2">

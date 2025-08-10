@@ -75,8 +75,12 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
     <>
       <div className="p-4 bg-slate-50 border-b border-slate-200">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <i className="fas fa-robot text-white text-sm"></i>
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center p-1">
+            <img 
+              src="/attached_assets/clemente_avatar_1754845138372.png" 
+              alt="Clemente AI" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h3 className="font-medium text-slate-900">Clemente</h3>
@@ -96,8 +100,12 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
         {messages.map((message) => (
           <div key={message.id} className={`flex gap-3 ${message.isAI ? '' : 'justify-end'}`}>
             {message.isAI && (
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                <i className="fas fa-robot text-white text-sm"></i>
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 p-1">
+                <img 
+                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  alt="Clemente AI" 
+                  className="w-full h-full object-contain"
+                />
               </div>
             )}
             <div className={`flex-1 ${message.isAI ? '' : 'flex justify-end'}`}>

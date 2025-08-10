@@ -65,7 +65,11 @@ export default function MerchantDashboard() {
             </Link>
             <Link href="/copilot-dashboard">
               <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
-                <i className="fas fa-robot mr-2"></i>
+                <img 
+                  src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                  alt="Leonardo AI" 
+                  className="w-5 h-5 mr-2"
+                />
                 Copilot Leonardo
               </Button>
             </Link>

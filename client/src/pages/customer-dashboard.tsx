@@ -31,7 +31,11 @@ export default function CustomerDashboard() {
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <Link href="/create">
               <Button className="bg-white text-green-800 hover:bg-green-50 hover:text-green-900 px-6 py-3 rounded-xl font-bold shadow-2xl border-3 border-green-200 transition-all duration-200">
-                <i className="fas fa-robot mr-2"></i>
+                <img 
+                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  alt="Clemente AI" 
+                  className="w-5 h-5 mr-2"
+                />
                 Parla con Clemente
               </Button>
             </Link>
@@ -99,8 +103,12 @@ export default function CustomerDashboard() {
         <Card className="lg:col-span-2">
           <div className="p-6 border-b border-slate-200 bg-green-50">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <i className="fas fa-robot text-white text-xl"></i>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 p-1">
+                <img 
+                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  alt="Clemente AI" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">Clemente, il tuo assistente AI</h3>
@@ -173,7 +181,13 @@ export default function CustomerDashboard() {
           {userRequests.length === 0 ? (
             <div className="p-8 text-center">
               <div className="p-4 bg-green-50 rounded-xl inline-flex items-center justify-center mb-4">
-                <i className="fas fa-robot text-green-500 text-3xl"></i>
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center p-1">
+                  <img 
+                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    alt="Clemente AI" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">Inizia con Clemente</h3>
               <p className="text-slate-500 mb-4">Non hai ancora creato nessuna richiesta. Parla con Clemente per trovare quello che cerchi!</p>

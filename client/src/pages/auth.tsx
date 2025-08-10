@@ -82,10 +82,12 @@ export default function Auth() {
         {/* Logo e Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-              <i className="fas fa-exchange-alt text-white text-xl"></i>
-            </div>
-            <span className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            <img 
+              src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+              alt="Switch Market Logo" 
+              className="h-12 w-auto mr-3"
+            />
+            <span className="text-3xl font-bold text-slate-900">
               Switch Market
             </span>
           </div>

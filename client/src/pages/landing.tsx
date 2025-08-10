@@ -11,10 +11,12 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center mr-3">
-                  <i className="fas fa-exchange-alt text-white text-lg"></i>
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                <img 
+                  src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                  alt="Switch Market Logo" 
+                  className="h-10 w-auto mr-3"
+                />
+                <span className="text-2xl font-bold text-slate-900">
                   Switch Market
                 </span>
               </div>
@@ -39,7 +41,11 @@ export default function Landing() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="pt-16 pb-8 text-center">
           <Badge variant="outline" className="mb-6 bg-green-50 text-green-700 border-green-200 px-4 py-2">
-            <i className="fas fa-robot mr-2"></i>
+            <img 
+              src="/attached_assets/clemente_avatar_1754845138372.png" 
+              alt="Clemente AI" 
+              className="w-6 h-6 mr-2"
+            />
             Powered by AI - Assistente Clemente
           </Badge>
           
@@ -224,10 +230,14 @@ export default function Landing() {
 
             <Card className="text-center p-6 hover:shadow-lg transition-all duration-200 border-0 bg-blue-50">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-robot text-blue-600 text-2xl"></i>
+                <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 p-2">
+                  <img 
+                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    alt="Clemente AI" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Assistente AI</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Assistente Clemente</h3>
                 <p className="text-slate-600 text-sm">
                   Clemente ti aiuta a creare richieste perfette
                 </p>
@@ -299,9 +309,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center mr-2">
-                <i className="fas fa-exchange-alt text-white"></i>
-              </div>
+              <img 
+                src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                alt="Switch Market Logo" 
+                className="h-8 w-auto mr-2"
+              />
               <span className="text-xl font-bold">Switch Market</span>
             </div>
             <p className="text-slate-400 mb-4">
