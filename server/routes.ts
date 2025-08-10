@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertRequestSchema, insertOfferSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { copilotService } from "./copilotService";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -190,13 +191,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Clemente AI endpoint with Gemini
-  app.post('/api/clemente/chat', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clemente/chat', async (req: any, res) => {
     try {
-      const { message, context } = req.body;
-      const { clementeChat } = await import('./gemini');
+      const { message, context, attachedFile } = req.body;
+      const { clementeAI } = await import('./clemente');
       
-      const result = await clementeChat(message, context);
-      res.json(result);
+      const result = await clementeAI.chatWithUser(message, attachedFile);
+      res.json({
+        response: result,
+        extractedData: {}
+      });
     } catch (error) {
       console.error("Error processing Clemente chat:", error);
       res.status(500).json({ message: "Failed to process chat" });

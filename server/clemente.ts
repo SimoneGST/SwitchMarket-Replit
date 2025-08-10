@@ -1,4 +1,3 @@
-// @ts-ignore
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface RequestData {
@@ -34,11 +33,11 @@ class ClementeAI {
   private chatHistory: ChatMessage[] = [];
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log('🔑 API Key disponibile:', !!apiKey, 'Lunghezza:', apiKey?.length);
+    const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+    console.log('🔑 Server API Key disponibile:', !!apiKey);
     
     if (!apiKey) {
-      console.warn('❌ VITE_GEMINI_API_KEY non configurata');
+      console.warn('❌ GOOGLE_API_KEY e GEMINI_API_KEY non configurate sul server');
       this.genAI = null as any;
       this.model = null;
       return;
@@ -47,9 +46,9 @@ class ClementeAI {
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      console.log('✅ Clemente AI inizializzato correttamente');
+      console.log('✅ Clemente AI Server inizializzato correttamente');
     } catch (error) {
-      console.error('❌ Errore inizializzazione Gemini:', error);
+      console.error('❌ Errore inizializzazione Gemini Server:', error);
       this.genAI = null as any;
       this.model = null;
     }
@@ -64,9 +63,11 @@ class ClementeAI {
     try {
       // Fetch dell'immagine per convertirla in base64
       const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const blob = await response.arrayBuffer();
+      const base64 = Buffer.from(blob).toString('base64');
+      
+      // Determina il tipo MIME (assumendo JPEG se non specificato)
+      const mimeType = response.headers.get('content-type') || 'image/jpeg';
       
       const prompt = userMessage 
         ? `Analizza questa immagine in relazione alla richiesta: "${userMessage}". Come può aiutarmi a trovare quello che cerco?`
@@ -76,7 +77,7 @@ class ClementeAI {
         {
           inlineData: {
             data: base64,
-            mimeType: blob.type
+            mimeType: mimeType
           }
         },
         prompt
@@ -96,26 +97,30 @@ class ClementeAI {
     try {
       console.log('🎨 Generando immagine di esempio per:', description);
       
-      // Usa Gemini 2.0 per generare immagini
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-preview-image-generation' });
-      
-      const prompt = `Genera un'immagine di esempio per aiutare l'utente a visualizzare: ${description}. 
-      L'immagine deve essere chiara, professionale e utile per identificare il prodotto.`;
+      // Usa Gemini 2.0 per generare immagini se disponibile
+      try {
+        const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-preview-image-generation' });
+        
+        const prompt = `Genera un'immagine di esempio per aiutare l'utente a visualizzare: ${description}. 
+        L'immagine deve essere chiara, professionale e utile per identificare il prodotto.`;
 
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseModalities: ['TEXT', 'IMAGE']
-        }
-      });
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            responseModalities: ['TEXT', 'IMAGE']
+          }
+        });
 
-      const candidates = result.candidates;
-      if (candidates && candidates[0]?.content?.parts) {
-        for (const part of candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        const candidates = result.candidates;
+        if (candidates && candidates[0]?.content?.parts) {
+          for (const part of candidates[0].content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            }
           }
         }
+      } catch (error) {
+        console.log('⚠️ Modello di generazione immagini non disponibile, continuo senza');
       }
       
       return null;
@@ -134,40 +139,30 @@ class ClementeAI {
     this.chatHistory.push({
       role: 'user',
       content: userMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
+      fileUrl: attachedFile?.url,
+      fileName: attachedFile?.name,
+      fileType: attachedFile?.type.startsWith('image/') ? 'image' : 'document'
     });
 
-    const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market. Aiuti i clienti a trovare prodotti nei negozi locali.
+    const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market che aiuta i clienti a specificare le loro richieste di prodotti.
 
-PERSONALITÀ: Amichevole e naturale, come un commesso esperto che fa UNA domanda alla volta.
+Obiettivo: Aiutare l'utente a creare richieste dettagliate e precise per trovare esattamente quello che cerca.
 
-STILE:
-- Risposte BREVI: massimo 1-2 frasi
-- UNA sola domanda per messaggio
-- Tono colloquiale e naturale
-- Come una vera conversazione in negozio
+Comportamento:
+- Fai UNA domanda specifica alla volta per ottenere dettagli
+- Risposte molto brevi: massimo 1-2 frasi
+- Linguaggio naturale e amichevole
+- Concentrati su dettagli tecnici importanti (marca, modello, caratteristiche, budget, tempistiche)
+- Se hai abbastanza informazioni, proponi di creare la richiesta
 
-PROCESSO:
-1. Conferma brevemente il prodotto cercato
-2. Fai domande specifiche UNA ALLA VOLTA:
-   - Prima le caratteristiche più importanti
-   - Poi budget o marca preferita  
-   - Infine tempistiche e zona
-
-ESEMPI BUONI:
-"Perfetto! Che tipo di attacco preferisci: SPD-SL o Look Delta?"
-"Hai un budget in mente?"
-"Che taglia indossi di solito?"
-
-IMPORTANTE: Procedi gradualmente, una domanda alla volta, come una conversazione reale. NON fare liste di domande.
-
-Conversazione precedente:
+Cronologia conversazione:
 ${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 
 Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, proponi di generare la richiesta.`;
 
     try {
-      console.log('🤖 Clemente sta elaborando:', userMessage);
+      console.log('🤖 Clemente Server sta elaborando:', userMessage);
       
       let finalMessage = userMessage;
       let analysisResult = '';
@@ -182,7 +177,7 @@ Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, pr
       const result = await this.model.generateContent(systemPrompt + '\n\nCliente: ' + finalMessage);
       const response = result.response.text();
       
-      console.log('✅ Risposta Clemente:', response.substring(0, 100) + '...');
+      console.log('✅ Risposta Clemente Server:', response.substring(0, 100) + '...');
       
       // Determina se dovrebbe generare un'immagine di esempio
       const shouldGenerateImage = this.shouldGenerateExampleImage(userMessage, response);
@@ -202,11 +197,11 @@ Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, pr
 
       return { text: response, generatedImage };
     } catch (error: any) {
-      console.error('❌ Errore chat Clemente:', error);
+      console.error('❌ Errore chat Clemente Server:', error);
       
       // Risposta di fallback più informativa
       if (error?.message?.includes('API key')) {
-        return { text: 'Problema con la chiave API. Controlla la configurazione di VITE_GEMINI_API_KEY.' };
+        return { text: 'Problema con la chiave API. Controlla la configurazione di GOOGLE_API_KEY.' };
       } else if (error?.message?.includes('quota')) {
         return { text: 'Quota API esaurita. Riprova più tardi.' };
       } else {
@@ -306,9 +301,9 @@ Crea una richiesta di prodotto basandoti su questo input. Rispondi SOLO con JSON
   "budget": null,
   "urgencyLevel": "few_days",
   "deliveryPreference": "both",
-  "actionRadius": 20,
-  "location": "Da specificare",
-  "technicalSpecs": "Specifiche se deducibili",
+  "actionRadius": 10,
+  "location": "Milano",
+  "technicalSpecs": null,
   "brand": null,
   "model": null,
   "size": null,
@@ -319,45 +314,18 @@ Crea una richiesta di prodotto basandoti su questo input. Rispondi SOLO con JSON
     try {
       const result = await this.model.generateContent(quickPrompt);
       const jsonText = result.response.text().trim();
+      
+      // Rimuovi eventuali markdown
       const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      return JSON.parse(cleanJson);
+      
+      const requestData = JSON.parse(cleanJson);
+      return requestData;
     } catch (error) {
       console.error('Errore generazione rapida:', error);
       return null;
     }
   }
-
-  // Miglioramento richiesta esistente
-  async improveRequest(currentRequest: Partial<RequestData>, userFeedback: string): Promise<RequestData | null> {
-    if (!this.model) return null;
-
-    const improvePrompt = `Migliora questa richiesta basandoti sul feedback dell'utente:
-
-Richiesta attuale: ${JSON.stringify(currentRequest)}
-Feedback utente: "${userFeedback}"
-
-Rispondi SOLO con il JSON migliorato mantenendo la stessa struttura.`;
-
-    try {
-      const result = await this.model.generateContent(improvePrompt);
-      const jsonText = result.response.text().trim();
-      const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      return JSON.parse(cleanJson);
-    } catch (error) {
-      console.error('Errore miglioramento:', error);
-      return null;
-    }
-  }
-
-  // Reset chat
-  clearChat() {
-    this.chatHistory = [];
-  }
-
-  // Ottieni storico chat
-  getChatHistory(): ChatMessage[] {
-    return [...this.chatHistory];
-  }
 }
 
-export { ClementeAI, type RequestData, type ChatMessage };
+// Esporta l'istanza singleton
+export const clementeAI = new ClementeAI();

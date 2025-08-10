@@ -10,8 +10,19 @@ interface ClementeChatProps {
   onDataUpdate: (data: any) => void;
 }
 
+interface Message {
+  id: number;
+  content: string;
+  isAI: boolean;
+  timestamp: Date;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: 'image' | 'document' | 'other';
+  aiGeneratedImage?: string;
+}
+
 export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       content: "Ciao! Sono Clemente, il tuo assistente per trovare quello che cerchi. Cosa vorresti acquistare oggi?",
@@ -23,19 +34,21 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
   const [chatContext, setChatContext] = useState({});
 
   const chatMutation = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async ({ message, attachedFile }: { message: string, attachedFile?: { url: string, name: string, type: string } }) => {
       return apiRequest("POST", "/api/clemente/chat", {
         message,
         context: chatContext,
+        attachedFile
       });
     },
     onSuccess: (data: any) => {
       // Add AI response to messages
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
-        content: data.response,
+        content: typeof data.response === 'string' ? data.response : data.response.text,
         isAI: true,
         timestamp: new Date(),
+        aiGeneratedImage: typeof data.response === 'object' ? data.response.generatedImage : undefined
       }]);
 
       // Update context and extracted data
@@ -58,7 +71,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
     setMessages(prev => [...prev, userMessage]);
     
     // Send to AI
-    chatMutation.mutate(newMessage.trim());
+    chatMutation.mutate({ message: newMessage.trim() });
     setNewMessage("");
   };
 
@@ -115,6 +128,36 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
                 <p className={`text-sm ${message.isAI ? 'text-slate-900' : 'text-white'}`}>
                   {message.content}
                 </p>
+                
+                {/* Mostra file allegato dall'utente */}
+                {message.fileUrl && (
+                  <div className="mt-2 p-2 bg-white/20 rounded border">
+                    {message.fileType === 'image' ? (
+                      <img 
+                        src={message.fileUrl} 
+                        alt={message.fileName} 
+                        className="max-w-full h-32 object-cover rounded"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-file"></i>
+                        <span className="text-xs">{message.fileName}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Mostra immagine generata dall'AI */}
+                {message.aiGeneratedImage && (
+                  <div className="mt-2">
+                    <img 
+                      src={message.aiGeneratedImage} 
+                      alt="Immagine di esempio generata da AI"
+                      className="max-w-full h-40 object-cover rounded border"
+                    />
+                    <p className="text-xs opacity-70 mt-1">🎨 Immagine di esempio</p>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-500 mt-1">
                 {message.timestamp.toLocaleTimeString('it-IT', { 
@@ -178,17 +221,24 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
               result.successful.forEach(file => {
                 const fileName = file.name;
                 const fileUrl = file.uploadURL;
+                const fileType = file.type?.startsWith('image/') ? 'image' : 'document';
                 
                 setMessages(prev => [...prev, {
-                  id: Date.now().toString(),
+                  id: Date.now(),
                   content: `📎 File allegato: ${fileName}`,
                   isAI: false,
-                  timestamp: new Date()
+                  timestamp: new Date(),
+                  fileUrl,
+                  fileName,
+                  fileType
                 }]);
                 
-                // Send file info to AI
+                // Send file info to AI with attachment data
                 setTimeout(() => {
-                  chatMutation.mutate(`Ho allegato il file: ${fileName}. Puoi analizzarlo per aiutarmi con la richiesta?`);
+                  chatMutation.mutate({
+                    message: `Ho allegato il file: ${fileName}. Puoi analizzarlo per aiutarmi con la richiesta?`,
+                    attachedFile: { url: fileUrl, name: fileName, type: file.type || 'application/octet-stream' }
+                  });
                 }, 100);
               });
             }}

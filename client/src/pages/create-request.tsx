@@ -113,12 +113,13 @@ export default function CreateRequest() {
     
     try {
       const response = await clemente.chatWithUser(chatInput);
-      console.log('📨 Risposta ricevuta:', response.substring(0, 50));
+      console.log('📨 Risposta ricevuta:', typeof response === 'string' ? response.substring(0, 50) : response.text.substring(0, 50));
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: response,
-        timestamp: new Date()
+        content: typeof response === 'string' ? response : response.text,
+        timestamp: new Date(),
+        aiGeneratedImage: typeof response === 'object' ? response.generatedImage : undefined
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
