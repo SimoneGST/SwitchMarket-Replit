@@ -132,15 +132,22 @@ export default function CreateRequest() {
     setIsClementeTyping(true);
     
     try {
-      const response = await clemente.chatWithUser(chatInput);
-      const responseText = typeof response === 'string' ? response : (response?.text || '');
+      // Usa l'API backend per mantenere la memoria della conversazione
+      const response = await apiRequest("POST", "/api/clemente/chat", {
+        message: chatInput,
+        context: {
+          conversationHistory: [...chatMessages, userMessage]
+        }
+      });
+      
+      const responseText = response.response?.text || response.response || '';
       console.log('📨 Risposta ricevuta:', responseText.substring(0, 50));
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: typeof response === 'string' ? response : (response?.text || ''),
+        content: responseText,
         timestamp: new Date(),
-        aiGeneratedImage: typeof response === 'object' ? response?.generatedImage : undefined
+        aiGeneratedImage: response.response?.generatedImage
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
@@ -148,8 +155,7 @@ export default function CreateRequest() {
       // Far parlare Clemente se la voce è abilitata
       if (voiceSettings.voiceEnabled) {
         setTimeout(() => {
-          const messageText = typeof response === 'string' ? response : (response?.text || '');
-          speakClementeMessage(messageText);
+          speakClementeMessage(responseText);
         }, 500);
       }
     } catch (error) {

@@ -97,21 +97,15 @@ class ClementeAI {
     return null;
   }
 
-  // Sistema di chat per ottenere dettagli (ora con supporto file)
-  async chatWithUser(userMessage: string, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string}> {
+  // Sistema di chat per ottenere dettagli (ora con supporto file e context)
+  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string}> {
     if (!this.model) {
       return { text: 'Mi dispiace, il servizio AI non è disponibile al momento. Prova la compilazione manuale.' };
     }
 
-    this.chatHistory.push({
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date(),
-      fileUrl: attachedFile?.url,
-      fileName: attachedFile?.name,
-      fileType: attachedFile?.type.startsWith('image/') ? 'image' : 'document'
-    });
-
+    // Usa il context passato dal frontend per mantenere la memoria della conversazione
+    const conversationHistory = context?.conversationHistory || [];
+    
     const systemPrompt = `Sei Clemente, esperto assistente di Switch Market che aiuta i clienti a creare richieste perfette per i negozianti locali.
 
 MISSIONE: Trasformare richieste vaghe in specifiche dettagliate e complete, educando il cliente sulle caratteristiche importanti del prodotto.
@@ -129,6 +123,7 @@ PROCESSO SEMPLICE:
 4. Proponi di creare la richiesta quando hai abbastanza info
 
 IMPORTANTE: Risposte BREVI e NATURALI. Non fare liste o spiegazioni lunghe.
+RICORDA: Tieni sempre a mente TUTTO quello che l'utente ha già detto nella conversazione.
 
 STILE COMUNICAZIONE:
 - Naturale e conversazionale, come un amico esperto
@@ -139,12 +134,19 @@ STILE COMUNICAZIONE:
 ESEMPI GIUSTI:
 "Perfetto! Che tipo di attacco usi di solito: SPD-SL o Look Delta?"
 "Hai un budget in mente?"
-"Per lo spinning è importante la rigidità della suola. La vuoi molto rigida o preferisci un po' di flessibilità?"
+"Per lo spinning è importante la rigidità della suola. La vuoi molto rigida or preferisci un po' di flessibilità?"
 
-Cronologia conversazione:
-${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+INFORMAZIONI RACCOLTE dalla conversazione precedente:
+${context?.productDetails ? `Prodotto: ${context.productDetails}` : ''}
+${context?.dimensions ? `Dimensioni: ${context.dimensions}` : ''}
+${context?.material ? `Materiale: ${context.material}` : ''}
+${context?.budget ? `Budget: ${context.budget}` : ''}
+${context?.features ? `Caratteristiche: ${context.features}` : ''}
 
-Aiuta il cliente a creare una richiesta completa e precisa.`;
+Cronologia conversazione completa:
+${conversationHistory.slice(-15).map((msg: any) => `${msg.isAI ? 'Clemente' : 'Cliente'}: ${msg.content}`).join('\n')}
+
+NON ripetere domande su cose già specificate. Aiuta il cliente a creare una richiesta completa e precisa.`;
 
     try {
       console.log('🤖 Clemente Server sta elaborando:', userMessage);
@@ -173,12 +175,7 @@ Aiuta il cliente a creare una richiesta completa e precisa.`;
         generatedImage = await this.generateExampleImage(imageDescription) || undefined;
       }
 
-      this.chatHistory.push({
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-        aiGeneratedImage: generatedImage
-      });
+      // Non aggiornare più la chatHistory locale, il context è gestito dal frontend
 
       return { text: response, generatedImage };
     } catch (error: any) {

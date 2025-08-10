@@ -196,10 +196,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { message, context, attachedFile } = req.body;
       const { clementeAI } = await import('./clemente');
       
-      const result = await clementeAI.chatWithUser(message, attachedFile);
+      // Passa il context completo al chat per mantenere la memoria
+      const result = await clementeAI.chatWithUser(message, context, attachedFile);
       res.json({
         response: result,
-        extractedData: {}
+        extractedData: context || {}
       });
     } catch (error) {
       console.error("Error processing Clemente chat:", error);

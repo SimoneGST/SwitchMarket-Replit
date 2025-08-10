@@ -43,7 +43,10 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
     mutationFn: async ({ message, attachedFile }: { message: string, attachedFile?: { url: string, name: string, type: string } }) => {
       return apiRequest("POST", "/api/clemente/chat", {
         message,
-        context: chatContext,
+        context: {
+          ...chatContext,
+          conversationHistory: messages
+        },
         attachedFile
       });
     },
