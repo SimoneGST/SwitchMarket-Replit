@@ -14,20 +14,24 @@ export default function Landing() {
                 <span className="text-xl font-bold text-slate-900">Switch Market</span>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-slate-600">Hai già un account?</span>
               <Button 
+                variant="outline"
+                size="sm"
                 onClick={async () => {
                   const { authService } = await import("@/lib/auth");
                   try {
                     await authService.signInWithGoogle();
                   } catch (error) {
                     console.error("Login failed:", error);
+                    alert("Errore durante il login. Riprova.");
                   }
                 }}
-                className="bg-primary hover:bg-primary/90"
+                className="border-slate-300 text-slate-700 hover:bg-slate-100"
               >
                 <i className="fab fa-google mr-2"></i>
-                Accedi con Google
+                Accedi
               </Button>
             </div>
           </div>
@@ -45,27 +49,76 @@ export default function Landing() {
             Trova quello che cerchi con l'aiuto di Clemente, il tuo assistente AI personale. 
             Connetti acquirenti e venditori nella tua zona.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg"
-              onClick={async () => {
-                const { authService } = await import("@/lib/auth");
-                try {
-                  await authService.signInWithGoogle();
-                } catch (error) {
-                  console.error("Login failed:", error);
-                }
-              }}
-              className="bg-primary hover:bg-primary/90 text-lg px-8 py-4"
-            >
-              <i className="fab fa-google mr-2"></i>
-              Inizia con Google
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            {/* Login Cliente - Verde */}
+            <Card className="w-full sm:w-80 border-2 border-green-500 bg-green-50">
+              <CardContent className="p-6 text-center">
+                <div className="mb-4">
+                  <i className="fas fa-user text-green-600 text-4xl mb-2"></i>
+                  <h3 className="text-xl font-bold text-green-800 mb-2">Sono un Cliente</h3>
+                  <p className="text-green-700 text-sm">Trova prodotti e servizi nella tua zona</p>
+                </div>
+                <Button 
+                  size="lg"
+                  onClick={async () => {
+                    const { authService } = await import("@/lib/auth");
+                    try {
+                      const user = await authService.signInWithGoogle();
+                      if (user) {
+                        // Set user type as customer after login
+                        localStorage.setItem('pendingUserType', 'customer');
+                      }
+                    } catch (error) {
+                      console.error("Login failed:", error);
+                      alert("Errore durante il login. Riprova.");
+                    }
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <i className="fab fa-google mr-2"></i>
+                  Accedi con Google
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Login Negoziante - Blu */}
+            <Card className="w-full sm:w-80 border-2 border-blue-500 bg-blue-50">
+              <CardContent className="p-6 text-center">
+                <div className="mb-4">
+                  <i className="fas fa-store text-blue-600 text-4xl mb-2"></i>
+                  <h3 className="text-xl font-bold text-blue-800 mb-2">Sono un Negoziante</h3>
+                  <p className="text-blue-700 text-sm">Vendi i tuoi prodotti e servizi</p>
+                </div>
+                <Button 
+                  size="lg"
+                  onClick={async () => {
+                    const { authService } = await import("@/lib/auth");
+                    try {
+                      const user = await authService.signInWithGoogle();
+                      if (user) {
+                        // Set user type as merchant after login
+                        localStorage.setItem('pendingUserType', 'merchant');
+                      }
+                    } catch (error) {
+                      console.error("Login failed:", error);
+                      alert("Errore durante il login. Riprova.");
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <i className="fab fa-google mr-2"></i>
+                  Accedi con Google
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mt-8">
             <Button 
               size="lg"
               variant="outline"
               onClick={() => window.location.href = '/how-it-works'}
-              className="text-lg px-8 py-4 border-primary text-primary hover:bg-primary/10"
+              className="text-lg px-8 py-4 border-slate-300 text-slate-700 hover:bg-slate-100"
             >
               <i className="fas fa-play mr-2"></i>
               Scopri Come Funziona
