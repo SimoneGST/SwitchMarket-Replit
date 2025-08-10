@@ -19,6 +19,7 @@ Preferred communication style: Simple, everyday language.
 - **Tono Amichevole**: Come un amico esperto, non un consulente formale
 - **Context Awareness**: Sa di essere su Switch Market, non chiede dove fare shopping
 - **Efficienza**: Raccoglie info essenziali senza essere verboso
+- **Pulsanti Chat Visibili**: Allegati (📎), microfono (🎤) e invio (✈️) ora chiaramente visibili
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni

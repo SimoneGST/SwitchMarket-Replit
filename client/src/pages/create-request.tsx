@@ -113,7 +113,7 @@ export default function CreateRequest() {
     
     try {
       const response = await clemente.chatWithUser(chatInput);
-      console.log('📨 Risposta ricevuta:', typeof response === 'string' ? response.substring(0, 50) : response.text.substring(0, 50));
+      console.log('📨 Risposta ricevuta:', typeof response === 'string' ? response.substring(0, 50) : (response.text || '').substring(0, 50));
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -293,20 +293,89 @@ export default function CreateRequest() {
                 </div>
 
                 {/* Input chat */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Scrivi a Clemente..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleChatMessage()}
-                    disabled={isClementeTyping}
-                  />
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Scrivi a Clemente..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleChatMessage()}
+                      disabled={isClementeTyping}
+                    />
+                  </div>
+                  
+                  {/* File Upload Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="px-3 py-2"
+                    onClick={() => {
+                      // Creo un input file temporaneo
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*,application/pdf,.doc,.docx,.txt';
+                      input.multiple = true;
+                      input.onchange = (e) => {
+                        const files = (e.target as HTMLInputElement).files;
+                        if (files) {
+                          Array.from(files).forEach(file => {
+                            const fileName = file.name;
+                            const fileUrl = URL.createObjectURL(file);
+                            
+                            setChatMessages(prev => [...prev, {
+                              role: 'user',
+                              content: `📎 File allegato: ${fileName}`,
+                              timestamp: new Date()
+                            }]);
+                            
+                            // Simula invio a Clemente per analisi file
+                            setTimeout(() => {
+                              setChatMessages(prev => [...prev, {
+                                role: 'assistant',
+                                content: `Ho ricevuto il file "${fileName}". Puoi descrivermi cosa rappresenta così posso aiutarti meglio con la richiesta?`,
+                                timestamp: new Date()
+                              }]);
+                            }, 1000);
+                          });
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    📎
+                  </Button>
+
+                  {/* Voice Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="px-3 py-2"
+                    onClick={() => {
+                      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                        const recognition = new SpeechRecognition();
+                        recognition.lang = 'it-IT';
+                        recognition.onresult = (event: any) => {
+                          const transcript = event.results[0][0].transcript;
+                          setChatInput(transcript);
+                        };
+                        recognition.start();
+                      } else {
+                        alert('Riconoscimento vocale non supportato dal browser');
+                      }
+                    }}
+                  >
+                    🎤
+                  </Button>
+                  
                   <Button 
                     onClick={handleChatMessage}
                     disabled={!chatInput.trim() || isClementeTyping}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-green-600 hover:bg-green-700 px-4"
                   >
-                    <i className="fas fa-paper-plane"></i>
+                    ✈️
                   </Button>
                 </div>
 
