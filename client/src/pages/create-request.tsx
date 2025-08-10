@@ -11,6 +11,8 @@ import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { ClementeAI, type RequestData, type ChatMessage } from "@/lib/clemente";
+import CharacterIntro from "@/components/character-intro";
+import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 
 export default function CreateRequest() {
   const [, setLocation] = useLocation();
@@ -20,6 +22,9 @@ export default function CreateRequest() {
   // Stati per la modalità di creazione
   const [mode, setMode] = useState<'quick' | 'chat' | 'manual'>('quick');
   const [clemente] = useState(() => new ClementeAI());
+  
+  // Character intro state
+  const { showIntro, completeIntro } = useCharacterIntro('clemente');
   
   // Stati per chat con Clemente
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -565,6 +570,13 @@ export default function CreateRequest() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Character Introduction */}
+        <CharacterIntro
+          character="clemente"
+          show={showIntro}
+          onComplete={completeIntro}
+        />
       </div>
     </main>
   );

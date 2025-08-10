@@ -3,12 +3,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import CharacterIntro from "@/components/character-intro";
+import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const { data: userRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/requests/my"],
   });
+  
+  const { showIntro, completeIntro, resetIntro } = useCharacterIntro('clemente');
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -236,6 +240,13 @@ export default function CustomerDashboard() {
           )}
         </div>
       </Card>
+
+      {/* Character Introduction */}
+      <CharacterIntro
+        character="clemente"
+        show={showIntro}
+        onComplete={completeIntro}
+      />
     </main>
   );
 }

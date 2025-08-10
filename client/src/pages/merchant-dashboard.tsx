@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import RequestCard from "@/components/request-card";
+import CharacterIntro from "@/components/character-intro";
+import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 
 export default function MerchantDashboard() {
   const { user } = useAuth();
@@ -15,6 +17,8 @@ export default function MerchantDashboard() {
   const { data: myOffers = [] } = useQuery<any[]>({
     queryKey: ["/api/offers/my"],
   });
+
+  const { showIntro, completeIntro } = useCharacterIntro('leonardo');
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -324,6 +328,13 @@ export default function MerchantDashboard() {
           </div>
         </Card>
       </div>
+
+      {/* Character Introduction */}
+      <CharacterIntro
+        character="leonardo"
+        show={showIntro}
+        onComplete={completeIntro}
+      />
     </main>
   );
 }

@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Mic, FileText, Send, Bot, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import CharacterIntro from "@/components/character-intro";
+import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 
 interface Message {
   id: string;
@@ -32,6 +34,8 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  const { showIntro, completeIntro } = useCharacterIntro('leonardo');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -288,6 +292,13 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
           )}
         </div>
       </CardContent>
+
+      {/* Character Introduction */}
+      <CharacterIntro
+        character="leonardo"
+        show={showIntro}
+        onComplete={completeIntro}
+      />
     </Card>
   );
 }
