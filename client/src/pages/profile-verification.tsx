@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle, User, Store } from 'lucide-react';
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import AddressAutocomplete from "@/components/address-autocomplete";
 
 export default function ProfileVerification() {
   const { user } = useAuth();
@@ -234,12 +235,25 @@ export default function ProfileVerification() {
                 />
               </div>
               <div>
-                <Label htmlFor="address">Indirizzo</Label>
-                <Input
-                  id="address"
+                <Label htmlFor="address">Indirizzo *</Label>
+                <AddressAutocomplete
                   value={profileData.address}
-                  onChange={(e) => setProfileData(prev => ({...prev, address: e.target.value}))}
+                  onChange={(value, coordinates) => {
+                    setProfileData(prev => ({
+                      ...prev, 
+                      address: value,
+                      // Aggiungi coordinate se disponibili per futuri usi
+                      ...(coordinates && {
+                        latitude: coordinates.lat,
+                        longitude: coordinates.lng
+                      })
+                    }));
+                  }}
+                  placeholder="Inserisci il tuo indirizzo completo"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Inserisci un indirizzo completo per permettere ai negozianti di trovarti
+                </p>
               </div>
               <div>
                 <Label htmlFor="city">Città *</Label>
@@ -315,12 +329,25 @@ export default function ProfileVerification() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="businessAddress">Indirizzo Attività</Label>
-                  <Input
-                    id="businessAddress"
+                  <Label htmlFor="businessAddress">Indirizzo Attività *</Label>
+                  <AddressAutocomplete
                     value={profileData.businessAddress}
-                    onChange={(e) => setProfileData(prev => ({...prev, businessAddress: e.target.value}))}
+                    onChange={(value, coordinates) => {
+                      setProfileData(prev => ({
+                        ...prev, 
+                        businessAddress: value,
+                        // Aggiungi coordinate business se disponibili
+                        ...(coordinates && {
+                          businessLatitude: coordinates.lat,
+                          businessLongitude: coordinates.lng
+                        })
+                      }));
+                    }}
+                    placeholder="Inserisci l'indirizzo completo del negozio"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Indirizzo dove i clienti possono trovarti fisicamente
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="businessCity">Città Attività *</Label>

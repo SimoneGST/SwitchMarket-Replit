@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ClementeAI, type RequestData, type ChatMessage } from "@/lib/clemente";
 import CharacterIntro from "@/components/character-intro";
 import { useCharacterIntro } from "@/hooks/useCharacterIntro";
+import AddressAutocomplete from "@/components/address-autocomplete";
 
 export default function CreateRequest() {
   const [, setLocation] = useLocation();
@@ -176,7 +177,7 @@ export default function CreateRequest() {
   // Pubblica richiesta
   const handlePublish = () => {
     // Verifica che ci sia almeno una posizione (manuale o automatica)
-    const hasLocation = useCurrentLocation ? currentLocation : requestData.location;
+    const hasLocation = useCurrentLocation ? currentLocation : (requestData.location && requestData.location.trim());
     
     if (!requestData.title || !hasLocation || !requestData.category) {
       toast({
@@ -805,11 +806,19 @@ export default function CreateRequest() {
 
                   {/* Input manuale o pulsante geolocalizzazione */}
                   {!useCurrentLocation ? (
-                    <Input
-                      placeholder="Inserisci indirizzo di partenza"
-                      value={requestData.location || ''}
-                      onChange={(e) => updateField('location', e.target.value)}
-                    />
+                    <div>
+                      <AddressAutocomplete
+                        value={requestData.location || ''}
+                        onChange={(value, coordinates) => {
+                          updateField('location', value);
+                          if (coordinates) {
+                            updateField('latitude', coordinates.lat);
+                            updateField('longitude', coordinates.lng);
+                          }
+                        }}
+                        placeholder="Inserisci indirizzo di partenza"
+                      />
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <Button
