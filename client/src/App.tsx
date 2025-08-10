@@ -71,33 +71,49 @@ function Router() {
               )}
             </Route>
             
-            {/* Authenticated routes */}
-            {isAuthenticated && !needsOnboarding && (
-              <>
-                <Route path="/dashboard">
-                  {user?.userType === 'customer' ? (
-                    <CustomerDashboard />
-                  ) : (
-                    <MerchantDashboard />
-                  )}
-                </Route>
-                <Route path="/browse" component={BrowseRequests} />
-                <Route path="/create" component={CreateRequest} />
-                <Route path="/integration-setup" component={IntegrationSetup} />
-                <Route path="/copilot-dashboard" component={CopilotDashboard} />
-                <Route path="/profile-verification" component={ProfileVerification} />
-                <Route path="/customer-profile" component={CustomerProfile} />
-                <Route path="/merchant-profile" component={MerchantProfile} />
-                <Route path="/profile">
-                  {user?.userType === 'customer' ? (
-                    <CustomerProfile />
-                  ) : (
-                    <MerchantProfile />
-                  )}
-                </Route>
-                <Route path="/messages" component={Messages} />
-              </>
-            )}
+            {/* Protected routes - redirect to auth if not authenticated */}
+            <Route path="/dashboard">
+              {!isAuthenticated ? (
+                <Auth />
+              ) : needsOnboarding ? (
+                <Onboarding />
+              ) : user?.userType === 'customer' ? (
+                <CustomerDashboard />
+              ) : (
+                <MerchantDashboard />
+              )}
+            </Route>
+            <Route path="/browse">
+              {!isAuthenticated ? <Auth /> : <BrowseRequests />}
+            </Route>
+            <Route path="/create">
+              {!isAuthenticated ? <Auth /> : <CreateRequest />}
+            </Route>
+            <Route path="/integration-setup">
+              {!isAuthenticated ? <Auth /> : <IntegrationSetup />}
+            </Route>
+            <Route path="/copilot-dashboard">
+              {!isAuthenticated ? <Auth /> : <CopilotDashboard />}
+            </Route>
+            <Route path="/profile-verification">
+              {!isAuthenticated ? <Auth /> : <ProfileVerification />}
+            </Route>
+            <Route path="/customer-profile">
+              {!isAuthenticated ? <Auth /> : <CustomerProfile />}
+            </Route>
+            <Route path="/merchant-profile">
+              {!isAuthenticated ? <Auth /> : <MerchantProfile />}
+            </Route>
+            <Route path="/profile">
+              {!isAuthenticated ? <Auth /> : user?.userType === 'customer' ? (
+                <CustomerProfile />
+              ) : (
+                <MerchantProfile />
+              )}
+            </Route>
+            <Route path="/messages">
+              {!isAuthenticated ? <Auth /> : <Messages />}
+            </Route>
             
             <Route component={NotFound} />
           </>
