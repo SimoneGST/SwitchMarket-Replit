@@ -44,14 +44,7 @@ export default function Landing() {
       {/* Hero Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="pt-16 pb-8 text-center">
-          <Badge variant="outline" className="mb-6 bg-green-50 text-green-700 border-green-200 px-4 py-2">
-            <img 
-              src="/attached_assets/clemente_avatar_1754845138372.png" 
-              alt="Clemente AI" 
-              className="w-6 h-6 mr-2"
-            />
-            Powered by AI - Assistente Clemente
-          </Badge>
+
           
           <h1 className="text-5xl md:text-7xl font-bold text-slate-900 mb-6 leading-tight">
             Il Prodotto che Cerchi,{" "}
