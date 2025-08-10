@@ -33,6 +33,11 @@ export default function CreateRequest() {
   const [isClementeSpeaking, setIsClementeSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Stati per geolocalizzazione
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   
   // Dati della richiesta
   const [requestData, setRequestData] = useState<Partial<RequestData>>({
@@ -170,7 +175,10 @@ export default function CreateRequest() {
 
   // Pubblica richiesta
   const handlePublish = () => {
-    if (!requestData.title || !requestData.location || !requestData.category) {
+    // Verifica che ci sia almeno una posizione (manuale o automatica)
+    const hasLocation = useCurrentLocation ? currentLocation : requestData.location;
+    
+    if (!requestData.title || !hasLocation || !requestData.category) {
       toast({
         title: "Dati mancanti",
         description: "Completa titolo, categoria e posizione per pubblicare",
@@ -179,7 +187,34 @@ export default function CreateRequest() {
       return;
     }
 
-    createRequestMutation.mutate(requestData as RequestData);
+    // Prepara i dati per l'invio includendo la geolocalizzazione
+    let locationData = {};
+    if (useCurrentLocation && currentLocation) {
+      locationData = {
+        currentLocation: currentLocation,
+        useCurrentLocation: true,
+        location: currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`,
+        latitude: currentLocation.lat,
+        longitude: currentLocation.lng
+      };
+    } else {
+      locationData = {
+        location: requestData.location,
+        useCurrentLocation: false
+      };
+    }
+
+    const finalRequestData = {
+      ...requestData,
+      ...locationData,
+      tags: requestData.tags?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
+      aiContext: {
+        messages: chatMessages,
+        extractedSpecs: chatMessages.length > 0 ? chatMessages[chatMessages.length - 1].content : ''
+      }
+    };
+
+    createRequestMutation.mutate(finalRequestData as RequestData);
   };
 
   // Aggiorna campo della richiesta
@@ -281,6 +316,79 @@ export default function CreateRequest() {
     setTimeout(() => {
       recognition.stop();
     }, 30000);
+  };
+
+  // Funzione per ottenere posizione corrente
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Geolocalizzazione non supportata",
+        description: "Il tuo browser non supporta la geolocalizzazione",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGettingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          // Reverse geocoding usando nominatim (gratuito)
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=it`);
+          const data = await response.json();
+          
+          let address = `${latitude}, ${longitude}`;
+          if (data && data.display_name) {
+            address = data.display_name;
+          }
+          
+          setCurrentLocation({
+            lat: latitude,
+            lng: longitude,
+            address: address
+          });
+          
+          setUseCurrentLocation(true);
+          
+          toast({
+            title: "Posizione ottenuta",
+            description: `Posizione corrente: ${address}`,
+          });
+        } catch (error) {
+          console.error('Errore reverse geocoding:', error);
+          setCurrentLocation({
+            lat: latitude,
+            lng: longitude,
+            address: `${latitude}, ${longitude}`
+          });
+          setUseCurrentLocation(true);
+          
+          toast({
+            title: "Posizione ottenuta",
+            description: `Coordinate: ${latitude}, ${longitude}`,
+          });
+        }
+        
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        console.error('Errore geolocalizzazione:', error);
+        toast({
+          title: "Errore geolocalizzazione",
+          description: "Impossibile ottenere la posizione corrente",
+          variant: "destructive"
+        });
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minuti
+      }
+    );
   };
 
   return (
@@ -668,13 +776,80 @@ export default function CreateRequest() {
               {/* Posizione */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Posizione *
+                  Posizione di Partenza per la Ricerca *
                 </label>
-                <Input
-                  placeholder="Città"
-                  value={requestData.location || ''}
-                  onChange={(e) => updateField('location', e.target.value)}
-                />
+                <div className="space-y-3">
+                  {/* Opzioni di selezione posizione */}
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="locationSource"
+                        checked={!useCurrentLocation}
+                        onChange={() => setUseCurrentLocation(false)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">Usa indirizzo del profilo</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="locationSource"
+                        checked={useCurrentLocation}
+                        onChange={() => setUseCurrentLocation(true)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">Usa posizione corrente</span>
+                    </label>
+                  </div>
+
+                  {/* Input manuale o pulsante geolocalizzazione */}
+                  {!useCurrentLocation ? (
+                    <Input
+                      placeholder="Inserisci indirizzo di partenza"
+                      value={requestData.location || ''}
+                      onChange={(e) => updateField('location', e.target.value)}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={getCurrentLocation}
+                        disabled={isGettingLocation}
+                        className="w-full"
+                      >
+                        {isGettingLocation ? (
+                          <>
+                            <i className="fas fa-spinner fa-spin mr-2"></i>
+                            Ottenendo posizione...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-location-dot mr-2"></i>
+                            Ottieni Posizione Corrente
+                          </>
+                        )}
+                      </Button>
+                      
+                      {currentLocation && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center text-green-700">
+                            <i className="fas fa-check-circle mr-2"></i>
+                            <span className="text-sm font-medium">Posizione ottenuta</span>
+                          </div>
+                          <p className="text-sm text-green-600 mt-1">
+                            {currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-slate-500">
+                    Questa posizione sarà usata come centro per calcolare il raggio di ricerca dei negozianti.
+                  </p>
+                </div>
               </div>
 
               {/* Preferenza consegna */}
@@ -733,7 +908,7 @@ export default function CreateRequest() {
               <Button 
                 onClick={handlePublish}
                 className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                disabled={createRequestMutation.isPending || !requestData.title || !requestData.category || !requestData.location}
+                disabled={createRequestMutation.isPending || !requestData.title || !requestData.category || (!requestData.location && !currentLocation)}
               >
                 {createRequestMutation.isPending ? (
                   <>
