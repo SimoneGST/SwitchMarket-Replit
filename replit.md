@@ -10,27 +10,37 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Raggio di Azione e Modalità di Consegna (09/08/2025)
+### Migrazione Completa a Firebase (10/08/2025)
+- **Migrazione Backend**: Convertita tutta l'architettura da PostgreSQL + Replit Auth a Firebase
+- **Firebase Authentication**: Sostituita Replit Auth con Firebase Auth + Google OAuth
+- **Cloud Firestore**: Migrato da PostgreSQL a Firestore per scalabilità e real-time
+- **Firebase Functions**: Backend serverless al posto di Express.js tradizionale
+- **Firebase Storage**: Gestione file e media con regole di sicurezza avanzate
+- **Firestore Security Rules**: Implementate regole granulari per protezione dati
+- **Real-time Updates**: Chat e notifiche ora supportano aggiornamenti in tempo reale
+- **Pagina "Come Funziona"**: Creata pagina informativa completa accessibile dalla landing
+- **Deploy Automatico**: Configurato deployment su Firebase Hosting con CDN globale
+- **Documentazione**: Aggiunta guida completa setup Firebase (FIREBASE_SETUP.md)
+
+### Funzionalità Precedenti (09/08/2025)
 - Aggiunto campo `actionRadius` alle richieste per specificare il raggio massimo di spostamento (in km)
 - Aggiunto campo `deliveryPreference` con opzioni: pickup (ritiro), delivery (spedizione), both (entrambe)
 - **Nuovo**: Aggiunto campo `urgencyLevel` per gradi di urgenza nelle spedizioni: 24h, 48h, few_days
 - **Logica migliorata**: Raggio di azione si applica SOLO al ritiro, non alla spedizione a casa
 - Interfaccia utente aggiornata per gestire logica condizionale tra ritiro e spedizione
 - Sistema di onboarding completato per distinguere clienti e negozianti
-- Preparazione per integrazione servizi di consegna terzi (tipo Deliveroo) mantenendo missione locale
 - **Integrazione AI avanzata**: Clemente ora usa Google Gemini per conversazioni naturali e specifiche tecniche
 - **Leonardo AI**: Nuovo assistente per negozianti con consigli su prezzi e strategie di vendita
 - API Gemini configurata per analisi intelligente delle richieste e estrazione dati strutturati
 - **Upload File**: Pulsante allega per inoltrare foto e documenti agli assistenti AI
 - **Comandi Vocali**: Microfono integrato per dettare messaggi usando riconoscimento vocale italiano
-- Object Storage configurato per gestione sicura degli allegati
 - **Sistema Integrazioni Gestionali**: Connessione con i maggiori software gestionali italiani
 - **Supporto Fatture in Cloud**: API completa per sincronizzazione prodotti e giacenze
 - **Supporto Danea EasyFatt**: Integrazione con gestionale desktop via API REST  
 - **Supporto TeamSystem**: Connessione con suite gestionale enterprise
 - **Sincronizzazione Automatica**: Aggiornamento prodotti in tempo reale o programmato
 - **Pulsante "Collega Gestionale"**: Accesso diretto dalla dashboard negoziante
-- **Copilot Leonardo Completo (10/08/2025)**: Servizio AI per assistere i negozianti nella gestione clienti
+- **Copilot Leonardo Completo**: Servizio AI per assistere i negozianti nella gestione clienti
 - **Dashboard Copilot Avanzata**: Configurazione personalità AI, orari operativi, statistiche conversazioni
 - **Chat Leonardo Integrata**: Interfaccia completa con riconoscimento vocale e supporto allegati
 - **API Copilot Complete**: Gestione sessioni, messaggi automatici e analisi conversazioni
@@ -41,26 +51,29 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript, bundled using Vite for fast development
 - **Styling**: Tailwind CSS with shadcn/ui component library for consistent design
-- **State Management**: TanStack Query for server state management and caching
+- **State Management**: Firebase SDK for real-time data and authentication state
 - **Routing**: Wouter for lightweight client-side routing
 - **UI Components**: Radix UI primitives with custom styling via class-variance-authority
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js framework
-- **Language**: TypeScript with ES modules
-- **Database ORM**: Drizzle ORM for type-safe database interactions
-- **Authentication**: Replit Auth integration with session-based authentication
-- **Session Storage**: PostgreSQL-based session store using connect-pg-simple
+- **Runtime**: Firebase Functions (Node.js 20) for serverless backend
+- **Language**: TypeScript with Firebase Admin SDK
+- **Database**: Cloud Firestore for NoSQL document database
+- **Authentication**: Firebase Authentication with Google OAuth
+- **Storage**: Firebase Storage for file uploads and media
 
 ### Database Design
-- **Primary Database**: PostgreSQL via Neon serverless
-- **Schema Management**: Drizzle migrations with schema defined in shared directory
-- **Key Entities**:
-  - Users (mandatory for Replit Auth with userType, business verification fields)
-  - Requests (buyer purchase requests with actionRadius and deliveryPreference)
-  - Offers (seller responses to requests)
-  - Conversations and Messages (communication between parties)
-  - Sessions (authentication state)
+- **Primary Database**: Cloud Firestore NoSQL database
+- **Security**: Firestore Security Rules for granular access control
+- **Key Collections**:
+  - users (user profiles with userType, business verification fields)
+  - requests (buyer purchase requests with actionRadius and deliveryPreference)
+  - offers (seller responses to requests)
+  - conversations (communication threads between parties)
+  - conversations/{id}/messages (individual messages)
+  - products (merchant catalogs)
+  - integrations (gestionale connections)
+  - copilotConfigs (AI assistant settings)
 
 ### API Architecture
 - **Pattern**: RESTful API with Express routes
@@ -69,10 +82,10 @@ Preferred communication style: Simple, everyday language.
 - **Request Logging**: Custom middleware for API call tracking
 
 ### Authentication & Authorization
-- **Provider**: Replit Auth with OpenID Connect
-- **Session Management**: Express sessions with PostgreSQL backing store
-- **Security**: HTTP-only cookies, CSRF protection, secure session configuration
-- **User Management**: Automatic user creation/update via auth middleware
+- **Provider**: Firebase Authentication with Google OAuth 2.0
+- **Session Management**: Firebase Auth tokens with automatic refresh
+- **Security**: Firestore Security Rules, Firebase Admin SDK validation
+- **User Management**: Automatic user document creation/update via Firebase Auth triggers
 
 ### File Structure & Organization
 - **Monorepo Structure**: Shared schema between client and server
@@ -84,9 +97,12 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Core Infrastructure
-- **Database**: Neon PostgreSQL serverless database
-- **Authentication**: Replit Auth service for user management
-- **Build Tools**: Vite for frontend bundling, esbuild for backend compilation
+- **Database**: Cloud Firestore NoSQL database
+- **Authentication**: Firebase Authentication service
+- **Hosting**: Firebase Hosting with global CDN
+- **Functions**: Firebase Functions for serverless backend
+- **Storage**: Firebase Storage for file management
+- **Build Tools**: Vite for frontend bundling, Firebase CLI for deployment
 
 ### Frontend Libraries
 - **UI Framework**: React with shadcn/ui component system
@@ -96,10 +112,10 @@ Preferred communication style: Simple, everyday language.
 - **Form Handling**: React Hook Form with Zod validation
 
 ### Backend Dependencies
-- **Database**: Drizzle ORM with Neon serverless driver
-- **Session Storage**: connect-pg-simple for PostgreSQL session store
-- **Validation**: Zod for runtime type checking
-- **Utilities**: date-fns for date manipulation, memoizee for caching
+- **Database**: Firebase Admin SDK for Firestore operations
+- **Authentication**: Firebase Admin SDK for token verification
+- **Validation**: Firebase Security Rules and server-side validation
+- **Utilities**: Firebase Functions runtime and Google Cloud services
 
 ### Development Tools
 - **Type Checking**: TypeScript compiler with strict configuration
