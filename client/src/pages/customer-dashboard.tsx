@@ -32,25 +32,15 @@ export default function CustomerDashboard() {
               </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
             <Link href="/create">
-              <Button className="bg-white text-green-800 hover:bg-green-50 hover:text-green-900 px-6 py-3 rounded-xl font-bold shadow-2xl border-3 border-green-200 transition-all duration-200">
-                <img 
-                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                  alt="Clemente AI" 
-                  className="w-5 h-5 mr-2"
-                />
-                Parla con Clemente
-              </Button>
-            </Link>
-            <Link href="/browse">
-              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-green-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
+              <Button className="bg-white text-green-800 hover:bg-green-50 hover:text-green-900 px-8 py-4 rounded-xl font-bold shadow-2xl border-3 border-green-200 transition-all duration-200">
                 <i className="fas fa-search mr-2"></i>
                 Cerca Prodotti
               </Button>
             </Link>
             <Link href="/customer-profile">
-              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-green-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
+              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-green-800 px-8 py-4 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
                 <i className="fas fa-user mr-2"></i>
                 Il Mio Profilo
               </Button>
