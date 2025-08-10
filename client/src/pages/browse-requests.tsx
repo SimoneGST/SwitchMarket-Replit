@@ -65,7 +65,7 @@ export default function BrowseRequests() {
                     <SelectValue placeholder="Tutte le categorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tutte le categorie</SelectItem>
+                    <SelectItem value="all">Tutte le categorie</SelectItem>
                     <SelectItem value="Elettronica">Elettronica</SelectItem>
                     <SelectItem value="Casa e Giardino">Casa e Giardino</SelectItem>
                     <SelectItem value="Sport e Tempo Libero">Sport e Tempo Libero</SelectItem>

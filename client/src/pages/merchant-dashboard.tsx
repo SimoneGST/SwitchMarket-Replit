@@ -8,11 +8,11 @@ import RequestCard from "@/components/request-card";
 export default function MerchantDashboard() {
   const { user } = useAuth();
   
-  const { data: requests = [] } = useQuery({
+  const { data: requests = [] } = useQuery<any[]>({
     queryKey: ["/api/requests"],
   });
 
-  const { data: myOffers = [] } = useQuery({
+  const { data: myOffers = [] } = useQuery<any[]>({
     queryKey: ["/api/offers/my"],
   });
 
@@ -37,7 +37,7 @@ export default function MerchantDashboard() {
           
           {/* Verification Status */}
           <div className="mb-6">
-            {user?.isVerified ? (
+            {user?.profileVerified ? (
               <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-lg">
                 <i className="fas fa-shield-check mr-2"></i>
                 Attività verificata
@@ -52,25 +52,25 @@ export default function MerchantDashboard() {
 
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <Link href="/browse">
-              <Button className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold">
+              <Button className="bg-white text-blue-800 hover:bg-blue-50 hover:text-blue-900 px-6 py-3 rounded-xl font-bold shadow-2xl border-3 border-blue-200 transition-all duration-200">
                 <i className="fas fa-search mr-2"></i>
                 Trova Richieste
               </Button>
             </Link>
             <Link href="/integration-setup">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
+              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
                 <i className="fas fa-link mr-2"></i>
                 Collega Gestionale
               </Button>
             </Link>
             <Link href="/copilot-dashboard">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
+              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
                 <i className="fas fa-robot mr-2"></i>
                 Copilot Leonardo
               </Button>
             </Link>
             <Link href="/merchant-profile">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
+              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
                 <i className="fas fa-user mr-2"></i>
                 Il Mio Profilo
               </Button>
