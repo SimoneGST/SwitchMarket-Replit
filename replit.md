@@ -10,16 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### UX e Navigazione Ottimizzati (10/08/2025)
-- **Logo Professionale**: SWITCHMARKET logo integrato in header senza testo aggiuntivo
-- **Avatar AI Completi**: Clemente (verde) e Leonardo (blu) sostituiscono tutte le icone generiche
-- **Introduzioni Animate**: Sequenze coinvolgenti con framer-motion per first impression
-- **Routing Corretto**: Landing page accessibile, no redirect automatici indesiderati
-- **Sistema Logout**: Funzionalità completa per tornare alla homepage
-- **File Statici**: Server Express configurato per servire correttamente immagini da attached_assets
-- **Header Ottimizzato**: Solo logo cliccabile collegato alla homepage, design pulito e professionale
-- **Menu Unificato**: "Cerca Prodotti" unica voce per clienti che include chat Clemente e compilazione manuale
-- **Fusione Chat**: Generazione rapida integrata nella conversazione con Clemente per UX naturale
+### Clemente AI Potenziato - Expert Assistant (10/08/2025)
+- **Approccio Educativo**: Clemente ora spiega caratteristiche tecniche e guida l'utente nella scelta
+- **Generazione Richieste Complete**: Focus su specifiche dettagliate e richieste non ambigue
+- **Chat Auto-Scroll**: Eliminato il bisogno di scrolling manuale, esperienza fluida
+- **Sistema Allegati Funzionante**: Upload e analisi immagini con Google Gemini integrato
+- **Prompt Expert**: Clemente agisce come consulente specializzato che educa il cliente
+- **Context Awareness Migliorato**: Non chiede più dove fare shopping, sa di essere su Switch Market
+- **Richieste Dettagliate**: Genera specifiche tecniche complete per ogni tipo di prodotto
+- **Range Prezzi Realistici**: Suggerisce budget appropriati per diverse categorie merceologiche
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni

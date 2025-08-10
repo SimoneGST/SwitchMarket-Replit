@@ -112,24 +112,37 @@ class ClementeAI {
       fileType: attachedFile?.type.startsWith('image/') ? 'image' : 'document'
     });
 
-    const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market, una piattaforma che connette clienti con negozianti locali.
+    const systemPrompt = `Sei Clemente, esperto assistente di Switch Market che aiuta i clienti a creare richieste perfette per i negozianti locali.
 
-IMPORTANTE: Switch Market è un marketplace locale dove i negozianti della zona rispondono alle richieste dei clienti. Non devi mai chiedere dove fare shopping perché i negozianti locali contatteranno il cliente direttamente.
+MISSIONE: Trasformare richieste vaghe in specifiche dettagliate e complete, educando il cliente sulle caratteristiche importanti del prodotto.
 
-Obiettivo: Aiutare l'utente a creare richieste dettagliate per i negozianti locali che possono fornire il prodotto.
+APPROCCIO EDUCATIVO:
+- Spiega perché certe specifiche sono importanti ("La suola flessibile è fondamentale per lo spinning perché...")
+- Suggerisci caratteristiche che il cliente potrebbe non aver considerato
+- Aiuta a capire le differenze tecniche tra opzioni simili
+- Proponi range di prezzo realistici per il mercato
 
-Comportamento:
-- Fai UNA domanda specifica alla volta per ottenere dettagli
-- Risposte molto brevi: massimo 1-2 frasi  
-- Linguaggio naturale e amichevole
-- Concentrati su: specifiche tecniche, budget, tempistiche di consegna, preferenze di ritiro/consegna
-- NON chiedere mai dove fare shopping - i negozianti locali risponderanno alla richiesta
-- Quando hai abbastanza dettagli, proponi di pubblicare la richiesta per i negozianti
+PROCESSO INTELLIGENTE:
+1. Identifica il prodotto e conferma comprensione
+2. Educa su 2-3 specifiche chiave del prodotto con spiegazioni
+3. Raccogli preferenze su caratteristiche importanti
+4. Definisci budget realistico e tempistiche
+5. Proponi di generare la richiesta completa
+
+STILE COMUNICAZIONE:
+- Esperto ma accessibile - come un consulente specializzato
+- Spiega il "perché" dietro ogni domanda tecnica
+- Risposte di 2-3 frasi con spiegazioni utili
+- Focus sulla qualità della richiesta finale
+
+ESEMPI DI APPROCCIO EDUCATIVO:
+"Le scarpe da spinning hanno due tipi di attacco: SPD-SL (più rigido, per prestazioni) e Look Delta (più comfort). Quale preferisci?"
+"Il budget per scarpe spinning di qualità va da 40€ (entry level) a 150€ (professionali). Che fascia ti interessa?"
 
 Cronologia conversazione:
 ${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 
-Aiuta il cliente a specificare bene la richiesta per i negozianti locali.`;
+Aiuta il cliente a creare una richiesta completa e precisa.`;
 
     try {
       console.log('🤖 Clemente Server sta elaborando:', userMessage);
@@ -218,28 +231,40 @@ Aiuta il cliente a specificare bene la richiesta per i negozianti locali.`;
       .map(msg => `${msg.role}: ${msg.content}`)
       .join('\n');
 
-    const extractionPrompt = `Analizza questa conversazione e estrai i dati per una richiesta di prodotto. 
-Rispondi SOLO con un JSON valido con questi campi:
+    const extractionPrompt = `Analizza questa conversazione e crea una richiesta dettagliata e completa per i negozianti.
+
+OBIETTIVO: Creare una richiesta chiara, specifica e completa che permetta ai negozianti di dare offerte precise.
+
+CRITERI QUALITÀ:
+- Titolo specifico e descrittivo (non generico)
+- Descrizione completa con tutte le caratteristiche discusse
+- Specifiche tecniche dettagliate
+- Budget realistico se discusso
+- Tempistiche chiare
+
+Rispondi SOLO con JSON valido:
 
 {
-  "title": "Titolo chiaro e specifico",
-  "description": "Descrizione dettagliata con tutte le specifiche",
-  "category": "Una di: Elettronica, Casa e Giardino, Sport e Tempo Libero, Veicoli, Abbigliamento, Servizi",
-  "budget": numero o null,
-  "urgencyLevel": "immediate" | "24h" | "48h" | "few_days",
-  "deliveryPreference": "pickup" | "delivery" | "both", 
-  "actionRadius": numero in km per ritiro o null,
-  "location": "città specificata",
-  "technicalSpecs": "specifiche tecniche se presenti",
-  "brand": "marca se specificata",
-  "model": "modello se specificato",
-  "size": "dimensioni se specificate",
-  "color": "colore se specificato", 
-  "material": "materiale se specificato"
+  "title": "Titolo specifico e descrittivo del prodotto",
+  "description": "Descrizione completa con caratteristiche, uso previsto e specifiche discusse",
+  "category": "Categoria appropriata: Elettronica, Casa e Giardino, Sport e Tempo Libero, Veicoli, Abbigliamento, Servizi",
+  "budget": numero_budget_se_discusso_o_null,
+  "urgencyLevel": "immediate | 24h | 48h | few_days",
+  "deliveryPreference": "pickup | delivery | both", 
+  "actionRadius": numero_km_per_ritiro_o_10_default,
+  "location": "Milano",
+  "technicalSpecs": "Tutte le specifiche tecniche discusse in dettaglio",
+  "brand": "marca_se_specificata_o_null",
+  "model": "modello_se_specificato_o_null",
+  "size": "dimensioni_se_specificate_o_null",
+  "color": "colore_se_specificato_o_null", 
+  "material": "materiale_se_specificato_o_null"
 }
 
 Conversazione:
-${conversationText}`;
+${conversationText}
+
+Crea una richiesta completa che i negozianti possano capire perfettamente.`;
 
     try {
       const result = await this.model.generateContent(extractionPrompt);
@@ -262,24 +287,34 @@ ${conversationText}`;
 
     const quickPrompt = `L'utente vuole: "${userInput}"
 
-Crea una richiesta di prodotto basandoti su questo input. Rispondi SOLO con JSON valido:
+TASK: Espandi questo input in una richiesta dettagliata e specifica. Aggiungi caratteristiche tecniche importanti, specifiche utili e dettagli che aiuterebbero i negozianti a fornire offerte precise.
+
+PRINCIPI:
+- Titolo specifico (non generico)
+- Descrizione dettagliata con caratteristiche tecniche
+- Specifiche tecniche comprehensive per il tipo di prodotto
+- Considerazioni d'uso tipiche
+
+Rispondi SOLO con JSON valido:
 
 {
-  "title": "Titolo specifico basato sull'input",
-  "description": "Descrizione dettagliata che espande l'input",
-  "category": "Categoria più appropriata",
+  "title": "Titolo specifico del prodotto richiesto",
+  "description": "Descrizione dettagliata con caratteristiche d'uso, specifiche tecniche importanti per questo tipo di prodotto",
+  "category": "Categoria appropriata dal lista: Elettronica, Casa e Giardino, Sport e Tempo Libero, Veicoli, Abbigliamento, Servizi",
   "budget": null,
   "urgencyLevel": "few_days",
   "deliveryPreference": "both",
   "actionRadius": 10,
   "location": "Milano",
-  "technicalSpecs": null,
+  "technicalSpecs": "Specifiche tecniche complete tipiche per questo prodotto",
   "brand": null,
   "model": null,
   "size": null,
   "color": null,
   "material": null
-}`;
+}
+
+Espandi "${userInput}" in una richiesta completa e dettagliata.`;
 
     try {
       const result = await this.model.generateContent(quickPrompt);
