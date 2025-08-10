@@ -75,6 +75,13 @@ function Router() {
                 <Route path="/profile-verification" component={ProfileVerification} />
                 <Route path="/customer-profile" component={CustomerProfile} />
                 <Route path="/merchant-profile" component={MerchantProfile} />
+                <Route path="/profile">
+                  {user?.userType === 'customer' ? (
+                    <CustomerProfile />
+                  ) : (
+                    <MerchantProfile />
+                  )}
+                </Route>
                 <Route path="/messages" component={Messages} />
               </>
             )}
