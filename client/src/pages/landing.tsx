@@ -70,7 +70,7 @@ export default function Landing() {
                 </h3>
                 <div className="flex items-center justify-center mb-4">
                   <img 
-                    src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-8 h-8 rounded-full mr-2 border-2 border-green-300"
                   />
