@@ -33,11 +33,11 @@ class ClementeAI {
   private chatHistory: ChatMessage[] = [];
 
   constructor() {
-    const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
-    console.log('🔑 Server API Key disponibile:', !!apiKey);
+    const apiKey = process.env.GEMINI_API_KEY;
+    console.log('🔑 Server API Key disponibile:', !!apiKey, 'Source: GEMINI_API_KEY');
     
     if (!apiKey) {
-      console.warn('❌ GOOGLE_API_KEY e GEMINI_API_KEY non configurate sul server');
+      console.warn('❌ GEMINI_API_KEY non configurata sul server');
       this.genAI = null as any;
       this.model = null;
       return;
