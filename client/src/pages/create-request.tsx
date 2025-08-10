@@ -140,8 +140,8 @@ export default function CreateRequest() {
         }
       });
       
-      const responseText = response.response?.text || response.response || '';
-      console.log('📨 Risposta ricevuta:', responseText.substring(0, 50));
+      const responseText = response.response?.text || '';
+      console.log('📨 Risposta ricevuta:', responseText);
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
