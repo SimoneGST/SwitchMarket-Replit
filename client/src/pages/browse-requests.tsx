@@ -148,11 +148,18 @@ export default function BrowseRequests() {
 
           {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Richieste Trovate</h2>
-              <p className="text-sm text-slate-500">
-                {requests.length} risultati per "{filters.search || 'tutte le richieste'}" a {filters.location}
-              </p>
+            <div className="flex items-center">
+              <img 
+                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                alt="Leonardo AI" 
+                className="w-8 h-8 rounded-full mr-3 border-2 border-blue-300"
+              />
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Richieste Trovate</h2>
+                <p className="text-sm text-slate-500">
+                  {requests.length} risultati per "{filters.search || 'tutte le richieste'}" a {filters.location}
+                </p>
+              </div>
             </div>
             <Select defaultValue="recent">
               <SelectTrigger className="w-48">

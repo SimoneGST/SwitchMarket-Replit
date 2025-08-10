@@ -62,12 +62,29 @@ export default function Landing() {
             {/* Cliente Card */}
             <Card className="w-full max-w-sm transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100/50">
               <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <i className="fas fa-shopping-cart text-white text-2xl"></i>
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                  <img 
+                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    alt="Clemente AI" 
+                    className="w-16 h-16 object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <i className="fas fa-shopping-cart text-white text-2xl hidden"></i>
                 </div>
                 <h3 className="text-2xl font-bold text-green-800 mb-3">
                   Inizia come Acquirente
                 </h3>
+                <div className="flex items-center justify-center mb-4">
+                  <img 
+                    src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                    alt="Clemente AI Assistant" 
+                    className="w-12 h-12 rounded-full mr-3 border-2 border-green-300"
+                  />
+                  <span className="text-green-800 font-semibold">Assistente Clemente</span>
+                </div>
                 <p className="text-green-700 mb-6 leading-relaxed">
                   Trova prodotti e servizi nella tua zona con l'aiuto di Clemente AI
                 </p>
@@ -102,12 +119,29 @@ export default function Landing() {
             {/* Negoziante Card */}
             <Card className="w-full max-w-sm transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
               <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <i className="fas fa-store text-white text-2xl"></i>
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                  <img 
+                    src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                    alt="Leonardo AI" 
+                    className="w-16 h-16 object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <i className="fas fa-store text-white text-2xl hidden"></i>
                 </div>
                 <h3 className="text-2xl font-bold text-blue-800 mb-3">
                   Sei un Negoziante?
                 </h3>
+                <div className="flex items-center justify-center mb-4">
+                  <img 
+                    src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                    alt="Leonardo AI Assistant" 
+                    className="w-12 h-12 rounded-full mr-3 border-2 border-blue-300"
+                  />
+                  <span className="text-blue-800 font-semibold">Assistente Leonardo</span>
+                </div>
                 <p className="text-blue-700 mb-6 leading-relaxed">
                   Ricevi richieste qualificate e aumenta le tue vendite locali
                 </p>

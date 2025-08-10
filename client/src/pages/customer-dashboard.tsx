@@ -30,16 +30,26 @@ export default function CustomerDashboard() {
       <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
         <div className="max-w-4xl">
           <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-              <i className="fas fa-shopping-cart text-white text-xl"></i>
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
+              <img 
+                src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                alt="Clemente AI" 
+                className="w-10 h-10 rounded-lg object-cover"
+              />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">
                 Dashboard Cliente
               </h1>
-              <p className="text-green-100 text-lg">
-                Ciao {user?.firstName}! Trova quello che cerchi con Clemente
-              </p>
+              <div className="flex items-center text-green-100 text-lg">
+                <span>Ciao {user?.firstName}! Trova quello che cerchi con</span>
+                <img 
+                  src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                  alt="Clemente" 
+                  className="w-6 h-6 rounded-full mx-2 border border-green-300"
+                />
+                <span>Clemente</span>
+              </div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">

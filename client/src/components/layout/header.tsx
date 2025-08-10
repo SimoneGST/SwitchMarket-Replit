@@ -42,12 +42,13 @@ export default function Header() {
               <img 
                 src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
                 alt="Switch Market" 
-                className="h-10 w-auto"
+                className="h-10 w-auto mr-3"
                 onError={(e) => {
                   console.error('Logo failed to load in header:', e);
                   e.currentTarget.style.display = 'none';
                 }}
               />
+              <span className="text-xl font-bold text-slate-900 hidden sm:block">Switch Market</span>
             </Link>
             <div className="hidden md:ml-10 md:flex space-x-8">
               <Link href="/">

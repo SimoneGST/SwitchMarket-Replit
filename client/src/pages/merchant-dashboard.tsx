@@ -36,16 +36,26 @@ export default function MerchantDashboard() {
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
         <div className="max-w-4xl">
           <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-              <i className="fas fa-store text-white text-xl"></i>
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
+              <img 
+                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                alt="Leonardo AI" 
+                className="w-10 h-10 rounded-lg object-cover"
+              />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">
                 Dashboard Negoziante
               </h1>
-              <p className="text-blue-100 text-lg">
-                Benvenuto {user?.businessName || user?.firstName}! Gestisci le tue vendite con Leonardo
-              </p>
+              <div className="flex items-center text-blue-100 text-lg">
+                <span>Benvenuto {user?.businessName || user?.firstName}! Gestisci le tue vendite con</span>
+                <img 
+                  src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                  alt="Leonardo" 
+                  className="w-6 h-6 rounded-full mx-2 border border-blue-300"
+                />
+                <span>Leonardo</span>
+              </div>
             </div>
           </div>
           

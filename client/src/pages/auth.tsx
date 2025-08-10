@@ -120,8 +120,13 @@ export default function Auth() {
                 }`}
               >
                 <div className="text-center">
-                  <i className="fas fa-shopping-cart text-2xl mb-2 block"></i>
+                  <img 
+                    src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                    alt="Clemente AI" 
+                    className="w-8 h-8 rounded-full mx-auto mb-2"
+                  />
                   <span className="font-semibold">Cliente</span>
+                  <div className="text-xs mt-1 opacity-80">con Clemente AI</div>
                 </div>
               </Button>
               <Button
@@ -135,8 +140,13 @@ export default function Auth() {
                 }`}
               >
                 <div className="text-center">
-                  <i className="fas fa-store text-2xl mb-2 block"></i>
+                  <img 
+                    src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                    alt="Leonardo AI" 
+                    className="w-8 h-8 rounded-full mx-auto mb-2"
+                  />
                   <span className="font-semibold">Negoziante</span>
+                  <div className="text-xs mt-1 opacity-80">con Leonardo AI</div>
                 </div>
               </Button>
             </div>

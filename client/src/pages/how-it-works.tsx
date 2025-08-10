@@ -18,7 +18,11 @@ export default function HowItWorks() {
                 Indietro
               </Button>
               <div className="flex items-center">
-                <i className="fas fa-exchange-alt text-primary text-2xl mr-2"></i>
+                <img 
+                  src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                  alt="Switch Market Logo" 
+                  className="h-8 w-auto mr-3"
+                />
                 <span className="text-xl font-bold">Switch Market</span>
               </div>
             </div>
@@ -108,15 +112,23 @@ export default function HowItWorks() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="p-4">
                   <CardContent className="text-center pt-0">
-                    <i className="fas fa-user text-primary text-2xl mb-2"></i>
-                    <h4 className="font-semibold">Clemente</h4>
+                    <img 
+                      src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                      alt="Clemente AI" 
+                      className="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-green-300"
+                    />
+                    <h4 className="font-semibold text-green-700">Clemente</h4>
                     <p className="text-sm text-muted-foreground">Per i Clienti</p>
                   </CardContent>
                 </Card>
                 <Card className="p-4">
                   <CardContent className="text-center pt-0">
-                    <i className="fas fa-store text-secondary text-2xl mb-2"></i>
-                    <h4 className="font-semibold">Leonardo</h4>
+                    <img 
+                      src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                      alt="Leonardo AI" 
+                      className="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-blue-300"
+                    />
+                    <h4 className="font-semibold text-blue-700">Leonardo</h4>
                     <p className="text-sm text-muted-foreground">Per i Negozianti</p>
                   </CardContent>
                 </Card>

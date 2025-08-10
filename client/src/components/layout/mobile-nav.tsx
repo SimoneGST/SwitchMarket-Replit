@@ -12,7 +12,11 @@ export default function MobileNav() {
           <button className={`flex flex-col items-center py-2 px-3 ${
             isActive('/') ? 'text-primary' : 'text-slate-400'
           }`}>
-            <i className="fas fa-home text-lg"></i>
+            <img 
+              src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+              alt="Switch Market" 
+              className="w-5 h-5"
+            />
             <span className="text-xs mt-1">Home</span>
           </button>
         </Link>

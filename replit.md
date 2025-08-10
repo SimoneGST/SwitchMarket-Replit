@@ -10,7 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Marketing e SEO Professionale Implementato (10/08/2025)
+### Visual Branding Completo e SEO Professionale (10/08/2025)
+- **Integrazione Logo Completa**: Logo Switch Market in header, landing, auth, mobile nav
+- **Assistenti AI Visibili**: Immagini Clemente (clienti) e Leonardo (negozianti) in tutte le pagine chiave
+- **Dashboard Branding**: Avatar assistenti nei header delle dashboard e nei messaggi di benvenuto
+- **Selezione Tipo Utente**: Immagini assistenti nelle cards di registrazione per identificazione visiva
+- **Pagine Informative**: Branding completo in "Come Funziona" e browse richieste
+- **Navigazione Mobile**: Logo in mobile nav per coerenza brand su mobile
 - **SEO Completo**: Meta tags ottimizzati per mercato italiano, keywords strategiche
 - **Structured Data**: Schema.org per WebApplication, LocalBusiness e Product 
 - **Open Graph**: Condivisioni social ottimizzate per Facebook, Twitter, LinkedIn

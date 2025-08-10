@@ -19,9 +19,15 @@ export default function Home() {
             Il Futuro del <br className="hidden sm:block" />
             Commercio Locale
           </h1>
-          <p className="text-xl md:text-2xl opacity-90 mb-8">
-            Trova quello che cerchi con l'aiuto di Clemente, il tuo assistente AI personale
-          </p>
+          <div className="text-xl md:text-2xl opacity-90 mb-8 flex items-center justify-center">
+            <span>Trova quello che cerchi con l'aiuto di</span>
+            <img 
+              src="/attached_assets/clemente foto profilo_1754847201275.png" 
+              alt="Clemente" 
+              className="w-8 h-8 rounded-full mx-3 border-2 border-white/30"
+            />
+            <span>Clemente, il tuo assistente AI personale</span>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/create">
               <Button className="bg-white text-primary hover:bg-slate-50 px-6 py-3 rounded-xl font-semibold">
@@ -88,7 +94,7 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-slate-900">Le Tue Richieste Recenti</h2>
         </div>
         <div className="divide-y divide-slate-200">
-          {userRequests.length === 0 ? (
+          {(Array.isArray(userRequests) ? userRequests.length : 0) === 0 ? (
             <div className="p-6 text-center">
               <div className="p-4 bg-slate-50 rounded-xl inline-flex items-center justify-center mb-4">
                 <i className="fas fa-inbox text-slate-400 text-2xl"></i>
@@ -103,7 +109,7 @@ export default function Home() {
               </Link>
             </div>
           ) : (
-            userRequests.map((request: any) => (
+            (Array.isArray(userRequests) ? userRequests : []).map((request: any) => (
               <div key={request.id} className="p-6 hover:bg-slate-50 cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -139,7 +145,7 @@ export default function Home() {
             ))
           )}
         </div>
-        {userRequests.length > 0 && (
+        {(Array.isArray(userRequests) ? userRequests.length : 0) > 0 && (
           <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
             <Link href="/browse">
               <button className="text-primary text-sm font-medium hover:underline">
