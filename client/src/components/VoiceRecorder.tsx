@@ -85,7 +85,7 @@ export function VoiceRecorder({ onTranscription, onError, className }: VoiceReco
       className={`${className} ${isRecording ? 'bg-red-100 border-red-300 text-red-700 animate-pulse' : ''}`}
       disabled={!isSupported}
     >
-      <i className={`fas ${isRecording ? 'fa-stop' : 'fa-microphone'} ${isRecording ? 'text-red-500' : 'text-slate-600'}`}></i>
+{isRecording ? '⏹️' : '🎤'}
     </Button>
   );
 }

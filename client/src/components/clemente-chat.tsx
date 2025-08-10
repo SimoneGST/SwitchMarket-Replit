@@ -184,7 +184,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
         {chatMutation.isPending && (
           <div className="flex gap-3">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <i className="fas fa-robot text-white text-sm"></i>
+🤖
             </div>
             <div className="flex-1">
               <div className="bg-slate-100 rounded-xl p-3 max-w-sm">
@@ -227,10 +227,10 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
               return { method: 'PUT' as const, url: data.uploadURL };
             }}
             onComplete={(result) => {
-              result.successful.forEach(file => {
-                const fileName = file.name;
-                const fileUrl = file.uploadURL;
-                const fileType = file.type?.startsWith('image/') ? 'image' : 'document';
+              result.successful?.forEach(file => {
+                const fileName = file.name || 'File sconosciuto';
+                const fileUrl = file.uploadURL || '';
+                const fileType = (file.type || '').startsWith('image/') ? 'image' : 'document';
                 
                 setMessages(prev => [...prev, {
                   id: Date.now(),
@@ -251,9 +251,9 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
                 }, 100);
               });
             }}
-            buttonClassName="px-3"
+            buttonClassName="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-md"
           >
-            <i className="fas fa-paperclip"></i>
+📎
           </ObjectUploader>
 
           {/* Voice Recorder Button */}
@@ -264,7 +264,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
             onError={(error) => {
               console.error('Voice error:', error);
             }}
-            className="px-3"
+            className="px-3 py-2"
           />
 
           <Button 
@@ -272,7 +272,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
             disabled={chatMutation.isPending || !newMessage.trim()}
             className="bg-primary hover:bg-primary/90 px-4"
           >
-            <i className="fas fa-paper-plane"></i>
+✈️
           </Button>
         </div>
         <div className="flex gap-2 mt-2">
