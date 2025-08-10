@@ -59,23 +59,24 @@ export default function Header() {
                   {user?.userType === 'customer' ? 'Dashboard' : 'Attività'}
                 </button>
               </Link>
-              <Link href="/browse">
-                <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
-                  isActive('/browse') 
-                    ? `${primaryColor} ${borderColor}` 
-                    : 'text-slate-500 hover:text-slate-700 border-transparent'
-                }`}>
-                  {user?.userType === 'customer' ? 'Cerca Prodotti' : 'Trova Richieste'}
-                </button>
-              </Link>
-              {user?.userType === 'customer' && (
+              {user?.userType === 'customer' ? (
                 <Link href="/create">
                   <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
                     isActive('/create') 
                       ? `${primaryColor} ${borderColor}` 
                       : 'text-slate-500 hover:text-slate-700 border-transparent'
                   }`}>
-                    Parla con Clemente
+                    Cerca Prodotti
+                  </button>
+                </Link>
+              ) : (
+                <Link href="/browse">
+                  <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
+                    isActive('/browse') 
+                      ? `${primaryColor} ${borderColor}` 
+                      : 'text-slate-500 hover:text-slate-700 border-transparent'
+                  }`}>
+                    Trova Richieste
                   </button>
                 </Link>
               )}

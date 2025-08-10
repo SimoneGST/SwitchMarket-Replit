@@ -156,10 +156,10 @@ export default function CreateRequest() {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Crea una Richiesta
+          Cerca Prodotti
         </h1>
         <p className="text-slate-600">
-          Trova esattamente quello che cerchi con l'aiuto di Clemente
+          Trova esattamente quello che cerchi con l'aiuto di Clemente o compila manualmente
         </p>
       </div>
 
@@ -181,7 +181,7 @@ export default function CreateRequest() {
               alt="Clemente AI" 
               className="w-4 h-4 mr-2"
             />
-            Chatta con Clemente
+            Parla con Clemente
           </Button>
           <Button
             variant={mode === 'manual' ? 'default' : 'ghost'}
@@ -203,6 +203,7 @@ export default function CreateRequest() {
                 <div className="mb-4">
                   <CharacterIntro
                     character="clemente"
+                    show={showIntro}
                     onComplete={() => {
                       completeIntro();
                       addWelcomeMessage();
@@ -311,7 +312,7 @@ export default function CreateRequest() {
                   <i className="fas fa-file-alt mr-2"></i>
                   Dettagli Richiesta
                 </span>
-                {(mode === 'quick' || mode === 'chat') && (
+                {mode === 'chat' && (
                   <Badge variant="outline" className="text-green-600">
                     Compilato da Clemente
                   </Badge>

@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Branding e Navigazione Completi (10/08/2025)
+### UX e Navigazione Ottimizzati (10/08/2025)
 - **Logo Professionale**: SWITCHMARKET logo integrato in header senza testo aggiuntivo
 - **Avatar AI Completi**: Clemente (verde) e Leonardo (blu) sostituiscono tutte le icone generiche
 - **Introduzioni Animate**: Sequenze coinvolgenti con framer-motion per first impression
@@ -18,6 +18,8 @@ Preferred communication style: Simple, everyday language.
 - **Sistema Logout**: Funzionalità completa per tornare alla homepage
 - **File Statici**: Server Express configurato per servire correttamente immagini da attached_assets
 - **Header Ottimizzato**: Solo logo cliccabile collegato alla homepage, design pulito e professionale
+- **Menu Unificato**: "Cerca Prodotti" unica voce per clienti che include chat Clemente e compilazione manuale
+- **Fusione Chat**: Generazione rapida integrata nella conversazione con Clemente per UX naturale
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
