@@ -19,7 +19,7 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
       name: "Clemente",
       color: "green",
       bgGradient: "from-green-500 to-green-600",
-      avatar: "/attached_assets/clemente_avatar_1754845138372.png",
+      avatar: "/attached_assets/Clemente foto profilo_1754847201275.png",
       role: "Assistente AI per Clienti",
       messages: [
         "Ciao! Sono Clemente, il tuo assistente personale.",
@@ -131,10 +131,10 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
                 type: "spring",
                 stiffness: 100
               }}
-              className="w-24 h-24 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center p-3"
+              className="w-48 h-48 mx-auto mb-4 flex items-center justify-center"
             >
               <motion.img
-                src={char.avatar}
+                src={isClemente ? "/attached_assets/clemente a busto intero_1754847733100.png" : char.avatar}
                 alt={char.name}
                 className="w-full h-full object-contain"
                 animate={{ 

@@ -177,7 +177,7 @@ export default function CreateRequest() {
             className={mode === 'chat' ? 'bg-green-600 text-white' : ''}
           >
             <img 
-              src="/attached_assets/clemente_avatar_1754845138372.png" 
+              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
               alt="Clemente AI" 
               className="w-4 h-4 mr-2"
             />
@@ -216,7 +216,7 @@ export default function CreateRequest() {
               <CardHeader>
                 <CardTitle className="flex items-center text-green-700">
                   <img 
-                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-5 h-5 mr-2"
                   />
@@ -230,7 +230,7 @@ export default function CreateRequest() {
                     <div className="text-center text-slate-500 mt-20">
                       <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 p-2">
                         <img 
-                          src="/attached_assets/clemente_avatar_1754845138372.png" 
+                          src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                           alt="Clemente AI" 
                           className="w-full h-full object-contain"
                         />

@@ -77,7 +77,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center p-1">
             <img 
-              src="/attached_assets/clemente_avatar_1754845138372.png" 
+              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
               alt="Clemente AI" 
               className="w-full h-full object-contain"
             />
@@ -102,7 +102,7 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
             {message.isAI && (
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 p-1">
                 <img 
-                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                   alt="Clemente AI" 
                   className="w-full h-full object-contain"
                 />

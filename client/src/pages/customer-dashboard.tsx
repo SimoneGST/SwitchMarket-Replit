@@ -36,7 +36,7 @@ export default function CustomerDashboard() {
             <Link href="/create">
               <Button className="bg-white text-green-800 hover:bg-green-50 hover:text-green-900 px-6 py-3 rounded-xl font-bold shadow-2xl border-3 border-green-200 transition-all duration-200">
                 <img 
-                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                   alt="Clemente AI" 
                   className="w-5 h-5 mr-2"
                 />
@@ -109,7 +109,7 @@ export default function CustomerDashboard() {
             <div className="flex items-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 p-1">
                 <img 
-                  src="/attached_assets/clemente_avatar_1754845138372.png" 
+                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                   alt="Clemente AI" 
                   className="w-full h-full object-contain"
                 />
@@ -187,7 +187,7 @@ export default function CustomerDashboard() {
               <div className="p-4 bg-green-50 rounded-xl inline-flex items-center justify-center mb-4">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center p-1">
                   <img 
-                    src="/attached_assets/clemente_avatar_1754845138372.png" 
+                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-full h-full object-contain"
                   />
