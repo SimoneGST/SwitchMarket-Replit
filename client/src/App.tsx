@@ -5,6 +5,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import SEOHead from "@/components/seo-head";
+import ConversionTracking from "@/components/marketing/conversion-tracking";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import HowItWorks from "@/pages/how-it-works";
@@ -23,6 +25,7 @@ import Messages from "@/pages/messages";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { initializeGlobalVoiceCommands } from "@/lib/voice-commands";
+import { initializeGoogleAnalytics } from "@/lib/google-analytics";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -30,13 +33,16 @@ function Router() {
   // Check if user needs onboarding
   const needsOnboarding = isAuthenticated && user && !user.userType;
 
-  // Initialize voice commands when component mounts
+  // Initialize voice commands and analytics when component mounts
   useEffect(() => {
     initializeGlobalVoiceCommands();
+    initializeGoogleAnalytics();
   }, []);
 
   return (
     <div className="min-h-full">
+      <SEOHead />
+      <ConversionTracking />
       {isAuthenticated && !needsOnboarding && <Header />}
       <Switch>
         {isLoading ? (

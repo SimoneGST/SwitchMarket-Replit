@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /come-funziona
+Allow: /customer-dashboard
+Allow: /merchant-dashboard
+Allow: /create
+Allow: /browse
+
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+Sitemap: https://switchmarket.replit.app/sitemap.xml
