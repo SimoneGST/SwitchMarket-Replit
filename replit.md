@@ -10,15 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Clemente AI Potenziato - Expert Assistant (10/08/2025)
-- **Approccio Educativo**: Clemente ora spiega caratteristiche tecniche e guida l'utente nella scelta
-- **Generazione Richieste Complete**: Focus su specifiche dettagliate e richieste non ambigue
-- **Chat Auto-Scroll**: Eliminato il bisogno di scrolling manuale, esperienza fluida
-- **Sistema Allegati Funzionante**: Upload e analisi immagini con Google Gemini integrato
-- **Prompt Expert**: Clemente agisce come consulente specializzato che educa il cliente
-- **Context Awareness Migliorato**: Non chiede più dove fare shopping, sa di essere su Switch Market
-- **Richieste Dettagliate**: Genera specifiche tecniche complete per ogni tipo di prodotto
-- **Range Prezzi Realistici**: Suggerisce budget appropriati per diverse categorie merceologiche
+### Clemente AI Perfezionato - Conversazione Naturale (10/08/2025)
+- **Conversazione Naturale**: Risposte brevi e colloquiali, una domanda alla volta
+- **Approccio Educativo Bilanciato**: Spiega caratteristiche tecniche ma in modo conciso
+- **Generazione Richieste Complete**: Focus su specifiche dettagliate per i negozianti
+- **Chat Auto-Scroll**: Esperienza fluida senza scrolling manuale
+- **Sistema Allegati Funzionante**: Upload e analisi immagini con Google Gemini
+- **Tono Amichevole**: Come un amico esperto, non un consulente formale
+- **Context Awareness**: Sa di essere su Switch Market, non chiede dove fare shopping
+- **Efficienza**: Raccoglie info essenziali senza essere verboso
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
