@@ -1,45 +1,43 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { MapPin, Clock, Package, AlertCircle, Euro, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import ClementeChat from "@/components/clemente-chat";
+import { ClementeAI, type RequestData, type ChatMessage } from "@/lib/clemente";
 
 export default function CreateRequest() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [requestData, setRequestData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    subcategory: "",
-    priceMin: "",
-    priceMax: "",
-    location: "",
-    actionRadius: 10,
-    deliveryPreference: "both",
-    urgencyLevel: "few_days",
-    attributes: [] as any[],
-    keywords: [] as string[],
+  // Stati per la modalità di creazione
+  const [mode, setMode] = useState<'quick' | 'chat' | 'manual'>('quick');
+  const [clemente] = useState(() => new ClementeAI());
+  
+  // Stati per chat con Clemente
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isClementeTyping, setIsClementeTyping] = useState(false);
+  const [quickInput, setQuickInput] = useState("");
+  
+  // Dati della richiesta
+  const [requestData, setRequestData] = useState<Partial<RequestData>>({
+    urgencyLevel: 'few_days',
+    deliveryPreference: 'both',
+    actionRadius: 20,
+    location: ''
   });
 
   const createRequestMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/requests", {
-        ...data,
-        priceMin: data.priceMin ? parseFloat(data.priceMin) : null,
-        priceMax: data.priceMax ? parseFloat(data.priceMax) : null,
-      });
+    mutationFn: async (data: RequestData) => {
+      return apiRequest("POST", "/api/requests", data);
     },
     onSuccess: () => {
       toast({
@@ -58,283 +56,478 @@ export default function CreateRequest() {
     },
   });
 
-  const handleDataUpdate = (newData: any) => {
-    setRequestData(prev => ({ ...prev, ...newData }));
+  // Generazione rapida con input semplice
+  const handleQuickGenerate = async () => {
+    if (!quickInput.trim()) return;
+    
+    try {
+      const generated = await clemente.quickGenerate(quickInput);
+      if (generated) {
+        setRequestData(generated);
+        setMode('manual');
+        toast({
+          title: "Richiesta generata!",
+          description: "Clemente ha compilato i campi per te. Controlla e modifica se necessario.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Errore nella generazione automatica",
+        variant: "destructive",
+      });
+    }
   };
 
+  // Chat con Clemente
+  const handleChatMessage = async () => {
+    if (!chatInput.trim()) return;
+    
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: chatInput,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput("");
+    setIsClementeTyping(true);
+    
+    try {
+      const response = await clemente.chatWithUser(chatInput);
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      toast({
+        title: "Errore chat",
+        description: "Problema nella comunicazione con Clemente",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClementeTyping(false);
+    }
+  };
+
+  // Genera richiesta dalla chat
+  const handleGenerateFromChat = async () => {
+    try {
+      const generated = await clemente.generateRequestFromChat();
+      if (generated) {
+        setRequestData(generated);
+        setMode('manual');
+        toast({
+          title: "Richiesta generata dalla chat!",
+          description: "Clemente ha estratto tutte le informazioni dalla conversazione.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Impossibile generare la richiesta dalla chat",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Pubblica richiesta
   const handlePublish = () => {
     if (!requestData.title || !requestData.location || !requestData.category) {
       toast({
         title: "Dati mancanti",
-        description: "Completa tutti i campi obbligatori per pubblicare la richiesta",
+        description: "Completa titolo, categoria e posizione per pubblicare",
         variant: "destructive",
       });
       return;
     }
 
-    createRequestMutation.mutate(requestData);
+    createRequestMutation.mutate(requestData as RequestData);
+  };
+
+  // Aggiorna campo della richiesta
+  const updateField = (field: keyof RequestData, value: any) => {
+    setRequestData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Crea Nuova Richiesta</h1>
-        <p className="text-slate-600">Clemente ti aiuterà a creare la richiesta perfetta per trovare quello che cerchi</p>
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          Crea una Richiesta
+        </h1>
+        <p className="text-slate-600">
+          Trova esattamente quello che cerchi con l'aiuto di Clemente
+        </p>
+      </div>
+
+      {/* Modalità di creazione */}
+      <div className="flex justify-center mb-8">
+        <div className="flex bg-slate-100 rounded-xl p-1">
+          <Button
+            variant={mode === 'quick' ? 'default' : 'ghost'}
+            onClick={() => setMode('quick')}
+            className={mode === 'quick' ? 'bg-green-600 text-white' : ''}
+          >
+            <i className="fas fa-bolt mr-2"></i>
+            Generazione Rapida
+          </Button>
+          <Button
+            variant={mode === 'chat' ? 'default' : 'ghost'}
+            onClick={() => setMode('chat')}
+            className={mode === 'chat' ? 'bg-green-600 text-white' : ''}
+          >
+            <i className="fas fa-comments mr-2"></i>
+            Chat con Clemente
+          </Button>
+          <Button
+            variant={mode === 'manual' ? 'default' : 'ghost'}
+            onClick={() => setMode('manual')}
+            className={mode === 'manual' ? 'bg-green-600 text-white' : ''}
+          >
+            <i className="fas fa-edit mr-2"></i>
+            Compilazione Manuale
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Form Column */}
-        <div className="space-y-6">
-          {/* Informazioni Base */}
+        {/* Pannello sinistro - Input/Chat */}
+        <div>
+          {mode === 'quick' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-700">
+                  <i className="fas fa-magic mr-2"></i>
+                  Generazione Rapida
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Descrivi cosa stai cercando
+                  </label>
+                  <Textarea
+                    placeholder="Esempio: Cerco un laptop per gaming con scheda grafica potente, budget intorno ai 1500€"
+                    value={quickInput}
+                    onChange={(e) => setQuickInput(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+                <Button 
+                  onClick={handleQuickGenerate}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={!quickInput.trim()}
+                >
+                  <i className="fas fa-robot mr-2"></i>
+                  Genera Richiesta Automaticamente
+                </Button>
+                <div className="text-xs text-slate-500">
+                  <i className="fas fa-lightbulb mr-1"></i>
+                  Clemente analizzerà il tuo input e compilerà automaticamente tutti i campi
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {mode === 'chat' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-700">
+                  <i className="fas fa-robot mr-2"></i>
+                  Chat con Clemente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Messaggi chat */}
+                <div className="h-96 overflow-y-auto border rounded-lg p-4 mb-4 bg-slate-50">
+                  {chatMessages.length === 0 && (
+                    <div className="text-center text-slate-500 mt-20">
+                      <i className="fas fa-robot text-4xl mb-4 text-green-500"></i>
+                      <p>Ciao! Sono Clemente, il tuo assistente AI.</p>
+                      <p>Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa!</p>
+                    </div>
+                  )}
+                  
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        msg.role === 'user' 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-white border border-slate-200'
+                      }`}>
+                        <div className="text-sm">{msg.content}</div>
+                        <div className="text-xs opacity-70 mt-1">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {isClementeTyping && (
+                    <div className="text-left mb-4">
+                      <div className="inline-block bg-white border border-slate-200 px-4 py-2 rounded-lg">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input chat */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Scrivi a Clemente..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleChatMessage()}
+                    disabled={isClementeTyping}
+                  />
+                  <Button 
+                    onClick={handleChatMessage}
+                    disabled={!chatInput.trim() || isClementeTyping}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <i className="fas fa-paper-plane"></i>
+                  </Button>
+                </div>
+
+                {/* Genera da chat */}
+                {chatMessages.length > 2 && (
+                  <Button 
+                    onClick={handleGenerateFromChat}
+                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
+                  >
+                    <i className="fas fa-magic mr-2"></i>
+                    Genera Richiesta dalla Conversazione
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Pannello destro - Form richiesta */}
+        <div>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-green-600" />
-                Cosa Stai Cercando?
+              <CardTitle className="flex items-center justify-between">
+                <span className="text-green-700">
+                  <i className="fas fa-file-alt mr-2"></i>
+                  Dettagli Richiesta
+                </span>
+                {(mode === 'quick' || mode === 'chat') && (
+                  <Badge variant="outline" className="text-green-600">
+                    Compilato da Clemente
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Titolo */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Titolo della richiesta *
+                  Titolo *
                 </label>
                 <Input
-                  value={requestData.title}
-                  onChange={(e) => setRequestData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Es. iPhone 15 Pro usato in ottime condizioni"
-                  className="w-full"
+                  placeholder="Titolo della richiesta"
+                  value={requestData.title || ''}
+                  onChange={(e) => updateField('title', e.target.value)}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Categoria *</label>
-                  <Select 
-                    value={requestData.category} 
-                    onValueChange={(value) => setRequestData(prev => ({ ...prev, category: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="elettronica">Elettronica</SelectItem>
-                      <SelectItem value="casa">Casa e Giardino</SelectItem>
-                      <SelectItem value="moda">Moda e Abbigliamento</SelectItem>
-                      <SelectItem value="sport">Sport e Tempo Libero</SelectItem>
-                      <SelectItem value="auto">Auto e Moto</SelectItem>
-                      <SelectItem value="libri">Libri e Riviste</SelectItem>
-                      <SelectItem value="servizi">Servizi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Sottocategoria</label>
-                  <Select 
-                    value={requestData.subcategory} 
-                    onValueChange={(value) => setRequestData(prev => ({ ...prev, subcategory: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Opzionale" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {requestData.category === "elettronica" && (
-                        <>
-                          <SelectItem value="smartphone">Smartphone</SelectItem>
-                          <SelectItem value="computer">Computer</SelectItem>
-                          <SelectItem value="tv">TV e Audio</SelectItem>
-                          <SelectItem value="gaming">Gaming</SelectItem>
-                        </>
-                      )}
-                      {requestData.category === "casa" && (
-                        <>
-                          <SelectItem value="mobili">Mobili</SelectItem>
-                          <SelectItem value="elettrodomestici">Elettrodomestici</SelectItem>
-                          <SelectItem value="decorazioni">Decorazioni</SelectItem>
-                          <SelectItem value="giardino">Giardino</SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+              {/* Categoria */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Descrizione dettagliata
+                  Categoria *
+                </label>
+                <Select value={requestData.category || ''} onValueChange={(value) => updateField('category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Elettronica">Elettronica</SelectItem>
+                    <SelectItem value="Casa e Giardino">Casa e Giardino</SelectItem>
+                    <SelectItem value="Sport e Tempo Libero">Sport e Tempo Libero</SelectItem>
+                    <SelectItem value="Veicoli">Veicoli</SelectItem>
+                    <SelectItem value="Abbigliamento">Abbigliamento</SelectItem>
+                    <SelectItem value="Servizi">Servizi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Descrizione */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Descrizione
                 </label>
                 <Textarea
-                  value={requestData.description}
-                  onChange={(e) => setRequestData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descrivi cosa stai cercando, caratteristiche specifiche, condizioni desiderate..."
+                  placeholder="Descrizione dettagliata"
+                  value={requestData.description || ''}
+                  onChange={(e) => updateField('description', e.target.value)}
                   rows={4}
-                  className="w-full"
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Budget */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Euro className="h-5 w-5 text-green-600" />
-                Budget
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {/* Specifiche tecniche */}
+              {requestData.technicalSpecs && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Prezzo minimo (€)</label>
-                  <Input
-                    type="number"
-                    value={requestData.priceMin}
-                    onChange={(e) => setRequestData(prev => ({ ...prev, priceMin: e.target.value }))}
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Specifiche Tecniche
+                  </label>
+                  <Textarea
+                    value={requestData.technicalSpecs}
+                    onChange={(e) => updateField('technicalSpecs', e.target.value)}
+                    rows={3}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Prezzo massimo (€)</label>
-                  <Input
-                    type="number"
-                    value={requestData.priceMax}
-                    onChange={(e) => setRequestData(prev => ({ ...prev, priceMax: e.target.value }))}
-                    placeholder="1000"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-              {requestData.priceMin && requestData.priceMax && (
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <p className="text-sm text-green-700">
-                    Budget: €{requestData.priceMin} - €{requestData.priceMax}
-                  </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Localizzazione e Consegna */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-green-600" />
-                Dove e Come Ritirare
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              {/* Dettagli prodotto in una griglia */}
+              <div className="grid grid-cols-2 gap-4">
+                {requestData.brand && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Marca</label>
+                    <Input
+                      value={requestData.brand}
+                      onChange={(e) => updateField('brand', e.target.value)}
+                    />
+                  </div>
+                )}
+                
+                {requestData.model && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Modello</label>
+                    <Input
+                      value={requestData.model}
+                      onChange={(e) => updateField('model', e.target.value)}
+                    />
+                  </div>
+                )}
+                
+                {requestData.color && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Colore</label>
+                    <Input
+                      value={requestData.color}
+                      onChange={(e) => updateField('color', e.target.value)}
+                    />
+                  </div>
+                )}
+                
+                {requestData.size && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Dimensioni</label>
+                    <Input
+                      value={requestData.size}
+                      onChange={(e) => updateField('size', e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Budget */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Budget (€)
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Budget massimo"
+                  value={requestData.budget || ''}
+                  onChange={(e) => updateField('budget', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+
+              {/* Posizione */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Posizione *
                 </label>
                 <Input
-                  value={requestData.location}
-                  onChange={(e) => setRequestData(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Es. Milano, Via Roma 123"
-                  className="w-full"
+                  placeholder="Città"
+                  value={requestData.location || ''}
+                  onChange={(e) => updateField('location', e.target.value)}
                 />
               </div>
 
+              {/* Preferenza consegna */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Raggio massimo per ritiro: {requestData.actionRadius} km
+                  Modalità di Consegna
                 </label>
-                <Slider
-                  value={[requestData.actionRadius]}
-                  onValueChange={([value]) => setRequestData(prev => ({ ...prev, actionRadius: value }))}
-                  max={50}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-slate-500 mt-1">
-                  <span>1 km</span>
-                  <span>50 km</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Modalità di consegna
-                </label>
-                <Select 
-                  value={requestData.deliveryPreference} 
-                  onValueChange={(value) => setRequestData(prev => ({ ...prev, deliveryPreference: value }))}
-                >
+                <Select value={requestData.deliveryPreference} onValueChange={(value) => updateField('deliveryPreference', value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pickup">Solo ritiro in zona</SelectItem>
-                    <SelectItem value="delivery">Solo spedizione</SelectItem>
-                    <SelectItem value="both">Entrambe le opzioni</SelectItem>
+                    <SelectItem value="pickup">Solo Ritiro</SelectItem>
+                    <SelectItem value="delivery">Solo Spedizione</SelectItem>
+                    <SelectItem value="both">Entrambe</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {(requestData.deliveryPreference === "delivery" || requestData.deliveryPreference === "both") && (
+              {/* Raggio azione (solo se ritiro incluso) */}
+              {(requestData.deliveryPreference === 'pickup' || requestData.deliveryPreference === 'both') && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    <Truck className="inline h-4 w-4 mr-1" />
-                    Urgenza per spedizione
+                    Raggio Massimo per Ritiro: {requestData.actionRadius}km
                   </label>
-                  <Select 
-                    value={requestData.urgencyLevel} 
-                    onValueChange={(value) => setRequestData(prev => ({ ...prev, urgencyLevel: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="24h">Entro 24 ore</SelectItem>
-                      <SelectItem value="48h">Entro 48 ore</SelectItem>
-                      <SelectItem value="few_days">Qualche giorno</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Slider
+                    value={[requestData.actionRadius || 20]}
+                    onValueChange={(value) => updateField('actionRadius', value[0])}
+                    max={100}
+                    min={5}
+                    step={5}
+                    className="w-full"
+                  />
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Pulsante Pubblica */}
-          <div className="flex gap-4">
-            <Button 
-              onClick={handlePublish}
-              disabled={createRequestMutation.isPending}
-              className="flex-1 bg-green-600 hover:bg-green-700"
-              size="lg"
-            >
-              {createRequestMutation.isPending ? "Pubblicando..." : "Pubblica Richiesta"}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation("/")}
-              size="lg"
-            >
-              Annulla
-            </Button>
-          </div>
-        </div>
+              {/* Urgenza */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Livello di Urgenza
+                </label>
+                <Select value={requestData.urgencyLevel} onValueChange={(value) => updateField('urgencyLevel', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="immediate">Immediato (entro poche ore)</SelectItem>
+                    <SelectItem value="24h">Entro 24 ore</SelectItem>
+                    <SelectItem value="48h">Entro 48 ore</SelectItem>
+                    <SelectItem value="few_days">Alcuni giorni</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {/* Chat Column */}
-        <div className="lg:sticky lg:top-8">
-          <Card className="h-[600px]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-bold text-sm">C</span>
-                </div>
-                Clemente ti aiuta
-              </CardTitle>
-              <p className="text-sm text-slate-600">
-                Descrivi cosa cerchi e Clemente creerà la richiesta perfetta per te
-              </p>
-            </CardHeader>
-            <CardContent className="p-0 h-[480px]">
-              <ClementeChat />
+              {/* Pubblica */}
+              <Button 
+                onClick={handlePublish}
+                className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
+                disabled={createRequestMutation.isPending || !requestData.title || !requestData.category || !requestData.location}
+              >
+                {createRequestMutation.isPending ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    Pubblicazione...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-paper-plane mr-2"></i>
+                    Pubblica Richiesta
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>
