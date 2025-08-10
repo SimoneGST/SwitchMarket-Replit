@@ -50,6 +50,7 @@ export default function Landing() {
             <Button 
               size="lg"
               variant="outline"
+              onClick={() => window.location.href = '/how-it-works'}
               className="text-lg px-8 py-4 border-primary text-primary hover:bg-primary/10"
             >
               <i className="fas fa-play mr-2"></i>

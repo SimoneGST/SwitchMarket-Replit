@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import HowItWorks from "@/pages/how-it-works";
 import Onboarding from "@/pages/onboarding";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
@@ -31,7 +32,10 @@ function Router() {
       {isAuthenticated && !needsOnboarding && <Header />}
       <Switch>
         {isLoading || !isAuthenticated ? (
-          <Route path="/" component={Landing} />
+          <>
+            <Route path="/" component={Landing} />
+            <Route path="/how-it-works" component={HowItWorks} />
+          </>
         ) : needsOnboarding ? (
           <Route path="/" component={Onboarding} />
         ) : (
