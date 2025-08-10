@@ -32,7 +32,7 @@ export default function CustomerDashboard() {
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
               <img 
-                src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                 alt="Clemente AI" 
                 className="w-10 h-10 rounded-lg object-cover"
               />
@@ -44,7 +44,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center text-green-100 text-lg">
                 <span>Ciao {user?.firstName}! Trova quello che cerchi con</span>
                 <img 
-                  src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                   alt="Clemente" 
                   className="w-6 h-6 rounded-full mx-2 border border-green-300"
                 />

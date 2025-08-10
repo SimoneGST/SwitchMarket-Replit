@@ -121,7 +121,7 @@ export default function Auth() {
               >
                 <div className="text-center">
                   <img 
-                    src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-8 h-8 rounded-full mx-auto mb-2"
                   />

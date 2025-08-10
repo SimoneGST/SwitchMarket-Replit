@@ -22,7 +22,7 @@ export default function Home() {
           <div className="text-xl md:text-2xl opacity-90 mb-8 flex items-center justify-center">
             <span>Trova quello che cerchi con l'aiuto di</span>
             <img 
-              src="/attached_assets/clemente foto profilo_1754847201275.png" 
+              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
               alt="Clemente" 
               className="w-8 h-8 rounded-full mx-3 border-2 border-white/30"
             />

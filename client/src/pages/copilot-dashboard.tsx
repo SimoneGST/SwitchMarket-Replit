@@ -104,7 +104,7 @@ export default function CopilotDashboard() {
           <div className="flex items-center">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 p-2">
               <img 
-                src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                 alt="Leonardo AI" 
                 className="w-full h-full object-contain"
               />

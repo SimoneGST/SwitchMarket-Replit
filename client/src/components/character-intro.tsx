@@ -141,7 +141,7 @@ export default function CharacterIntro({ character, onComplete, onNeverShow, sho
               className="w-48 h-48 mx-auto mb-4 flex items-center justify-center"
             >
               <motion.img
-                src={isClemente ? "/attached_assets/clemente a busto intero_1754847733100.png" : "/attached_assets/leonardo_avatar_1754851387216.png"}
+                src={isClemente ? "/attached_assets/clemente a busto intero_1754847733100.png" : "/attached_assets/leonardo foto profilo_1754851361956.png"}
                 alt={char.name}
                 className="w-full h-full object-contain"
                 animate={{ 

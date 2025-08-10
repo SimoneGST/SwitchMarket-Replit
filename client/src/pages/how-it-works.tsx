@@ -113,7 +113,7 @@ export default function HowItWorks() {
                 <Card className="p-4">
                   <CardContent className="text-center pt-0">
                     <img 
-                      src="/attached_assets/clemente foto profilo_1754847201275.png" 
+                      src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                       alt="Clemente AI" 
                       className="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-green-300"
                     />
