@@ -23,9 +23,16 @@
    - Abilita **Google**
    - Aggiungi domini autorizzati:
      - `localhost` (per sviluppo)
+     - `switch-market-guestellasimone.replit.app` (dominio Replit corrente)
      - Il tuo dominio di produzione
      - `your-project-id.firebaseapp.com`
      - `your-project-id.web.app`
+
+**IMPORTANTE**: Dopo il deploy su Replit, devi aggiungere il dominio Replit ai domini autorizzati:
+1. Vai su Firebase Console > Authentication > Settings > Authorized domains
+2. Clicca "Add domain" 
+3. Inserisci: `switch-market-guestellasimone.replit.app`
+4. Salva le modifiche
 
 ### 3. Configura Firestore Database
 
