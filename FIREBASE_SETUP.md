@@ -24,6 +24,7 @@
    - Aggiungi domini autorizzati:
      - `localhost` (per sviluppo)
      - `switch-market-guestellasimone.replit.app` (dominio Replit corrente)
+     - `3c74d7c6-3cc3-4419-9af7-a666a3e55242-00-2m5vbwa31cjap.kirk.replit.dev` (dominio preview Replit)
      - Il tuo dominio di produzione
      - `your-project-id.firebaseapp.com`
      - `your-project-id.web.app`
