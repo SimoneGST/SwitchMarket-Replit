@@ -31,15 +31,24 @@ class ClementeAI {
 
   constructor() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    console.log('🔑 API Key disponibile:', !!apiKey, 'Lunghezza:', apiKey?.length);
+    
     if (!apiKey) {
-      console.warn('GEMINI_API_KEY non configurata');
-      // Fallback per sviluppo
-      this.genAI = null;
+      console.warn('❌ VITE_GEMINI_API_KEY non configurata');
+      this.genAI = null as any;
       this.model = null;
       return;
     }
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      console.log('✅ Clemente AI inizializzato correttamente');
+    } catch (error) {
+      console.error('❌ Errore inizializzazione Gemini:', error);
+      this.genAI = null as any;
+      this.model = null;
+    }
   }
 
   // Sistema di chat per ottenere dettagli
@@ -75,12 +84,12 @@ ${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n
 Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, proponi di generare la richiesta.`;
 
     try {
-      const result = await this.model.generateContent([
-        { text: systemPrompt },
-        { text: `Cliente: ${userMessage}` }
-      ]);
-
+      console.log('🤖 Clemente sta elaborando:', userMessage);
+      
+      const result = await this.model.generateContent(systemPrompt + '\n\nCliente: ' + userMessage);
       const response = result.response.text();
+      
+      console.log('✅ Risposta Clemente:', response.substring(0, 100) + '...');
       
       this.chatHistory.push({
         role: 'assistant',
@@ -89,9 +98,17 @@ Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, pr
       });
 
       return response;
-    } catch (error) {
-      console.error('Errore chat Clemente:', error);
-      return 'Mi dispiace, ho avuto un problema tecnico. Puoi ripetere?';
+    } catch (error: any) {
+      console.error('❌ Errore chat Clemente:', error);
+      
+      // Risposta di fallback più informativa
+      if (error?.message?.includes('API key')) {
+        return 'Problema con la chiave API. Controlla la configurazione di VITE_GEMINI_API_KEY.';
+      } else if (error?.message?.includes('quota')) {
+        return 'Quota API esaurita. Riprova più tardi.';
+      } else {
+        return `Errore tecnico: ${error?.message || 'Sconosciuto'}. Prova la compilazione manuale.`;
+      }
     }
   }
 

@@ -60,8 +60,12 @@ export default function CreateRequest() {
   const handleQuickGenerate = async () => {
     if (!quickInput.trim()) return;
     
+    console.log('🚀 Avvio generazione rapida per:', quickInput);
+    
     try {
       const generated = await clemente.quickGenerate(quickInput);
+      console.log('📝 Risultato generazione:', generated);
+      
       if (generated) {
         setRequestData(generated);
         setMode('manual');
@@ -69,8 +73,15 @@ export default function CreateRequest() {
           title: "Richiesta generata!",
           description: "Clemente ha compilato i campi per te. Controlla e modifica se necessario.",
         });
+      } else {
+        toast({
+          title: "Errore generazione",
+          description: "Clemente non è riuscito a generare la richiesta. Prova la chat.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
+      console.error('❌ Errore generazione rapida:', error);
       toast({
         title: "Errore",
         description: "Errore nella generazione automatica",
@@ -82,6 +93,8 @@ export default function CreateRequest() {
   // Chat con Clemente
   const handleChatMessage = async () => {
     if (!chatInput.trim()) return;
+    
+    console.log('💬 Invio messaggio a Clemente:', chatInput);
     
     const userMessage: ChatMessage = {
       role: 'user',
@@ -95,6 +108,8 @@ export default function CreateRequest() {
     
     try {
       const response = await clemente.chatWithUser(chatInput);
+      console.log('📨 Risposta ricevuta:', response.substring(0, 50));
+      
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: response,
@@ -103,6 +118,7 @@ export default function CreateRequest() {
       
       setChatMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
+      console.error('❌ Errore comunicazione chat:', error);
       toast({
         title: "Errore chat",
         description: "Problema nella comunicazione con Clemente",
