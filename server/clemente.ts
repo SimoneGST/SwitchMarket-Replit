@@ -92,39 +92,9 @@ class ClementeAI {
 
   // Genera un'immagine per aiutare l'utente
   async generateExampleImage(description: string): Promise<string | null> {
-    if (!this.model) return null;
-
-    try {
-      console.log('🎨 Generando immagine di esempio per:', description);
-      
-      // Usa Gemini 2.0 per generare immagini se disponibile
-      try {
-        const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-preview-image-generation' });
-        
-        const prompt = `Genera un'immagine di esempio per aiutare l'utente a visualizzare: ${description}. 
-        L'immagine deve essere chiara, professionale e utile per identificare il prodotto.`;
-
-        const result = await model.generateContent([
-          prompt
-        ]);
-
-        const candidates = result.candidates;
-        if (candidates && candidates[0]?.content?.parts) {
-          for (const part of candidates[0].content.parts) {
-            if (part.inlineData && part.inlineData.data) {
-              return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-            }
-          }
-        }
-      } catch (error) {
-        console.log('⚠️ Modello di generazione immagini non disponibile, continuo senza');
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('❌ Errore generazione immagine:', error);
-      return null;
-    }
+    // Temporaneamente disabilitato fino a che l'API non è stabile
+    console.log('🎨 Generazione immagini temporaneamente disabilitata');
+    return null;
   }
 
   // Sistema di chat per ottenere dettagli (ora con supporto file)

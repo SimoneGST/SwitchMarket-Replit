@@ -91,38 +91,9 @@ class ClementeAI {
 
   // Genera un'immagine per aiutare l'utente
   async generateExampleImage(description: string): Promise<string | null> {
-    if (!this.model) return null;
-
-    try {
-      console.log('🎨 Generando immagine di esempio per:', description);
-      
-      // Usa Gemini 2.0 per generare immagini
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-preview-image-generation' });
-      
-      const prompt = `Genera un'immagine di esempio per aiutare l'utente a visualizzare: ${description}. 
-      L'immagine deve essere chiara, professionale e utile per identificare il prodotto.`;
-
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseModalities: ['TEXT', 'IMAGE']
-        }
-      });
-
-      const candidates = result.candidates;
-      if (candidates && candidates[0]?.content?.parts) {
-        for (const part of candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-          }
-        }
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('❌ Errore generazione immagine:', error);
-      return null;
-    }
+    // Temporaneamente disabilitato fino a che l'API non è stabile
+    console.log('🎨 Generazione immagini temporaneamente disabilitata');
+    return null;
   }
 
   // Sistema di chat per ottenere dettagli (ora con supporto file)
@@ -152,14 +123,17 @@ PROCESSO:
 2. Fai domande specifiche UNA ALLA VOLTA:
    - Prima le caratteristiche più importanti
    - Poi budget o marca preferita  
-   - Infine tempistiche e zona
+   - Infine tempistiche e modalità di consegna (ritiro/spedizione)
 
 ESEMPI BUONI:
 "Perfetto! Che tipo di attacco preferisci: SPD-SL o Look Delta?"
 "Hai un budget in mente?"
 "Che taglia indossi di solito?"
 
-IMPORTANTE: Procedi gradualmente, una domanda alla volta, come una conversazione reale. NON fare liste di domande.
+IMPORTANTE: 
+- Procedi gradualmente, una domanda alla volta
+- NON chiedere mai dove fare shopping - Switch Market è la piattaforma e i negozianti locali risponderanno
+- Concentrati su specifiche tecniche, budget e tempistiche
 
 Conversazione precedente:
 ${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
