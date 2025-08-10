@@ -35,15 +35,21 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  userType: varchar("user_type", { length: 20 }).notNull().default("customer"), // customer, merchant
+  userType: varchar("user_type", { length: 20 }).default("customer"), // customer, merchant
+  phone: varchar("phone"),
+  address: varchar("address"),
+  city: varchar("city"),
+  postalCode: varchar("postal_code"),
+  // Campi per negozianti
   businessName: varchar("business_name"),
-  vatNumber: varchar("vat_number"), // P.IVA
-  taxCode: varchar("tax_code"), // Codice Fiscale
-  businessAddress: text("business_address"),
-  businessPhone: varchar("business_phone"),
-  businessCategory: varchar("business_category"),
+  businessType: varchar("business_type"),
+  partitaIva: varchar("partita_iva"), // P.IVA
+  codiceFiscale: varchar("codice_fiscale"), // Codice Fiscale
+  businessAddress: varchar("business_address"),
+  businessCity: varchar("business_city"),
+  businessPostalCode: varchar("business_postal_code"),
   businessDescription: text("business_description"),
-  isVerified: boolean("is_verified").notNull().default(false),
+  profileVerified: boolean("profile_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

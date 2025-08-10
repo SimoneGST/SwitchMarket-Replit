@@ -492,6 +492,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== PROFILE API =====
+  app.get('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.post('/api/profile/verify', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(userId, {
+        ...profileData,
+        profileVerified: true
+      });
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error verifying profile:", error);
+      res.status(500).json({ message: "Failed to verify profile" });
+    }
+  });
+
   // ===== LEONARDO CHAT API =====
   app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
     try {

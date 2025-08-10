@@ -13,6 +13,9 @@ import BrowseRequests from "@/pages/browse-requests";
 import CreateRequest from "@/pages/create-request";
 import IntegrationSetup from "@/pages/integration-setup";
 import CopilotDashboard from "@/pages/copilot-dashboard";
+import ProfileVerification from "@/pages/profile-verification";
+import CustomerProfile from "@/pages/customer-profile";
+import MerchantProfile from "@/pages/merchant-profile";
 import Messages from "@/pages/messages";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -42,6 +45,9 @@ function Router() {
             <Route path="/create" component={CreateRequest} />
             <Route path="/integration-setup" component={IntegrationSetup} />
             <Route path="/copilot-dashboard" component={CopilotDashboard} />
+            <Route path="/profile-verification" component={ProfileVerification} />
+            <Route path="/customer-profile" component={CustomerProfile} />
+            <Route path="/merchant-profile" component={MerchantProfile} />
             <Route path="/messages" component={Messages} />
           </>
         )}

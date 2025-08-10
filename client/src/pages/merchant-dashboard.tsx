@@ -69,6 +69,12 @@ export default function MerchantDashboard() {
                 Copilot Leonardo
               </Button>
             </Link>
+            <Link href="/merchant-profile">
+              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
+                <i className="fas fa-user mr-2"></i>
+                Il Mio Profilo
+              </Button>
+            </Link>
             <Link href="/messages">
               <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-xl font-semibold">
                 <i className="fas fa-message mr-2"></i>

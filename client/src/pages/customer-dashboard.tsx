@@ -41,6 +41,12 @@ export default function CustomerDashboard() {
                 Cerca Prodotti
               </Button>
             </Link>
+            <Link href="/customer-profile">
+              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-6 py-3 rounded-xl font-semibold">
+                <i className="fas fa-user mr-2"></i>
+                Il Mio Profilo
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

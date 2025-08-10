@@ -19,7 +19,8 @@ export default function Landing() {
                 onClick={() => window.location.href = '/api/login'}
                 className="bg-primary hover:bg-primary/90"
               >
-                Accedi
+                <i className="fab fa-google mr-2"></i>
+                Accedi con Google
               </Button>
             </div>
           </div>
@@ -43,8 +44,8 @@ export default function Landing() {
               onClick={() => window.location.href = '/api/login'}
               className="bg-primary hover:bg-primary/90 text-lg px-8 py-4"
             >
-              <i className="fas fa-rocket mr-2"></i>
-              Inizia Subito
+              <i className="fab fa-google mr-2"></i>
+              Inizia con Google
             </Button>
             <Button 
               size="lg"
