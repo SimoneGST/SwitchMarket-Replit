@@ -21,6 +21,9 @@ Preferred communication style: Simple, everyday language.
 - **Pagina "Come Funziona"**: Creata pagina informativa completa accessibile dalla landing
 - **Deploy Automatico**: Configurato deployment su Firebase Hosting con CDN globale
 - **Documentazione**: Aggiunta guida completa setup Firebase (FIREBASE_SETUP.md)
+- **Login Page Aggiornata**: Implementata con colori distintivi verde (clienti) e blu (negozianti)
+- **Google OAuth Configurato**: Autenticazione Google pronta per deploy su dominio pubblico
+- **Build Completato**: App pronta per deployment con Firebase hosting integrato
 
 ### Funzionalità Precedenti (09/08/2025)
 - Aggiunto campo `actionRadius` alle richieste per specificare il raggio massimo di spostamento (in km)
