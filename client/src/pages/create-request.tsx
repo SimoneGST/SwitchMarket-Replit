@@ -27,7 +27,15 @@ export default function CreateRequest() {
   const [clemente] = useState(() => new ClementeAI());
   
   // Character intro state - mostrato al primo accesso
-  const { showIntro, completeIntro } = useCharacterIntro('clemente');
+  const { showIntro, completeIntro, resetIntro } = useCharacterIntro('clemente');
+  
+  // Debug: forza reset dell'intro per test
+  useEffect(() => {
+    // Pulisce localStorage per forzare animazione ogni volta (solo per debugging)
+    localStorage.removeItem('hasSeenIntro_clemente');
+    localStorage.removeItem('neverShowIntro_clemente');
+    console.log('🧹 Pulito localStorage per debugging');
+  }, []);
   
   // Stati per chat con Clemente
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);

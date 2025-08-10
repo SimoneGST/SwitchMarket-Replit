@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export function useCharacterIntro(character: 'clemente' | 'leonardo') {
   const [showIntro, setShowIntro] = useState(false);
   const [hasSeenIntro, setHasSeenIntro] = useState(false);
+  const [forceReset, setForceReset] = useState(0);
 
   useEffect(() => {
     // Check if user has permanently disabled this character's intro
@@ -14,14 +15,23 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     const seen = localStorage.getItem(introKey) === 'true';
     setHasSeenIntro(seen);
     
+    console.log('🎬 CharacterIntro Debug:', {
+      character,
+      neverShow,
+      seen,
+      shouldShow: !neverShow && !seen
+    });
+    
     // Only show intro if not permanently disabled and not seen in current session
     if (!neverShow && !seen) {
+      console.log('⏰ Avvio timer per mostrare intro di', character);
       const timer = setTimeout(() => {
+        console.log('🎭 Attivando showIntro per', character);
         setShowIntro(true);
-      }, 500);
+      }, 1000); // Aumentato il delay per dare tempo al componente di caricarsi
       return () => clearTimeout(timer);
     }
-  }, [character]);
+  }, [character, forceReset]);
 
   const completeIntro = () => {
     const introKey = `hasSeenIntro_${character}`;
@@ -36,7 +46,10 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     localStorage.removeItem(introKey);
     localStorage.removeItem(neverShowKey);
     setHasSeenIntro(false);
-    setShowIntro(true);
+    setShowIntro(false);
+    console.log('🔄 Reset intro per', character);
+    // Triggera il re-check
+    setForceReset(prev => prev + 1);
   };
 
   const startIntro = () => {
