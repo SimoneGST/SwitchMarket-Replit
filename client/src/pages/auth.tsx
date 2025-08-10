@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,15 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Controlla se c'è un tipo di utente pending dal localStorage
+  useEffect(() => {
+    const pendingType = localStorage.getItem('pendingUserType');
+    if (pendingType === 'customer' || pendingType === 'merchant') {
+      setUserType(pendingType);
+      localStorage.removeItem('pendingUserType');
+    }
+  }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,127 +77,158 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-lg">
+        {/* Logo e Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <i className="fas fa-exchange-alt text-primary text-3xl mr-2"></i>
-            <span className="text-2xl font-bold text-slate-900">Switch Market</span>
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
+              <i className="fas fa-exchange-alt text-white text-xl"></i>
+            </div>
+            <span className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Switch Market
+            </span>
           </div>
-          <p className="text-slate-600">Il tuo marketplace locale intelligente</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            {isLogin ? 'Bentornato!' : 'Crea il tuo account'}
+          </h1>
+          <p className="text-slate-600">
+            {isLogin 
+              ? 'Accedi per continuare nel tuo marketplace locale intelligente' 
+              : 'Unisciti alla community di Switch Market'
+            }
+          </p>
         </div>
 
-        {/* User Type Selection */}
+        {/* Selezione Tipo Utente per Registrazione */}
         {!isLogin && (
-          <div className="mb-6">
-            <p className="text-sm font-medium text-slate-700 mb-3 text-center">Scegli il tipo di account:</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="mb-8">
+            <p className="text-sm font-medium text-slate-700 mb-4 text-center">
+              Scegli il tipo di account:
+            </p>
+            <div className="grid grid-cols-2 gap-4">
               <Button
                 type="button"
                 variant={userType === 'customer' ? "default" : "outline"}
                 onClick={() => setUserType('customer')}
-                className={userType === 'customer' 
-                  ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
-                  : "border-green-600 text-green-600 hover:bg-green-50"
-                }
+                className={`p-6 h-auto transition-all duration-200 ${
+                  userType === 'customer' 
+                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg hover:shadow-xl border-0" 
+                    : "border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                }`}
               >
-                <i className="fas fa-user mr-2"></i>
-                Cliente
+                <div className="text-center">
+                  <i className="fas fa-shopping-cart text-2xl mb-2 block"></i>
+                  <span className="font-semibold">Cliente</span>
+                </div>
               </Button>
               <Button
                 type="button"
                 variant={userType === 'merchant' ? "default" : "outline"}
                 onClick={() => setUserType('merchant')}
-                className={userType === 'merchant' 
-                  ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" 
-                  : "border-blue-600 text-blue-600 hover:bg-blue-50"
-                }
+                className={`p-6 h-auto transition-all duration-200 ${
+                  userType === 'merchant' 
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl border-0" 
+                    : "border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                }`}
               >
-                <i className="fas fa-store mr-2"></i>
-                Negoziante
+                <div className="text-center">
+                  <i className="fas fa-store text-2xl mb-2 block"></i>
+                  <span className="font-semibold">Negoziante</span>
+                </div>
               </Button>
             </div>
           </div>
         )}
 
-        {/* Auth Card */}
-        <Card className={`border-2 ${
+        {/* Card Autenticazione */}
+        <Card className={`shadow-2xl border-2 transition-all duration-300 ${
           userType === 'customer' 
-            ? 'border-green-500 bg-green-50/30' 
-            : 'border-blue-500 bg-blue-50/30'
+            ? 'border-green-200 bg-gradient-to-br from-green-50/50 to-white' 
+            : 'border-blue-200 bg-gradient-to-br from-blue-50/50 to-white'
         }`}>
-          <CardHeader>
-            <CardTitle className={`text-center ${
+          <CardHeader className="space-y-4">
+            <CardTitle className={`text-center text-xl ${
               userType === 'customer' ? 'text-green-800' : 'text-blue-800'
             }`}>
-              {isLogin ? 'Accedi' : 'Registrati'}
+              <i className={`fas ${userType === 'customer' ? 'fa-shopping-cart' : 'fa-store'} mr-2`}></i>
+              {isLogin ? 'Accedi' : 'Registrati'} come {userType === 'customer' ? 'Cliente' : 'Negoziante'}
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Google Login */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
+
+            {/* Google Sign In */}
+            <Button 
               onClick={handleGoogleAuth}
               disabled={isLoading}
+              className={`w-full py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 ${
+                userType === 'customer'
+                  ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+              }`}
             >
-              <i className="fab fa-google mr-2"></i>
-              {isLogin ? 'Accedi' : 'Registrati'} con Google
+              {isLoading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin mr-3"></i>
+                  Accesso in corso...
+                </>
+              ) : (
+                <>
+                  <i className="fab fa-google mr-3"></i>
+                  {isLogin ? 'Accedi' : 'Registrati'} con Google
+                </>
+              )}
             </Button>
 
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-300" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">oppure</span>
+                <span className="bg-white px-4 text-slate-500 font-medium">oppure</span>
               </div>
             </div>
+          </CardHeader>
 
-            {/* Email/Password Form */}
+          <CardContent>
             <form onSubmit={handleEmailAuth} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
                   Email
                 </label>
                 <Input
+                  id="email"
                   type="email"
+                  placeholder="la-tua-email@esempio.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tua@email.com"
                   required
-                  disabled={isLoading}
+                  className="h-12 text-lg border-slate-300 focus:border-slate-500 focus:ring-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
                   Password
                 </label>
                 <Input
+                  id="password"
                   type="password"
+                  placeholder="La tua password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
                   required
-                  minLength={6}
-                  disabled={isLoading}
+                  className="h-12 text-lg border-slate-300 focus:border-slate-500 focus:ring-slate-500"
                 />
-                {!isLogin && (
-                  <p className="text-xs text-slate-500 mt-1">Minimo 6 caratteri</p>
-                )}
               </div>
 
-              <Button
+              <Button 
                 type="submit"
-                className={`w-full ${
-                  userType === 'customer' 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
                 disabled={isLoading}
+                className={`w-full py-3 text-lg font-semibold transition-all duration-200 ${
+                  userType === 'customer'
+                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                } shadow-lg hover:shadow-xl`}
               >
                 {isLoading ? (
                   <>
@@ -197,80 +237,55 @@ export default function Auth() {
                   </>
                 ) : (
                   <>
-                    {isLogin ? 'Accedi' : 'Registrati'}
+                    <i className={`fas ${isLogin ? 'fa-sign-in-alt' : 'fa-user-plus'} mr-2`}></i>
+                    {isLogin ? 'Accedi' : 'Crea Account'}
                   </>
                 )}
               </Button>
             </form>
 
             {/* Toggle Login/Register */}
-            <div className="text-center">
-              <Button
+            <div className="mt-6 text-center">
+              <button
                 type="button"
-                variant="link"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-slate-600 hover:text-slate-900"
-                disabled={isLoading}
+                className="text-sm text-slate-600 hover:text-slate-900 transition-colors duration-200"
               >
-                {isLogin 
-                  ? "Non hai un account? Registrati" 
-                  : "Hai già un account? Accedi"
-                }
-              </Button>
-            </div>
-
-            {/* Password Reset */}
-            {isLogin && (
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={async () => {
-                    if (!email) {
-                      toast({
-                        title: "Email richiesta",
-                        description: "Inserisci la tua email per reimpostare la password",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    try {
-                      await authService.resetPassword(email);
-                      toast({
-                        title: "Email inviata",
-                        description: "Controlla la tua email per reimpostare la password",
-                      });
-                    } catch (error: any) {
-                      toast({
-                        title: "Errore",
-                        description: error.message,
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="text-xs text-slate-500 hover:text-slate-700"
-                  disabled={isLoading}
-                >
-                  Password dimenticata?
-                </Button>
-              </div>
-            )}
-
-            {/* Back to home */}
-            <div className="text-center pt-4 border-t border-slate-200">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setLocation("/")}
-                className="text-slate-600 hover:text-slate-900"
-                disabled={isLoading}
-              >
-                <i className="fas fa-arrow-left mr-2"></i>
-                Torna alla home
-              </Button>
+                {isLogin ? (
+                  <>
+                    Non hai un account?{' '}
+                    <span className={`font-semibold ${
+                      userType === 'customer' ? 'text-green-600 hover:text-green-700' : 'text-blue-600 hover:text-blue-700'
+                    }`}>
+                      Registrati
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Hai già un account?{' '}
+                    <span className={`font-semibold ${
+                      userType === 'customer' ? 'text-green-600 hover:text-green-700' : 'text-blue-600 hover:text-blue-700'
+                    }`}>
+                      Accedi
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Link indietro */}
+        <div className="text-center mt-6">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="text-slate-600 hover:text-slate-900 transition-colors duration-200"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>
+            Torna alla Home
+          </Button>
+        </div>
       </div>
     </div>
   );

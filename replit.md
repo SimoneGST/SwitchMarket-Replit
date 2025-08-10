@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Landing e Auth Rinnovate (10/08/2025)
+- **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
+- **Hero Section Impatto**: "Il Prodotto che Cerchi, Ora" - titolo più diretto e convincente
+- **Cards Interattive**: Effetti hover e trasformazioni per cliente/negoziante
+- **Autenticazione Ridisegnata**: Form più eleganti con gradienti e feedback visivi migliori
+- **UX Migliorata**: Selezione tipo utente più intuitiva e visual feedback chiari
+- **API Key Risolto**: Configurato VITE_GEMINI_API_KEY per frontend Clemente AI
+- **Design System**: Colori brand green/blue con gradienti e ombre professionali
+
 ### Migrazione Completa a Firebase (10/08/2025)
 - **Migrazione Backend**: Convertita tutta l'architettura da PostgreSQL + Replit Auth a Firebase
 - **Firebase Authentication**: Sostituita Replit Auth con Firebase Auth + Google OAuth
