@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Requests are readable by everyone, writable by owner
+    match /requests/{requestId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (resource == null || resource.data.buyerId == request.auth.uid);
+    }
+    
+    // Offers are readable by request owner and offer creator
+    match /offers/{offerId} {
+      allow read: if request.auth != null && 
+        (resource.data.sellerId == request.auth.uid || 
+         get(/databases/$(database)/documents/requests/$(resource.data.requestId)).data.buyerId == request.auth.uid);
+      allow write: if request.auth != null && resource.data.sellerId == request.auth.uid;
+    }
+    
+    // Conversations are readable by participants
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null && 
+        (resource.data.buyerId == request.auth.uid || 
+         resource.data.sellerId == request.auth.uid);
+    }
+    
+    // Messages are readable by conversation participants
+    match /conversations/{conversationId}/messages/{messageId} {
+      allow read, write: if request.auth != null && 
+        (get(/databases/$(database)/documents/conversations/$(conversationId)).data.buyerId == request.auth.uid || 
+         get(/databases/$(database)/documents/conversations/$(conversationId)).data.sellerId == request.auth.uid);
+    }
+    
+    // Products are readable by everyone, writable by owner
+    match /products/{productId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Integrations are private to owner
+    match /integrations/{integrationId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Copilot configs are private to owner
+    match /copilotConfigs/{configId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Copilot sessions are readable by merchant and customer
+    match /copilotSessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        (resource.data.merchantId == request.auth.uid || 
+         resource.data.customerId == request.auth.uid);
+    }
+  }
+}

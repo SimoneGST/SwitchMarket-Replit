@@ -24,7 +24,14 @@ export default function HowItWorks() {
             </div>
             <div className="flex items-center">
               <Button 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={async () => {
+                  const { authService } = await import("@/lib/auth");
+                  try {
+                    await authService.signInWithGoogle();
+                  } catch (error) {
+                    console.error("Login failed:", error);
+                  }
+                }}
                 className="bg-primary hover:bg-primary/90"
               >
                 <i className="fab fa-google mr-2"></i>
@@ -258,7 +265,14 @@ export default function HowItWorks() {
           </p>
           <Button 
             size="lg"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={async () => {
+              const { authService } = await import("@/lib/auth");
+              try {
+                await authService.signInWithGoogle();
+              } catch (error) {
+                console.error("Login failed:", error);
+              }
+            }}
             className="bg-primary hover:bg-primary/90 text-lg px-12 py-6"
           >
             <i className="fab fa-google mr-2"></i>
