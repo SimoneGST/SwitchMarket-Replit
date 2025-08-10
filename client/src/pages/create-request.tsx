@@ -176,9 +176,14 @@ export default function CreateRequest() {
     setRequestData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Scroll automatico quando cambiano i messaggi
+  // Scroll automatico solo per l'area messaggi della chat
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      const chatContainer = messagesEndRef.current.closest('.overflow-y-auto');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
   };
 
   useEffect(() => {
