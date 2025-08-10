@@ -386,9 +386,9 @@ export default function CreateRequest() {
                 <div className="h-96 overflow-y-auto border rounded-lg p-4 mb-4 bg-slate-50">
                   {chatMessages.length === 0 && (
                     <div className="text-center text-slate-500 mt-20">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 p-2">
+                      <div className="w-20 h-24 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 p-2">
                         <img 
-                          src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                          src="/attached_assets/clemente a busto intero_1754847733100.png" 
                           alt="Clemente AI" 
                           className="w-full h-full object-contain"
                         />

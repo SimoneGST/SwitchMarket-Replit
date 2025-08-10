@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Clemente AI con Supporto Vocale Completo (10/08/2025)
+### Clemente AI con Supporto Vocale Completo e Immagine Aggiornata (10/08/2025)
 - **Esperienza Vocale Completa**: Clemente ora parla usando Text-to-Speech italiano
 - **Modalità Conversazione**: Chat hands-free per creazione richieste completamente vocali
 - **Controlli Vocali**: Pulsanti per attivare/disattivare voce e modalità vocale continua
@@ -26,6 +26,7 @@ Preferred communication style: Simple, everyday language.
 - **Context Awareness**: Sa di essere su Switch Market, non chiede dove fare shopping
 - **Efficienza**: Raccoglie info essenziali senza essere verboso
 - **Pulsanti Chat Visibili**: Allegati (📎), microfono (🎤) e invio (✈️) ora chiaramente visibili
+- **Immagine Clemente Aggiornata**: Usata immagine a busto intero nella chat iniziale per maggiore presenza
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
