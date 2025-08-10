@@ -208,6 +208,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Genera richiesta dalla conversazione con Clemente
+  app.post("/api/clemente/generate-request", async (req, res) => {
+    try {
+      const { conversationHistory } = req.body;
+      const { clementeAI } = await import('./clemente');
+      
+      if (!conversationHistory || !Array.isArray(conversationHistory)) {
+        return res.status(400).json({ error: 'Cronologia conversazione richiesta' });
+      }
+      
+      const requestData = await clementeAI.generateRequestFromChat(conversationHistory);
+      
+      if (!requestData) {
+        return res.status(400).json({ error: 'Non riesco a generare una richiesta dalla conversazione' });
+      }
+      
+      res.json({ requestData });
+    } catch (error: any) {
+      console.error('Errore generazione richiesta da chat:', error);
+      res.status(500).json({ error: error.message || 'Errore interno del server' });
+    }
+  });
+
   // Leonardo AI endpoint for merchants
   app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
     try {

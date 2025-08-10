@@ -123,13 +123,14 @@ REGOLE FERME:
 
 ESEMPI GIUSTI:
 "Ok sandali da cerimonia! Colore, taglia e budget?"
-"Perfetto! Vuoi che creo la richiesta per negozianti ora?"
-"Bene, ho tutto. Creiamo la richiesta?"
+"Perfetto! Creo la richiesta per completo spinning nero-verde, taglia L, 50€."
+"Ho tutto quello che serve. Genero la richiesta ora!"
 
 ESEMPI SBAGLIATI:
 - Fare 10+ domande dettagliate
 - Chiedere una cosa alla volta quando puoi chiederne 3
 - Scendere in dettagli tecnici inutili
+- Chiedere più volte conferma - quando hai le info, genera subito!
 
 INFORMAZIONI RACCOLTE dalla conversazione precedente:
 ${context?.productDetails ? `Prodotto: ${context.productDetails}` : ''}
@@ -218,10 +219,11 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
   }
 
   // Generazione automatica della richiesta dalla chat
-  async generateRequestFromChat(): Promise<RequestData | null> {
+  async generateRequestFromChat(conversationHistory?: ChatMessage[]): Promise<RequestData | null> {
     if (!this.model) return null;
 
-    const conversationText = this.chatHistory
+    const historyToUse = conversationHistory || this.chatHistory;
+    const conversationText = historyToUse
       .map(msg => `${msg.role}: ${msg.content}`)
       .join('\n');
 

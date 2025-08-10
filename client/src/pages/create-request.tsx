@@ -156,6 +156,16 @@ export default function CreateRequest() {
       
       setChatMessages(prev => [...prev, assistantMessage]);
       
+      // Auto-genera la richiesta se Clemente chiede conferma finale per creare la richiesta
+      if (responseText.toLowerCase().includes('creiamo la richiesta') || 
+          responseText.toLowerCase().includes('crei la richiesta') ||
+          responseText.toLowerCase().includes('genero la richiesta')) {
+        // Attendi un momento per dare tempo all'utente di vedere la conferma
+        setTimeout(() => {
+          handleGenerateFromChat();
+        }, 1000);
+      }
+      
       // Far parlare Clemente se la voce è abilitata
       if (voiceSettings.voiceEnabled) {
         setTimeout(() => {
@@ -177,19 +187,27 @@ export default function CreateRequest() {
   // Genera richiesta dalla chat
   const handleGenerateFromChat = async () => {
     try {
-      const generated = await clemente.generateRequestFromChat();
-      if (generated) {
-        setRequestData(generated);
+      const apiResponse = await apiRequest("POST", "/api/clemente/generate-request", {
+        conversationHistory: chatMessages
+      });
+      
+      const response = await apiResponse.json();
+      
+      if (response.requestData) {
+        setRequestData(response.requestData);
         setMode('manual');
         toast({
           title: "Richiesta generata dalla chat!",
           description: "Clemente ha estratto tutte le informazioni dalla conversazione.",
         });
+      } else {
+        throw new Error('Dati richiesta non validi');
       }
     } catch (error) {
+      console.error('Errore generazione da chat:', error);
       toast({
-        title: "Errore",
-        description: "Impossibile generare la richiesta dalla chat",
+        title: "Errore generazione",
+        description: "Non riesco a generare la richiesta dalla chat. Prova la modalità manuale.",
         variant: "destructive",
       });
     }
