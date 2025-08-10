@@ -1,10 +1,30 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { authService } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Header() {
   const [location] = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await authService.signOut();
+      toast({
+        title: "Disconnesso",
+        description: "Sei stato disconnesso con successo",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Errore",
+        description: "Errore durante la disconnessione",
+        variant: "destructive",
+      });
+    }
+  };
 
   const isActive = (path: string) => location === path;
   
@@ -19,7 +39,15 @@ export default function Header() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <i className={`fas fa-exchange-alt ${primaryColor} text-2xl mr-2`}></i>
+              <img 
+                src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                alt="Switch Market Logo" 
+                className="h-8 w-auto mr-3"
+                onError={(e) => {
+                  console.error('Logo failed to load in header:', e);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
               <span className="text-xl font-bold text-slate-900">Switch Market</span>
             </Link>
             <div className="hidden md:ml-10 md:flex space-x-8">
@@ -86,7 +114,7 @@ export default function Header() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={handleLogout}
               >
                 <i className="fas fa-sign-out-alt mr-1"></i>
                 Esci

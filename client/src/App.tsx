@@ -32,32 +32,56 @@ function Router() {
     <div className="min-h-full">
       {isAuthenticated && !needsOnboarding && <Header />}
       <Switch>
-        {isLoading || !isAuthenticated ? (
-          <>
-            <Route path="/" component={Landing} />
-            <Route path="/how-it-works" component={HowItWorks} />
-            <Route path="/auth" component={Auth} />
-          </>
-        ) : needsOnboarding ? (
-          <Route path="/" component={Onboarding} />
+        {isLoading ? (
+          <Route path="*">
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full" />
+            </div>
+          </Route>
         ) : (
           <>
-            {user?.userType === 'customer' ? (
-              <Route path="/" component={CustomerDashboard} />
-            ) : (
-              <Route path="/" component={MerchantDashboard} />
+            {/* Public routes - always accessible */}
+            <Route path="/landing" component={Landing} />
+            <Route path="/how-it-works" component={HowItWorks} />
+            <Route path="/auth" component={Auth} />
+            
+            {/* Root route logic */}
+            <Route path="/">
+              {!isAuthenticated ? (
+                <Landing />
+              ) : needsOnboarding ? (
+                <Onboarding />
+              ) : user?.userType === 'customer' ? (
+                <CustomerDashboard />
+              ) : (
+                <MerchantDashboard />
+              )}
+            </Route>
+            
+            {/* Authenticated routes */}
+            {isAuthenticated && !needsOnboarding && (
+              <>
+                <Route path="/dashboard">
+                  {user?.userType === 'customer' ? (
+                    <CustomerDashboard />
+                  ) : (
+                    <MerchantDashboard />
+                  )}
+                </Route>
+                <Route path="/browse" component={BrowseRequests} />
+                <Route path="/create" component={CreateRequest} />
+                <Route path="/integration-setup" component={IntegrationSetup} />
+                <Route path="/copilot-dashboard" component={CopilotDashboard} />
+                <Route path="/profile-verification" component={ProfileVerification} />
+                <Route path="/customer-profile" component={CustomerProfile} />
+                <Route path="/merchant-profile" component={MerchantProfile} />
+                <Route path="/messages" component={Messages} />
+              </>
             )}
-            <Route path="/browse" component={BrowseRequests} />
-            <Route path="/create" component={CreateRequest} />
-            <Route path="/integration-setup" component={IntegrationSetup} />
-            <Route path="/copilot-dashboard" component={CopilotDashboard} />
-            <Route path="/profile-verification" component={ProfileVerification} />
-            <Route path="/customer-profile" component={CustomerProfile} />
-            <Route path="/merchant-profile" component={MerchantProfile} />
-            <Route path="/messages" component={Messages} />
+            
+            <Route component={NotFound} />
           </>
         )}
-        <Route component={NotFound} />
       </Switch>
       {isAuthenticated && !needsOnboarding && <MobileNav />}
     </div>
