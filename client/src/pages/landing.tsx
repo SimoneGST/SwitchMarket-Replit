@@ -19,18 +19,12 @@ export default function Landing() {
               <Button 
                 variant="outline"
                 size="sm"
-                onClick={async () => {
-                  const { authService } = await import("@/lib/auth");
-                  try {
-                    await authService.signInWithGoogle();
-                  } catch (error) {
-                    console.error("Login failed:", error);
-                    alert("Errore durante il login. Riprova.");
-                  }
+                onClick={() => {
+                  window.location.href = "/auth";
                 }}
                 className="border-slate-300 text-slate-700 hover:bg-slate-100"
               >
-                <i className="fab fa-google mr-2"></i>
+                <i className="fas fa-sign-in-alt mr-2"></i>
                 Accedi
               </Button>
             </div>
@@ -60,18 +54,9 @@ export default function Landing() {
                 </div>
                 <Button 
                   size="lg"
-                  onClick={async () => {
-                    const { authService } = await import("@/lib/auth");
-                    try {
-                      const user = await authService.signInWithGoogle();
-                      if (user) {
-                        // Set user type as customer after login
-                        localStorage.setItem('pendingUserType', 'customer');
-                      }
-                    } catch (error) {
-                      console.error("Login failed:", error);
-                      alert("Errore durante il login. Riprova.");
-                    }
+                  onClick={() => {
+                    localStorage.setItem('pendingUserType', 'customer');
+                    window.location.href = "/auth";
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
@@ -91,18 +76,9 @@ export default function Landing() {
                 </div>
                 <Button 
                   size="lg"
-                  onClick={async () => {
-                    const { authService } = await import("@/lib/auth");
-                    try {
-                      const user = await authService.signInWithGoogle();
-                      if (user) {
-                        // Set user type as merchant after login
-                        localStorage.setItem('pendingUserType', 'merchant');
-                      }
-                    } catch (error) {
-                      console.error("Login failed:", error);
-                      alert("Errore durante il login. Riprova.");
-                    }
+                  onClick={() => {
+                    localStorage.setItem('pendingUserType', 'merchant');
+                    window.location.href = "/auth";
                   }}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >

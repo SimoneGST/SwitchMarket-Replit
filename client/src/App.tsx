@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import HowItWorks from "@/pages/how-it-works";
+import Auth from "@/pages/auth";
 import Onboarding from "@/pages/onboarding";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
@@ -35,6 +36,7 @@ function Router() {
           <>
             <Route path="/" component={Landing} />
             <Route path="/how-it-works" component={HowItWorks} />
+            <Route path="/auth" component={Auth} />
           </>
         ) : needsOnboarding ? (
           <Route path="/" component={Onboarding} />
