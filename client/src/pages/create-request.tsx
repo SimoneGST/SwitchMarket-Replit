@@ -41,6 +41,11 @@ export default function CreateRequest() {
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: RequestData) => {
+      // Prima di creare la richiesta, verifica che il profilo sia completo
+      const profile: any = await apiRequest("GET", "/api/profile");
+      if (!profile || !profile.firstName || !profile.lastName || !profile.city || !profile.phone) {
+        throw new Error("Devi completare il profilo prima di pubblicare una richiesta");
+      }
       return apiRequest("POST", "/api/requests", data);
     },
     onSuccess: () => {
@@ -52,11 +57,29 @@ export default function CreateRequest() {
       setLocation("/");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Errore",
-        description: error.message || "Impossibile creare la richiesta",
-        variant: "destructive",
-      });
+      if (error.message.includes("completare il profilo")) {
+        toast({
+          title: "Profilo incompleto",
+          description: error.message,
+          variant: "destructive",
+          action: (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation("/profile-verification")}
+              className="ml-2"
+            >
+              Completa Profilo
+            </Button>
+          ),
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: error.message || "Impossibile creare la richiesta",
+          variant: "destructive",
+        });
+      }
     },
   });
 

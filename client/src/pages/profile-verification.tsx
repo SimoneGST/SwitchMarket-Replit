@@ -172,30 +172,32 @@ export default function ProfileVerification() {
             <CardTitle>Tipo di Account</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                variant={userType === 'customer' ? 'default' : 'outline'}
-                onClick={() => setUserType('customer')}
-                className={`h-20 ${userType === 'customer' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-              >
-                <div className="text-center">
-                  <User className="w-6 h-6 mx-auto mb-2" />
-                  <div className="font-semibold">Cliente</div>
-                  <div className="text-xs opacity-80">Cerco prodotti e servizi</div>
+            <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  userType === 'customer' ? 'bg-green-100' : 'bg-blue-100'
+                }`}>
+                  {userType === 'customer' ? (
+                    <User className={`w-6 h-6 text-green-600`} />
+                  ) : (
+                    <Store className={`w-6 h-6 text-blue-600`} />
+                  )}
                 </div>
-              </Button>
-              
-              <Button
-                variant={userType === 'merchant' ? 'default' : 'outline'}
-                onClick={() => setUserType('merchant')}
-                className={`h-20 ${userType === 'merchant' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-              >
-                <div className="text-center">
-                  <Store className="w-6 h-6 mx-auto mb-2" />
-                  <div className="font-semibold">Negoziante</div>
-                  <div className="text-xs opacity-80">Vendo prodotti e servizi</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {userType === 'customer' ? 'Cliente' : 'Negoziante'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {userType === 'customer' 
+                      ? 'Cerchi prodotti e servizi nei negozi locali' 
+                      : 'Vendi prodotti e servizi nella tua zona'
+                    }
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Il tipo di account è stato scelto durante la registrazione e non può essere modificato
+                  </p>
                 </div>
-              </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
