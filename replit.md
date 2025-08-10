@@ -10,93 +10,44 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Visual Branding Completo e SEO Professionale (10/08/2025)
-- **Integrazione Logo Completa**: Logo Switch Market in header, landing, auth, mobile nav
-- **Assistenti AI Visibili**: Immagini Clemente (clienti) e Leonardo (negozianti) in tutte le pagine chiave
-- **Dashboard Branding**: Avatar assistenti nei header delle dashboard e nei messaggi di benvenuto
-- **Selezione Tipo Utente**: Immagini assistenti nelle cards di registrazione per identificazione visiva
-- **Pagine Informative**: Branding completo in "Come Funziona" e browse richieste
-- **Navigazione Mobile**: Logo in mobile nav per coerenza brand su mobile
-- **SEO Completo**: Meta tags ottimizzati per mercato italiano, keywords strategiche
-- **Structured Data**: Schema.org per WebApplication, LocalBusiness e Product 
-- **Open Graph**: Condivisioni social ottimizzate per Facebook, Twitter, LinkedIn
-- **Google Analytics**: Setup professionale con Enhanced E-commerce e conversion tracking
-- **Technical SEO**: Robots.txt, sitemap.xml, canonical URLs, favicon integrato
-- **Conversion Tracking**: Eventi personalizzati per customer/merchant journey
-- **Keywords Strategy**: Focus su "marketplace locale AI", "assistenti shopping", "negozi zona"
-- **Business Analytics**: Tracking ROI, lead generation, AI usage, geographic distribution
-- **Marketing Infrastructure**: Pronto per Google Search Console, Google Ads, content strategy
-- **Performance Monitoring**: Core Web Vitals, organic traffic, keyword rankings setup
-- **Local SEO Ready**: Schema per negozianti, Google Maps integration preparata
+### Branding e SEO Professionale (10/08/2025)
+- **Visual Identity**: Logo e assistenti AI integrati in tutte le pagine, mobile nav ottimizzato
+- **SEO Completo**: Meta tags italiani, Schema.org, Open Graph, robots.txt, sitemap
+- **Analytics Avanzato**: Google Analytics con Enhanced E-commerce, conversion tracking
+- **Marketing Ready**: Keywords strategy, ROI tracking, Google Search Console setup
+- **Performance**: Core Web Vitals monitoring, local SEO per negozianti
 
-### Clemente AI con Supporto Vocale Completo e Animazione di Introduzione (10/08/2025)
-- **Esperienza Vocale Completa**: Clemente ora parla usando Text-to-Speech italiano
-- **Modalità Conversazione**: Chat hands-free per creazione richieste completamente vocali
-- **Controlli Vocali**: Pulsanti per attivare/disattivare voce e modalità vocale continua
-- **Comandi Vocali Globali**: Sistema di comandi per navigazione e controllo app
-- **Indicatori Visivi**: Mostra quando Clemente sta parlando con animazioni
-- **Preparazione Smart Speakers**: Base per integrazione Google Assistant e Alexa
-- **Conversazione Naturale**: Risposte brevi e colloquiali, una domanda alla volta
-- **Approccio Educativo Bilanciato**: Spiega caratteristiche tecniche ma in modo conciso
-- **Generazione Richieste Complete**: Focus su specifiche dettagliate per i negozianti
-- **Chat Auto-Scroll**: Esperienza fluida senza scrolling manuale (implementato in entrambe le chat)
-- **Sistema Allegati Funzionante**: Upload e analisi immagini con Google Gemini
-- **Tono Amichevole**: Come un amico esperto, non un consulente formale
-- **Context Awareness**: Sa di essere su Switch Market, non chiede dove fare shopping
-- **Efficienza**: Raccoglie info essenziali senza essere verboso
-- **Pulsanti Chat Visibili**: Allegati (📎), microfono (🎤) e invio (✈️) ora chiaramente visibili
-- **Immagine Clemente Aggiornata**: Usata immagine a busto intero nella chat iniziale per maggiore presenza
-- **Animazione di Introduzione**: Al primo login si attiva automaticamente l'animazione di presentazione di Clemente
-- **Controllo Utente Animazioni**: Pulsante "Non mostrare più" per disabilitare permanentemente l'introduzione
-- **Gestione Preferenze Persistente**: Sistema localStorage per ricordare le preferenze utente sulle animazioni
+### Clemente AI con Supporto Vocale e Animazioni (10/08/2025)
+- **Interfaccia Vocale**: Text-to-Speech italiano, chat hands-free, controlli vocali
+- **Navigazione Vocale**: Comandi globali per controllo app, preparazione smart speakers
+- **Conversazione Naturale**: Risposte concise, una domanda alla volta, tono amichevole
+- **Generazione Richieste**: Specifiche dettagliate per negozianti, approccio educativo bilanciato
+- **UX Ottimizzata**: Auto-scroll chat, pulsanti visibili, allegati con analisi Gemini
+- **Animazioni Introduttive**: Al primo accesso, controllo utente "Non mostrare più"
+- **Gestione Preferenze**: Sistema localStorage persistente per scelte utente
 
 ### Landing e Auth Rinnovate (10/08/2025)
-- **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
-- **Hero Section Impatto**: "Il Prodotto che Cerchi, Ora" - titolo più diretto e convincente
-- **Cards Interattive**: Effetti hover e trasformazioni per cliente/negoziante
-- **Autenticazione Ridisegnata**: Form più eleganti con gradienti e feedback visivi migliori
-- **UX Migliorata**: Selezione tipo utente più intuitiva e visual feedback chiari
-- **API Key Risolto**: Configurato VITE_GEMINI_API_KEY per frontend Clemente AI
-- **Design System**: Colori brand green/blue con gradienti e ombre professionali
+- **Design Moderno**: Gradienti, animazioni, cards interattive con effetti hover
+- **UX Migliorata**: Selezione utente intuitiva, form eleganti, feedback visivi
+- **Integrazione API**: VITE_GEMINI_API_KEY configurato, design system green/blue
 
-### Migrazione Completa a Firebase (10/08/2025)
-- **Migrazione Backend**: Convertita tutta l'architettura da PostgreSQL + Replit Auth a Firebase
-- **Firebase Authentication**: Sostituita Replit Auth con Firebase Auth + Google OAuth
-- **Cloud Firestore**: Migrato da PostgreSQL a Firestore per scalabilità e real-time
-- **Firebase Functions**: Backend serverless al posto di Express.js tradizionale
-- **Firebase Storage**: Gestione file e media con regole di sicurezza avanzate
-- **Firestore Security Rules**: Implementate regole granulari per protezione dati
-- **Real-time Updates**: Chat e notifiche ora supportano aggiornamenti in tempo reale
-- **Pagina "Come Funziona"**: Creata pagina informativa completa accessibile dalla landing
-- **Deploy Automatico**: Configurato deployment su Firebase Hosting con CDN globale
-- **Documentazione**: Aggiunta guida completa setup Firebase (FIREBASE_SETUP.md)
-- **Login Page Aggiornata**: Implementata con colori distintivi verde (clienti) e blu (negozianti)
-- **Google OAuth Configurato**: Autenticazione Google pronta per deploy su dominio pubblico
-- **Build Completato**: App pronta per deployment con Firebase hosting integrato
+### Migrazione Firebase (10/08/2025)
+- **Architettura**: Da PostgreSQL/Replit Auth a Firebase completo (Auth, Firestore, Functions, Storage)
+- **Real-time**: Chat e notifiche con aggiornamenti istantanei
+- **Security**: Firestore Security Rules granulari, Google OAuth configurato
+- **Deploy Ready**: Firebase Hosting con CDN, documentazione setup completa
 
-### Funzionalità Precedenti (09/08/2025)
-- Aggiunto campo `actionRadius` alle richieste per specificare il raggio massimo di spostamento (in km)
-- Aggiunto campo `deliveryPreference` con opzioni: pickup (ritiro), delivery (spedizione), both (entrambe)
-- **Nuovo**: Aggiunto campo `urgencyLevel` per gradi di urgenza nelle spedizioni: 24h, 48h, few_days
-- **Logica migliorata**: Raggio di azione si applica SOLO al ritiro, non alla spedizione a casa
-- Interfaccia utente aggiornata per gestire logica condizionale tra ritiro e spedizione
-- Sistema di onboarding completato per distinguere clienti e negozianti
-- **Integrazione AI avanzata**: Clemente ora usa Google Gemini per conversazioni naturali e specifiche tecniche
-- **Leonardo AI**: Nuovo assistente per negozianti con consigli su prezzi e strategie di vendita
-- API Gemini configurata per analisi intelligente delle richieste e estrazione dati strutturati
-- **Upload File**: Pulsante allega per inoltrare foto e documenti agli assistenti AI
-- **Comandi Vocali**: Microfono integrato per dettare messaggi usando riconoscimento vocale italiano
-- **Sistema Integrazioni Gestionali**: Connessione con i maggiori software gestionali italiani
-- **Supporto Fatture in Cloud**: API completa per sincronizzazione prodotti e giacenze
-- **Supporto Danea EasyFatt**: Integrazione con gestionale desktop via API REST  
-- **Supporto TeamSystem**: Connessione con suite gestionale enterprise
-- **Sincronizzazione Automatica**: Aggiornamento prodotti in tempo reale o programmato
-- **Pulsante "Collega Gestionale"**: Accesso diretto dalla dashboard negoziante
-- **Copilot Leonardo Completo**: Servizio AI per assistere i negozianti nella gestione clienti
-- **Dashboard Copilot Avanzata**: Configurazione personalità AI, orari operativi, statistiche conversazioni
-- **Chat Leonardo Integrata**: Interfaccia completa con riconoscimento vocale e supporto allegati
-- **API Copilot Complete**: Gestione sessioni, messaggi automatici e analisi conversazioni
-- **Collegamento Dashboard**: Accesso rapido al copilot dalla dashboard negoziante
+### Funzionalità Avanzate (09/08/2025)
+- **Geolocalizzazione**: actionRadius, deliveryPreference (pickup/delivery/both), urgencyLevel
+- **AI Assistenti**: Clemente (clienti) e Leonardo (negozianti) con Google Gemini
+- **Integrazione Vocale**: Riconoscimento vocale italiano, upload file e documenti
+- **Gestionali Italiani**: Fatture in Cloud, Danea EasyFatt, TeamSystem con sync automatica
+- **Copilot Leonardo**: Dashboard avanzata, configurazione personalità, chat integrata, analytics
+
+### Ottimizzazioni Recenti (10/08/2025)
+- **Asset Management**: Foto profilo per elementi piccoli, busto intero solo per animazioni introduttive
+- **Consistenza Visiva**: Standardizzazione immagini assistenti AI in tutta l'applicazione
+- **Performance**: Ridotte ripetizioni documentazione, codice più pulito e manutenibile
 
 ## System Architecture
 
