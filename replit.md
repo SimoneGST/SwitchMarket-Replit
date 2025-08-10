@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 - **Conversazione Naturale**: Risposte brevi e colloquiali, una domanda alla volta
 - **Approccio Educativo Bilanciato**: Spiega caratteristiche tecniche ma in modo conciso
 - **Generazione Richieste Complete**: Focus su specifiche dettagliate per i negozianti
-- **Chat Auto-Scroll**: Esperienza fluida senza scrolling manuale
+- **Chat Auto-Scroll**: Esperienza fluida senza scrolling manuale (implementato in entrambe le chat)
 - **Sistema Allegati Funzionante**: Upload e analisi immagini con Google Gemini
 - **Tono Amichevole**: Come un amico esperto, non un consulente formale
 - **Context Awareness**: Sa di essere su Switch Market, non chiede dove fare shopping

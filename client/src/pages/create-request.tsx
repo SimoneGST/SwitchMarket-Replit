@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +30,7 @@ export default function CreateRequest() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isClementeTyping, setIsClementeTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Dati della richiesta
   const [requestData, setRequestData] = useState<Partial<RequestData>>({
@@ -175,6 +176,15 @@ export default function CreateRequest() {
     setRequestData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Scroll automatico quando cambiano i messaggi
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages, isClementeTyping]);
+
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -290,6 +300,9 @@ export default function CreateRequest() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Elemento per scroll automatico */}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input chat */}
