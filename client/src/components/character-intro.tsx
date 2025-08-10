@@ -32,7 +32,7 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
       name: "Leonardo",
       color: "blue", 
       bgGradient: "from-blue-500 to-blue-600",
-      avatar: "/attached_assets/leonardo_avatar_1754845138372.png",
+      avatar: "/attached_assets/leonardo_avatar_1754851387216.png",
       role: "Assistente AI per Negozianti",
       messages: [
         "Benvenuto! Sono Leonardo, il tuo copilot per le vendite.",
@@ -134,7 +134,7 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
               className="w-48 h-48 mx-auto mb-4 flex items-center justify-center"
             >
               <motion.img
-                src={isClemente ? "/attached_assets/clemente a busto intero_1754847733100.png" : char.avatar}
+                src={isClemente ? "/attached_assets/clemente a busto intero_1754847733100.png" : "/attached_assets/leonardo_avatar_1754851387216.png"}
                 alt={char.name}
                 className="w-full h-full object-contain"
                 animate={{ 

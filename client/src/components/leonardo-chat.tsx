@@ -176,7 +176,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
           <CardHeader className="border-b bg-blue-50">
             <CardTitle className="flex items-center gap-2 text-blue-600">
               <img 
-                src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                 alt="Leonardo AI" 
                 className="w-5 h-5"
               />
@@ -205,7 +205,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
                     <User className="w-4 h-4" />
                   ) : (
                     <img 
-                      src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                      src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                       alt="Leonardo AI" 
                       className="w-4 h-4 object-contain"
                     />
@@ -238,7 +238,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="bg-blue-100 text-blue-600 p-1">
                   <img 
-                    src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                    src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                     alt="Leonardo AI" 
                     className="w-full h-full object-contain"
                   />
