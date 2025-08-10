@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,12 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [chatContext, setChatContext] = useState({});
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll quando arrivano nuovi messaggi
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const chatMutation = useMutation({
     mutationFn: async ({ message, attachedFile }: { message: string, attachedFile?: { url: string, name: string, type: string } }) => {
@@ -191,6 +197,9 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
             </div>
           </div>
         )}
+        
+        {/* Elemento invisibile per l'auto-scroll */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Chat Input */}

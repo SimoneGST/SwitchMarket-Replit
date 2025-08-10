@@ -104,12 +104,9 @@ class ClementeAI {
         const prompt = `Genera un'immagine di esempio per aiutare l'utente a visualizzare: ${description}. 
         L'immagine deve essere chiara, professionale e utile per identificare il prodotto.`;
 
-        const result = await model.generateContent({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          config: {
-            responseModalities: ['TEXT', 'IMAGE']
-          }
-        });
+        const result = await model.generateContent([
+          prompt
+        ]);
 
         const candidates = result.candidates;
         if (candidates && candidates[0]?.content?.parts) {
@@ -145,21 +142,24 @@ class ClementeAI {
       fileType: attachedFile?.type.startsWith('image/') ? 'image' : 'document'
     });
 
-    const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market che aiuta i clienti a specificare le loro richieste di prodotti.
+    const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market, una piattaforma che connette clienti con negozianti locali.
 
-Obiettivo: Aiutare l'utente a creare richieste dettagliate e precise per trovare esattamente quello che cerca.
+IMPORTANTE: Switch Market è un marketplace locale dove i negozianti della zona rispondono alle richieste dei clienti. Non devi mai chiedere dove fare shopping perché i negozianti locali contatteranno il cliente direttamente.
+
+Obiettivo: Aiutare l'utente a creare richieste dettagliate per i negozianti locali che possono fornire il prodotto.
 
 Comportamento:
 - Fai UNA domanda specifica alla volta per ottenere dettagli
-- Risposte molto brevi: massimo 1-2 frasi
+- Risposte molto brevi: massimo 1-2 frasi  
 - Linguaggio naturale e amichevole
-- Concentrati su dettagli tecnici importanti (marca, modello, caratteristiche, budget, tempistiche)
-- Se hai abbastanza informazioni, proponi di creare la richiesta
+- Concentrati su: specifiche tecniche, budget, tempistiche di consegna, preferenze di ritiro/consegna
+- NON chiedere mai dove fare shopping - i negozianti locali risponderanno alla richiesta
+- Quando hai abbastanza dettagli, proponi di pubblicare la richiesta per i negozianti
 
 Cronologia conversazione:
 ${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 
-Rispondi al cliente in modo naturale e utile. Se hai abbastanza informazioni, proponi di generare la richiesta.`;
+Aiuta il cliente a specificare bene la richiesta per i negozianti locali.`;
 
     try {
       console.log('🤖 Clemente Server sta elaborando:', userMessage);
