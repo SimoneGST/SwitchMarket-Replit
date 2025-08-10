@@ -14,6 +14,8 @@ import { ClementeAI, type RequestData, type ChatMessage } from "@/lib/clemente";
 import CharacterIntro from "@/components/character-intro";
 import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 import AddressAutocomplete from "@/components/address-autocomplete";
+import VoiceSettings from "@/components/voice-settings";
+import { useVoiceSettings } from "@/hooks/useVoiceSettings";
 
 export default function CreateRequest() {
   const [, setLocation] = useLocation();
@@ -32,8 +34,11 @@ export default function CreateRequest() {
   const [chatInput, setChatInput] = useState("");
   const [isClementeTyping, setIsClementeTyping] = useState(false);
   const [isClementeSpeaking, setIsClementeSpeaking] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Hook per le impostazioni vocali
+  const { settings: voiceSettings, updateSettings: updateVoiceSettings, speakWithSettings } = useVoiceSettings();
 
   // Stati per geolocalizzazione
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
@@ -135,7 +140,7 @@ export default function CreateRequest() {
       setChatMessages(prev => [...prev, assistantMessage]);
       
       // Far parlare Clemente se la voce è abilitata
-      if (voiceEnabled) {
+      if (voiceSettings.voiceEnabled) {
         setTimeout(() => {
           const messageText = typeof response === 'string' ? response : (response?.text || '');
           speakClementeMessage(messageText);
@@ -237,39 +242,19 @@ export default function CreateRequest() {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
-  // Funzione per far parlare Clemente
-  const speakClementeMessage = (text: string) => {
-    if (!voiceEnabled || !('speechSynthesis' in window)) return;
-    
-    // Ferma eventuali discorsi in corso
-    speechSynthesis.cancel();
+  // Funzione per far parlare Clemente con le impostazioni personalizzate
+  const speakClementeMessage = async (text: string) => {
+    if (!voiceSettings.voiceEnabled) return;
     
     setIsClementeSpeaking(true);
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'it-IT';
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
-    
-    // Cerca una voce italiana maschile se disponibile
-    const voices = speechSynthesis.getVoices();
-    const italianVoice = voices.find(voice => 
-      voice.lang.includes('it') && voice.name.toLowerCase().includes('male')
-    ) || voices.find(voice => voice.lang.includes('it'));
-    
-    if (italianVoice) {
-      utterance.voice = italianVoice;
+    try {
+      await speakWithSettings(text, 'clemente');
+    } catch (error) {
+      console.error('Errore sintesi vocale:', error);
+    } finally {
+      setIsClementeSpeaking(false);
     }
-    
-    utterance.onend = () => {
-      setIsClementeSpeaking(false);
-    };
-    
-    utterance.onerror = () => {
-      setIsClementeSpeaking(false);
-    };
-    
-    speechSynthesis.speak(utterance);
   };
 
   // Comando vocale continuo per generazione richiesta
@@ -461,10 +446,19 @@ export default function CreateRequest() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setVoiceEnabled(!voiceEnabled)}
-                      className={voiceEnabled ? 'bg-green-50' : 'bg-slate-50'}
+                      onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                      className="bg-green-50"
                     >
-                      {voiceEnabled ? '🔊' : '🔇'}
+                      <i className="fas fa-cog mr-1"></i>
+                      Voce
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateVoiceSettings({...voiceSettings, voiceEnabled: !voiceSettings.voiceEnabled})}
+                      className={voiceSettings.voiceEnabled ? 'bg-green-50' : 'bg-slate-50'}
+                    >
+                      {voiceSettings.voiceEnabled ? '🔊' : '🔇'}
                     </Button>
                     <Button
                       variant="outline"
@@ -477,6 +471,17 @@ export default function CreateRequest() {
                   </div>
                 </CardTitle>
               </CardHeader>
+              
+              {/* Pannello Impostazioni Vocali */}
+              {showVoiceSettings && (
+                <div className="px-6 pb-4 border-b">
+                  <VoiceSettings 
+                    settings={voiceSettings}
+                    onSettingsChange={updateVoiceSettings}
+                  />
+                </div>
+              )}
+              
               <CardContent>
                 {/* Messaggi chat */}
                 <div className="h-96 overflow-y-auto border rounded-lg mb-4 bg-slate-50 flex flex-col">
