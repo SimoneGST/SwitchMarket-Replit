@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 interface CharacterIntroProps {
   character: 'clemente' | 'leonardo';
   onComplete: () => void;
+  onNeverShow?: () => void;
   show: boolean;
 }
 
-export default function CharacterIntro({ character, onComplete, show }: CharacterIntroProps) {
+export default function CharacterIntro({ character, onComplete, onNeverShow, show }: CharacterIntroProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [showDialog, setShowDialog] = useState(false);
 
@@ -64,7 +65,13 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
     }
   }, [showDialog, currentStep, char.messages.length]);
 
-  const handleSkip = () => {
+  const handleNeverShow = () => {
+    // Marca permanentemente per non mostrare più
+    const neverShowKey = `neverShowIntro_${character}`;
+    localStorage.setItem(neverShowKey, 'true');
+    if (onNeverShow) {
+      onNeverShow();
+    }
     onComplete();
   };
 
@@ -216,19 +223,19 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
           </AnimatePresence>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 relative z-10">
-            <Button
-              variant="outline"
-              onClick={handleSkip}
-              className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              Salta Intro
-            </Button>
+          <div className="flex flex-col gap-3 relative z-10">
             <Button
               onClick={handleContinue}
-              className={`flex-1 bg-white text-${char.color}-600 hover:bg-white/90`}
+              className={`bg-white text-${char.color}-600 hover:bg-white/90 font-semibold`}
             >
               {currentStep >= char.messages.length ? "Iniziamo!" : "Continua"}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleNeverShow}
+              className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+            >
+              Non mostrare più
             </Button>
           </div>
 

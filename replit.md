@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **Performance Monitoring**: Core Web Vitals, organic traffic, keyword rankings setup
 - **Local SEO Ready**: Schema per negozianti, Google Maps integration preparata
 
-### Clemente AI con Supporto Vocale Completo e Immagine Aggiornata (10/08/2025)
+### Clemente AI con Supporto Vocale Completo e Animazione di Introduzione (10/08/2025)
 - **Esperienza Vocale Completa**: Clemente ora parla usando Text-to-Speech italiano
 - **Modalità Conversazione**: Chat hands-free per creazione richieste completamente vocali
 - **Controlli Vocali**: Pulsanti per attivare/disattivare voce e modalità vocale continua
@@ -46,6 +46,9 @@ Preferred communication style: Simple, everyday language.
 - **Efficienza**: Raccoglie info essenziali senza essere verboso
 - **Pulsanti Chat Visibili**: Allegati (📎), microfono (🎤) e invio (✈️) ora chiaramente visibili
 - **Immagine Clemente Aggiornata**: Usata immagine a busto intero nella chat iniziale per maggiore presenza
+- **Animazione di Introduzione**: Al primo login si attiva automaticamente l'animazione di presentazione di Clemente
+- **Controllo Utente Animazioni**: Pulsante "Non mostrare più" per disabilitare permanentemente l'introduzione
+- **Gestione Preferenze Persistente**: Sistema localStorage per ricordare le preferenze utente sulle animazioni
 
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni

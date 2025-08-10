@@ -24,8 +24,8 @@ export default function CreateRequest() {
   const [mode, setMode] = useState<'chat' | 'manual'>('chat');
   const [clemente] = useState(() => new ClementeAI());
   
-  // Character intro state - non mostrato più qui dato che è nella dashboard
-  const { showIntro, completeIntro, startIntro } = useCharacterIntro('clemente');
+  // Character intro state - mostrato al primo accesso
+  const { showIntro, completeIntro } = useCharacterIntro('clemente');
   
   // Stati per chat con Clemente
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
