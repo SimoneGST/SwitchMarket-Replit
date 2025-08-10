@@ -15,6 +15,10 @@ export default function Landing() {
                   src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
                   alt="Switch Market Logo" 
                   className="h-10 w-auto mr-3"
+                  onError={(e) => {
+                    console.error('Logo failed to load:', e);
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <span className="text-2xl font-bold text-slate-900">
                   Switch Market
