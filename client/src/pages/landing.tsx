@@ -58,98 +58,68 @@ export default function Landing() {
             ti facciano la loro <strong>migliore offerta</strong>.
           </p>
 
-          <div className="flex flex-col lg:flex-row gap-8 justify-center items-center mb-16">
+          <div className="flex flex-row gap-4 md:gap-8 justify-center items-center mb-16 max-w-4xl mx-auto">
             {/* Cliente Card */}
-            <Card className="w-full max-w-sm transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100/50">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
-                  <i className="fas fa-shopping-cart text-white text-2xl"></i>
+            <Card className="flex-1 max-w-xs transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100/50">
+              <CardContent className="p-4 md:p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg overflow-hidden">
+                  <i className="fas fa-shopping-cart text-white text-xl"></i>
                 </div>
-                <h3 className="text-2xl font-bold text-green-800 mb-3">
+                <h3 className="text-lg md:text-xl font-bold text-green-800 mb-2">
                   Inizia come Acquirente
                 </h3>
-                <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center mb-3">
                   <img 
                     src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
-                    className="w-8 h-8 rounded-full mr-2 border-2 border-green-300"
+                    className="w-6 h-6 rounded-full mr-2 border border-green-300"
                   />
-                  <span className="text-green-800 font-semibold">Assistente Clemente</span>
+                  <span className="text-green-800 font-medium text-sm">Assistente Clemente</span>
                 </div>
-                <p className="text-green-700 mb-6 leading-relaxed">
-                  Trova prodotti e servizi nella tua zona con l'aiuto di Clemente AI
+                <p className="text-green-700 mb-4 text-sm leading-relaxed">
+                  Trova prodotti con l'aiuto di Clemente AI
                 </p>
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-green-600">
-                    <i className="fas fa-check-circle mr-2"></i>
-                    <span>È completamente gratuito</span>
-                  </div>
-                  <div className="flex items-center text-sm text-green-600">
-                    <i className="fas fa-robot mr-2"></i>
-                    <span>Assistente AI personalizzato</span>
-                  </div>
-                  <div className="flex items-center text-sm text-green-600">
-                    <i className="fas fa-clock mr-2"></i>
-                    <span>Risposta in pochi minuti</span>
-                  </div>
-                </div>
                 <Button 
-                  size="lg"
                   onClick={() => {
                     localStorage.setItem('pendingUserType', 'customer');
                     window.location.href = "/auth";
                   }}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-lg py-3"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm md:text-base py-2"
                 >
-                  <i className="fas fa-rocket mr-2"></i>
+                  <i className="fas fa-rocket mr-1"></i>
                   Inizia Gratis
                 </Button>
               </CardContent>
             </Card>
 
             {/* Negoziante Card */}
-            <Card className="w-full max-w-sm transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
-                  <i className="fas fa-store text-white text-2xl"></i>
+            <Card className="flex-1 max-w-xs transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
+              <CardContent className="p-4 md:p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg overflow-hidden">
+                  <i className="fas fa-store text-white text-xl"></i>
                 </div>
-                <h3 className="text-2xl font-bold text-blue-800 mb-3">
+                <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-2">
                   Sei un Negoziante?
                 </h3>
-                <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center mb-3">
                   <img 
                     src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                     alt="Leonardo AI" 
-                    className="w-8 h-8 rounded-full mr-2 border-2 border-blue-300"
+                    className="w-6 h-6 rounded-full mr-2 border border-blue-300"
                   />
-                  <span className="text-blue-800 font-semibold">Assistente Leonardo</span>
+                  <span className="text-blue-800 font-medium text-sm">Assistente Leonardo</span>
                 </div>
-                <p className="text-blue-700 mb-6 leading-relaxed">
-                  Ricevi richieste qualificate e aumenta le tue vendite locali
+                <p className="text-blue-700 mb-4 text-sm leading-relaxed">
+                  Ricevi richieste qualificate e aumenta le vendite
                 </p>
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-blue-600">
-                    <i className="fas fa-check-circle mr-2"></i>
-                    <span>Clienti già interessati</span>
-                  </div>
-                  <div className="flex items-center text-sm text-blue-600">
-                    <i className="fas fa-chart-line mr-2"></i>
-                    <span>Aumenta le vendite</span>
-                  </div>
-                  <div className="flex items-center text-sm text-blue-600">
-                    <i className="fas fa-handshake mr-2"></i>
-                    <span>Zero intermediari</span>
-                  </div>
-                </div>
                 <Button 
-                  size="lg"
                   onClick={() => {
                     localStorage.setItem('pendingUserType', 'merchant');
                     window.location.href = "/auth";
                   }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-lg py-3"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm md:text-base py-2"
                 >
-                  <i className="fas fa-store mr-2"></i>
+                  <i className="fas fa-store mr-1"></i>
                   Registra Negozio
                 </Button>
               </CardContent>
