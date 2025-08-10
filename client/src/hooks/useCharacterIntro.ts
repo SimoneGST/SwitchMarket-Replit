@@ -10,11 +10,13 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     const seen = localStorage.getItem(introKey) === 'true';
     setHasSeenIntro(seen);
     
-    // Always show intro when character component loads for a better experience
-    const timer = setTimeout(() => {
-      setShowIntro(true);
-    }, 500);
-    return () => clearTimeout(timer);
+    // Only show intro if not seen before
+    if (!seen) {
+      const timer = setTimeout(() => {
+        setShowIntro(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [character]);
 
   const completeIntro = () => {

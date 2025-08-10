@@ -16,6 +16,16 @@ export default function CustomerDashboard() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Character Introduction */}
+      {showIntro && (
+        <div className="fixed inset-0 z-50">
+          <CharacterIntro
+            character="clemente"
+            show={showIntro}
+            onComplete={completeIntro}
+          />
+        </div>
+      )}
       {/* Hero Section - Cliente (Verde) */}
       <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
         <div className="max-w-4xl">

@@ -24,7 +24,7 @@ export default function CreateRequest() {
   const [mode, setMode] = useState<'chat' | 'manual'>('chat');
   const [clemente] = useState(() => new ClementeAI());
   
-  // Character intro state
+  // Character intro state - non mostrato più qui dato che è nella dashboard
   const { showIntro, completeIntro, startIntro } = useCharacterIntro('clemente');
   
   // Stati per chat con Clemente
@@ -411,8 +411,6 @@ export default function CreateRequest() {
             variant={mode === 'chat' ? 'default' : 'ghost'}
             onClick={() => {
               setMode('chat');
-              // Avvia sempre l'introduzione quando si clicca su "Parla con Clemente"
-              startIntro();
               if (chatMessages.length === 0) {
                 addWelcomeMessage();
               }
@@ -442,20 +440,7 @@ export default function CreateRequest() {
         <div>
           {mode === 'chat' && (
             <>
-              {showIntro && (
-                <div className="mb-4">
-                  <CharacterIntro
-                    character="clemente"
-                    show={showIntro}
-                    onComplete={() => {
-                      completeIntro();
-                      addWelcomeMessage();
-                    }}
-                  />
-                </div>
-              )}
-              {!showIntro && (
-                <Card>
+              <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-green-700">
                   <div className="flex items-center">
@@ -641,7 +626,6 @@ export default function CreateRequest() {
                 )}
               </CardContent>
                 </Card>
-              )}
             </>
           )}
         </div>
