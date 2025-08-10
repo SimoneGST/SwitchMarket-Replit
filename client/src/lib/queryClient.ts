@@ -12,11 +12,23 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const { auth } = await import("./firebase");
+  const token = await auth.currentUser?.getIdToken();
+  
+  // Use Firebase Functions URL for production
+  const baseUrl = import.meta.env.PROD 
+    ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
+    : "";
+  
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+  
+  const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
   });
 
   await throwIfResNotOk(res);
@@ -29,8 +41,19 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
+    const { auth } = await import("./firebase");
+    const token = await auth.currentUser?.getIdToken();
+    
+    // Use Firebase Functions URL for production
+    const baseUrl = import.meta.env.PROD 
+      ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
+      : "";
+    
+    const fullUrl = queryKey.join("/") as string;
+    const finalUrl = fullUrl.startsWith('http') ? fullUrl : `${baseUrl}${fullUrl}`;
+    
+    const res = await fetch(finalUrl, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

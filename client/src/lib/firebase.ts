@@ -20,15 +20,15 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Connect to emulators in development
-if (import.meta.env.DEV) {
+// Connect to emulators only in local development
+if (import.meta.env.DEV && !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
   try {
     connectAuthEmulator(auth, "http://localhost:9099");
     connectFirestoreEmulator(db, "localhost", 8080);
     connectStorageEmulator(storage, "localhost", 9199);
   } catch (error) {
-    // Emulators already connected
-    console.log("Firebase emulators already connected");
+    // Emulators already connected or not needed
+    console.log("Firebase emulators not needed - using production");
   }
 }
 
