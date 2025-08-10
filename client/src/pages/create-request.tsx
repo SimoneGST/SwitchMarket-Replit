@@ -25,7 +25,7 @@ export default function CreateRequest() {
   const [clemente] = useState(() => new ClementeAI());
   
   // Character intro state
-  const { showIntro, completeIntro } = useCharacterIntro('clemente');
+  const { showIntro, completeIntro, startIntro } = useCharacterIntro('clemente');
   
   // Stati per chat con Clemente
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -411,6 +411,8 @@ export default function CreateRequest() {
             variant={mode === 'chat' ? 'default' : 'ghost'}
             onClick={() => {
               setMode('chat');
+              // Avvia sempre l'introduzione quando si clicca su "Parla con Clemente"
+              startIntro();
               if (chatMessages.length === 0) {
                 addWelcomeMessage();
               }

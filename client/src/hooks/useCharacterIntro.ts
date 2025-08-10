@@ -10,13 +10,11 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     const seen = localStorage.getItem(introKey) === 'true';
     setHasSeenIntro(seen);
     
-    // Show intro if not seen before and after a small delay
-    if (!seen) {
-      const timer = setTimeout(() => {
-        setShowIntro(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
+    // Always show intro when character component loads for a better experience
+    const timer = setTimeout(() => {
+      setShowIntro(true);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [character]);
 
   const completeIntro = () => {
@@ -33,10 +31,15 @@ export function useCharacterIntro(character: 'clemente' | 'leonardo') {
     setShowIntro(true);
   };
 
+  const startIntro = () => {
+    setShowIntro(true);
+  };
+
   return {
     showIntro,
     hasSeenIntro,
     completeIntro,
-    resetIntro
+    resetIntro,
+    startIntro
   };
 }

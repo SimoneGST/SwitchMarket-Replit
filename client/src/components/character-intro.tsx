@@ -19,7 +19,7 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
       name: "Clemente",
       color: "green",
       bgGradient: "from-green-500 to-green-600",
-      avatar: "/attached_assets/Clemente foto profilo_1754847201275.png",
+      avatar: "/attached_assets/clemente a busto intero_1754847733100.png",
       role: "Assistente AI per Clienti",
       messages: [
         "Ciao! Sono Clemente, il tuo assistente personale.",
@@ -32,7 +32,7 @@ export default function CharacterIntro({ character, onComplete, show }: Characte
       name: "Leonardo",
       color: "blue", 
       bgGradient: "from-blue-500 to-blue-600",
-      avatar: "/attached_assets/leonardo_avatar_1754851387216.png",
+      avatar: "/attached_assets/leonardo foto profilo_1754851361956.png",
       role: "Assistente AI per Negozianti",
       messages: [
         "Benvenuto! Sono Leonardo, il tuo copilot per le vendite.",
