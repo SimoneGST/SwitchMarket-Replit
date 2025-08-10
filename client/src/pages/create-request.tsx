@@ -20,7 +20,7 @@ export default function CreateRequest() {
   const queryClient = useQueryClient();
   
   // Stati per la modalità di creazione
-  const [mode, setMode] = useState<'quick' | 'chat' | 'manual'>('quick');
+  const [mode, setMode] = useState<'chat' | 'manual'>('chat');
   const [clemente] = useState(() => new ClementeAI());
   
   // Character intro state
@@ -30,7 +30,6 @@ export default function CreateRequest() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isClementeTyping, setIsClementeTyping] = useState(false);
-  const [quickInput, setQuickInput] = useState("");
   
   // Dati della richiesta
   const [requestData, setRequestData] = useState<Partial<RequestData>>({
@@ -61,37 +60,15 @@ export default function CreateRequest() {
     },
   });
 
-  // Generazione rapida con input semplice
-  const handleQuickGenerate = async () => {
-    if (!quickInput.trim()) return;
-    
-    console.log('🚀 Avvio generazione rapida per:', quickInput);
-    
-    try {
-      const generated = await clemente.quickGenerate(quickInput);
-      console.log('📝 Risultato generazione:', generated);
-      
-      if (generated) {
-        setRequestData(generated);
-        setMode('manual');
-        toast({
-          title: "Richiesta generata!",
-          description: "Clemente ha compilato i campi per te. Controlla e modifica se necessario.",
-        });
-      } else {
-        toast({
-          title: "Errore generazione",
-          description: "Clemente non è riuscito a generare la richiesta. Prova la chat.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('❌ Errore generazione rapida:', error);
-      toast({
-        title: "Errore",
-        description: "Errore nella generazione automatica",
-        variant: "destructive",
-      });
+  // Aggiunge un messaggio di benvenuto all'inizio della chat
+  const addWelcomeMessage = () => {
+    if (chatMessages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        role: 'assistant',
+        content: "Ciao! Sono Clemente, il tuo assistente AI per trovare prodotti. Puoi descrivermi cosa stai cercando in modo naturale - ad esempio 'cerco scarpe da running' o 'ho bisogno di una scrivania per casa'. Ti aiuterò a creare una richiesta dettagliata!",
+        timestamp: new Date()
+      };
+      setChatMessages([welcomeMessage]);
     }
   };
 
@@ -190,20 +167,21 @@ export default function CreateRequest() {
       <div className="flex justify-center mb-8">
         <div className="flex bg-slate-100 rounded-xl p-1">
           <Button
-            variant={mode === 'quick' ? 'default' : 'ghost'}
-            onClick={() => setMode('quick')}
-            className={mode === 'quick' ? 'bg-green-600 text-white' : ''}
-          >
-            <i className="fas fa-bolt mr-2"></i>
-            Generazione Rapida
-          </Button>
-          <Button
             variant={mode === 'chat' ? 'default' : 'ghost'}
-            onClick={() => setMode('chat')}
+            onClick={() => {
+              setMode('chat');
+              if (chatMessages.length === 0) {
+                addWelcomeMessage();
+              }
+            }}
             className={mode === 'chat' ? 'bg-green-600 text-white' : ''}
           >
-            <i className="fas fa-comments mr-2"></i>
-            Chat con Clemente
+            <img 
+              src="/attached_assets/clemente_avatar_1754845138372.png" 
+              alt="Clemente AI" 
+              className="w-4 h-4 mr-2"
+            />
+            Chatta con Clemente
           </Button>
           <Button
             variant={mode === 'manual' ? 'default' : 'ghost'}
@@ -219,52 +197,21 @@ export default function CreateRequest() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Pannello sinistro - Input/Chat */}
         <div>
-          {mode === 'quick' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-green-700">
-                  <img 
-                    src="/attached_assets/clemente_avatar_1754845138372.png" 
-                    alt="Clemente AI" 
-                    className="w-5 h-5 mr-2"
-                  />
-                  Generazione Rapida
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Descrivi cosa stai cercando
-                  </label>
-                  <Textarea
-                    placeholder="Esempio: Cerco un laptop per gaming con scheda grafica potente, budget intorno ai 1500€"
-                    value={quickInput}
-                    onChange={(e) => setQuickInput(e.target.value)}
-                    rows={4}
-                  />
-                </div>
-                <Button 
-                  onClick={handleQuickGenerate}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  disabled={!quickInput.trim()}
-                >
-                  <img 
-                    src="/attached_assets/clemente_avatar_1754845138372.png" 
-                    alt="Clemente AI" 
-                    className="w-4 h-4 mr-2"
-                  />
-                  Genera Richiesta Automaticamente
-                </Button>
-                <div className="text-xs text-slate-500">
-                  <i className="fas fa-lightbulb mr-1"></i>
-                  Clemente analizzerà il tuo input e compilerà automaticamente tutti i campi
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {mode === 'chat' && (
-            <Card>
+            <>
+              {showIntro && (
+                <div className="mb-4">
+                  <CharacterIntro
+                    character="clemente"
+                    onComplete={() => {
+                      completeIntro();
+                      addWelcomeMessage();
+                    }}
+                  />
+                </div>
+              )}
+              {!showIntro && (
+                <Card>
               <CardHeader>
                 <CardTitle className="flex items-center text-green-700">
                   <img 
@@ -349,7 +296,9 @@ export default function CreateRequest() {
                   </Button>
                 )}
               </CardContent>
-            </Card>
+                </Card>
+              )}
+            </>
           )}
         </div>
 

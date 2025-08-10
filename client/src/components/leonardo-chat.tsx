@@ -164,15 +164,23 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
   };
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
-      <CardHeader className="border-b bg-blue-50">
-        <CardTitle className="flex items-center gap-2 text-blue-600">
-          <img 
-            src="/attached_assets/leonardo_avatar_1754845138372.png" 
-            alt="Leonardo AI" 
-            className="w-5 h-5"
-          />
-          Chat con Leonardo
+    <div className="w-full h-[600px]">
+      {showIntro && (
+        <CharacterIntro
+          character="leonardo"
+          onComplete={completeIntro}
+        />
+      )}
+      {!showIntro && (
+        <Card className="w-full h-[600px] flex flex-col">
+          <CardHeader className="border-b bg-blue-50">
+            <CardTitle className="flex items-center gap-2 text-blue-600">
+              <img 
+                src="/attached_assets/leonardo_avatar_1754845138372.png" 
+                alt="Leonardo AI" 
+                className="w-5 h-5"
+              />
+              Chat con Leonardo
           {sessionId && <span className="text-xs bg-blue-100 px-2 py-1 rounded">Copilot Attivo</span>}
         </CardTitle>
       </CardHeader>
@@ -293,12 +301,8 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
         </div>
       </CardContent>
 
-      {/* Character Introduction */}
-      <CharacterIntro
-        character="leonardo"
-        show={showIntro}
-        onComplete={completeIntro}
-      />
-    </Card>
+        </Card>
+      )}
+    </div>
   );
 }
