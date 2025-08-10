@@ -38,17 +38,16 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
+            <Link href="/" className="flex-shrink-0 flex items-center hover:opacity-80 transition-opacity">
               <img 
                 src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
-                alt="Switch Market Logo" 
-                className="h-8 w-auto mr-3"
+                alt="Switch Market" 
+                className="h-10 w-auto"
                 onError={(e) => {
                   console.error('Logo failed to load in header:', e);
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              <span className="text-xl font-bold text-slate-900">Switch Market</span>
             </Link>
             <div className="hidden md:ml-10 md:flex space-x-8">
               <Link href="/">

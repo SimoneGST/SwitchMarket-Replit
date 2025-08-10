@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Branding e Navigazione Completi (10/08/2025)
+- **Logo Professionale**: SWITCHMARKET logo integrato in header senza testo aggiuntivo
+- **Avatar AI Completi**: Clemente (verde) e Leonardo (blu) sostituiscono tutte le icone generiche
+- **Introduzioni Animate**: Sequenze coinvolgenti con framer-motion per first impression
+- **Routing Corretto**: Landing page accessibile, no redirect automatici indesiderati
+- **Sistema Logout**: Funzionalità completa per tornare alla homepage
+- **File Statici**: Server Express configurato per servire correttamente immagini da attached_assets
+- **Header Ottimizzato**: Solo logo cliccabile collegato alla homepage, design pulito e professionale
+
 ### Landing e Auth Rinnovate (10/08/2025)
 - **Landing Page Modernizzata**: Design ispirato a switchmarket.it con gradienti e animazioni
 - **Hero Section Impatto**: "Il Prodotto che Cerchi, Ora" - titolo più diretto e convincente
