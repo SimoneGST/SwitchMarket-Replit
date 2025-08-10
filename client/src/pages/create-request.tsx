@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { MapPin, Clock, Package, AlertCircle, Euro, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -72,246 +76,269 @@ export default function CreateRequest() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Card className="overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-primary to-secondary text-white">
-          <h2 className="text-xl font-semibold flex items-center">
-            <i className="fas fa-robot mr-3"></i>
-            Crea la tua richiesta con l'aiuto di Clemente
-          </h2>
-          <p className="text-sm opacity-90 mt-1">Il tuo assistente AI ti guiderà passo dopo passo per creare la richiesta perfetta</p>
-        </div>
+    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Crea Nuova Richiesta</h1>
+        <p className="text-slate-600">Clemente ti aiuterà a creare la richiesta perfetta per trovare quello che cerchi</p>
+      </div>
 
-        <div className="flex flex-col lg:flex-row">
-          {/* Chat Interface with Clemente */}
-          <div className="lg:w-1/2 border-r border-slate-200">
-            <ClementeChat onDataUpdate={handleDataUpdate} />
-          </div>
-
-          {/* Request Preview */}
-          <div className="lg:w-1/2 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Anteprima della tua richiesta</h3>
-            
-            <div className="space-y-4">
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Titolo</label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form Column */}
+        <div className="space-y-6">
+          {/* Informazioni Base */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-green-600" />
+                Cosa Stai Cercando?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Titolo della richiesta *
+                </label>
                 <Input
                   value={requestData.title}
                   onChange={(e) => setRequestData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Descrivi cosa stai cercando"
+                  placeholder="Es. iPhone 15 Pro usato in ottime condizioni"
+                  className="w-full"
                 />
               </div>
 
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
-                <Select 
-                  value={requestData.category} 
-                  onValueChange={(value) => setRequestData(prev => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Elettronica">Elettronica</SelectItem>
-                    <SelectItem value="Casa e Giardino">Casa e Giardino</SelectItem>
-                    <SelectItem value="Sport e Tempo Libero">Sport e Tempo Libero</SelectItem>
-                    <SelectItem value="Veicoli">Veicoli</SelectItem>
-                    <SelectItem value="Abbigliamento">Abbigliamento</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Categoria *</label>
+                  <Select 
+                    value={requestData.category} 
+                    onValueChange={(value) => setRequestData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="elettronica">Elettronica</SelectItem>
+                      <SelectItem value="casa">Casa e Giardino</SelectItem>
+                      <SelectItem value="moda">Moda e Abbigliamento</SelectItem>
+                      <SelectItem value="sport">Sport e Tempo Libero</SelectItem>
+                      <SelectItem value="auto">Auto e Moto</SelectItem>
+                      <SelectItem value="libri">Libri e Riviste</SelectItem>
+                      <SelectItem value="servizi">Servizi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Sottocategoria</label>
+                  <Select 
+                    value={requestData.subcategory} 
+                    onValueChange={(value) => setRequestData(prev => ({ ...prev, subcategory: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Opzionale" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {requestData.category === "elettronica" && (
+                        <>
+                          <SelectItem value="smartphone">Smartphone</SelectItem>
+                          <SelectItem value="computer">Computer</SelectItem>
+                          <SelectItem value="tv">TV e Audio</SelectItem>
+                          <SelectItem value="gaming">Gaming</SelectItem>
+                        </>
+                      )}
+                      {requestData.category === "casa" && (
+                        <>
+                          <SelectItem value="mobili">Mobili</SelectItem>
+                          <SelectItem value="elettrodomestici">Elettrodomestici</SelectItem>
+                          <SelectItem value="decorazioni">Decorazioni</SelectItem>
+                          <SelectItem value="giardino">Giardino</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Fascia di prezzo</label>
-                <div className="flex gap-2">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Descrizione dettagliata
+                </label>
+                <Textarea
+                  value={requestData.description}
+                  onChange={(e) => setRequestData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Descrivi cosa stai cercando, caratteristiche specifiche, condizioni desiderate..."
+                  rows={4}
+                  className="w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Budget */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Euro className="h-5 w-5 text-green-600" />
+                Budget
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Prezzo minimo (€)</label>
                   <Input
                     type="number"
-                    placeholder="Min €"
                     value={requestData.priceMin}
                     onChange={(e) => setRequestData(prev => ({ ...prev, priceMin: e.target.value }))}
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Prezzo massimo (€)</label>
                   <Input
                     type="number"
-                    placeholder="Max €"
                     value={requestData.priceMax}
                     onChange={(e) => setRequestData(prev => ({ ...prev, priceMax: e.target.value }))}
+                    placeholder="1000"
+                    min="0"
+                    step="0.01"
                   />
                 </div>
               </div>
-
-              {requestData.attributes.length > 0 && (
-                <div className="border border-slate-200 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Caratteristiche richieste</label>
-                  <div className="space-y-2">
-                    {requestData.attributes.map((attr: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-slate-50 rounded">
-                        <span className="text-sm">{attr.key}: {attr.value}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          attr.required 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {attr.required ? 'Obbligatorio' : 'Preferito'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              {requestData.priceMin && requestData.priceMax && (
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <p className="text-sm text-green-700">
+                    Budget: €{requestData.priceMin} - €{requestData.priceMax}
+                  </p>
                 </div>
               )}
+            </CardContent>
+          </Card>
 
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Posizione</label>
-                <div className="relative">
-                  <Input
-                    value={requestData.location}
-                    onChange={(e) => setRequestData(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="Inserisci la tua città"
-                    className="pl-10"
-                  />
-                  <i className="fas fa-map-marker-alt text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+          {/* Localizzazione e Consegna */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-green-600" />
+                Dove e Come Ritirare
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Posizione *
+                </label>
+                <Input
+                  value={requestData.location}
+                  onChange={(e) => setRequestData(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="Es. Milano, Via Roma 123"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Raggio massimo per ritiro: {requestData.actionRadius} km
+                </label>
+                <Slider
+                  value={[requestData.actionRadius]}
+                  onValueChange={([value]) => setRequestData(prev => ({ ...prev, actionRadius: value }))}
+                  max={50}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-slate-500 mt-1">
+                  <span>1 km</span>
+                  <span>50 km</span>
                 </div>
               </div>
 
-              {/* Raggio di azione - solo per ritiro */}
-              {(requestData.deliveryPreference === 'pickup' || requestData.deliveryPreference === 'both') && (
-                <div className="border border-slate-200 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    <i className="fas fa-walking mr-2"></i>
-                    Raggio di azione per ritiro
-                  </label>
-                  <p className="text-xs text-slate-500 mb-3">Quanto sei disposto a spostarti per ritirare il prodotto?</p>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={requestData.actionRadius}
-                        onChange={(e) => setRequestData(prev => ({ ...prev, actionRadius: parseInt(e.target.value) || 10 }))}
-                        className="w-20"
-                      />
-                      <span className="text-sm text-slate-600">km dalla mia posizione</span>
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      <i className="fas fa-info-circle mr-1"></i>
-                      I negozianti entro questo raggio vedranno la tua richiesta per il ritiro
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Modalità di consegna</label>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Modalità di consegna
+                </label>
                 <Select 
                   value={requestData.deliveryPreference} 
                   onValueChange={(value) => setRequestData(prev => ({ ...prev, deliveryPreference: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Come vuoi ricevere il prodotto?" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pickup">
-                      <div className="flex items-center">
-                        <i className="fas fa-walking mr-2"></i>
-                        Ritiro in negozio
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="delivery">
-                      <div className="flex items-center">
-                        <i className="fas fa-truck mr-2"></i>
-                        Spedizione a casa
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="both">
-                      <div className="flex items-center">
-                        <i className="fas fa-both mr-2"></i>
-                        Entrambe le opzioni
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="pickup">Solo ritiro in zona</SelectItem>
+                    <SelectItem value="delivery">Solo spedizione</SelectItem>
+                    <SelectItem value="both">Entrambe le opzioni</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-slate-500 mt-2">
-                  {requestData.deliveryPreference === 'pickup' && 'Andrò a ritirare il prodotto di persona'}
-                  {requestData.deliveryPreference === 'delivery' && 'Preferisco ricevere il prodotto a casa tramite servizio di consegna'}
-                  {requestData.deliveryPreference === 'both' && 'Sono flessibile su entrambe le modalità'}
-                </p>
               </div>
 
-              {/* Grado di urgenza - solo per spedizione a casa */}
-              {(requestData.deliveryPreference === 'delivery' || requestData.deliveryPreference === 'both') && (
-                <div className="border border-slate-200 rounded-lg p-4">
+              {(requestData.deliveryPreference === "delivery" || requestData.deliveryPreference === "both") && (
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    <i className="fas fa-clock mr-2"></i>
-                    Grado di urgenza per spedizione
+                    <Truck className="inline h-4 w-4 mr-1" />
+                    Urgenza per spedizione
                   </label>
-                  <p className="text-xs text-slate-500 mb-3">Quando ti serve il prodotto a casa?</p>
                   <Select 
                     value={requestData.urgencyLevel} 
                     onValueChange={(value) => setRequestData(prev => ({ ...prev, urgencyLevel: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleziona urgenza" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="24h">
-                        <div className="flex items-center">
-                          <i className="fas fa-bolt mr-2 text-red-500"></i>
-                          <div>
-                            <div className="font-medium">Entro 24 ore</div>
-                            <div className="text-xs text-slate-500">Servizio espresso</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="48h">
-                        <div className="flex items-center">
-                          <i className="fas fa-truck-fast mr-2 text-orange-500"></i>
-                          <div>
-                            <div className="font-medium">Entro 48 ore</div>
-                            <div className="text-xs text-slate-500">Consegna veloce</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="few_days">
-                        <div className="flex items-center">
-                          <i className="fas fa-calendar mr-2 text-green-500"></i>
-                          <div>
-                            <div className="font-medium">Qualche giorno</div>
-                            <div className="text-xs text-slate-500">Consegna standard</div>
-                          </div>
-                        </div>
-                      </SelectItem>
+                      <SelectItem value="24h">Entro 24 ore</SelectItem>
+                      <SelectItem value="48h">Entro 48 ore</SelectItem>
+                      <SelectItem value="few_days">Qualche giorno</SelectItem>
                     </SelectContent>
                   </Select>
-                  <div className="text-xs text-slate-500 mt-2">
-                    <i className="fas fa-info-circle mr-1"></i>
-                    {requestData.urgencyLevel === '24h' && 'Costo maggiore per consegna express tramite servizi terzi (es. Deliveroo, Glovo)'}
-                    {requestData.urgencyLevel === '48h' && 'Costo intermedio per consegna veloce tramite corrieri locali'}
-                    {requestData.urgencyLevel === 'few_days' && 'Costo standard per consegna normale - supporta mission locale'}
-                  </div>
-                  
-                  {/* Nota per sviluppo futuro: Integrazione API servizi di consegna */}
-                  <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-50 rounded border-l-4 border-blue-200">
-                    <i className="fas fa-lightbulb mr-1"></i>
-                    <strong>In sviluppo:</strong> Integrazione diretta con servizi di consegna per preventivi automatici
-                  </div>
                 </div>
               )}
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <Button 
-                onClick={handlePublish}
-                disabled={createRequestMutation.isPending}
-                className="w-full bg-secondary hover:bg-secondary/90 py-3 font-semibold"
-              >
-                <i className="fas fa-check mr-2"></i>
-                {createRequestMutation.isPending ? 'Pubblicazione...' : 'Pubblica Richiesta'}
-              </Button>
-              <p className="text-xs text-slate-500 text-center mt-2">La tua richiesta sarà visibile ai negozianti della zona</p>
-            </div>
+          {/* Pulsante Pubblica */}
+          <div className="flex gap-4">
+            <Button 
+              onClick={handlePublish}
+              disabled={createRequestMutation.isPending}
+              className="flex-1 bg-green-600 hover:bg-green-700"
+              size="lg"
+            >
+              {createRequestMutation.isPending ? "Pubblicando..." : "Pubblica Richiesta"}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setLocation("/")}
+              size="lg"
+            >
+              Annulla
+            </Button>
           </div>
         </div>
-      </Card>
+
+        {/* Chat Column */}
+        <div className="lg:sticky lg:top-8">
+          <Card className="h-[600px]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 font-bold text-sm">C</span>
+                </div>
+                Clemente ti aiuta
+              </CardTitle>
+              <p className="text-sm text-slate-600">
+                Descrivi cosa cerchi e Clemente creerà la richiesta perfetta per te
+              </p>
+            </CardHeader>
+            <CardContent className="p-0 h-[480px]">
+              <ClementeChat />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </main>
   );
 }
