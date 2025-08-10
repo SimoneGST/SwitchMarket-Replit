@@ -22,6 +22,16 @@ export default function MerchantDashboard() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Character Introduction */}
+      {showIntro && (
+        <div className="fixed inset-0 z-50">
+          <CharacterIntro
+            character="leonardo"
+            show={showIntro}
+            onComplete={completeIntro}
+          />
+        </div>
+      )}
       {/* Hero Section - Negoziante (Blu) */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
         <div className="max-w-4xl">
