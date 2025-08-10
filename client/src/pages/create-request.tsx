@@ -494,15 +494,15 @@ export default function CreateRequest() {
                 {/* Messaggi chat */}
                 <div className="h-96 overflow-y-auto border rounded-lg mb-4 bg-slate-50 flex flex-col">
                   {chatMessages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center text-slate-500">
-                      <div className="flex-1 flex items-center justify-center w-full">
+                    <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
+                      <div className="flex-1 flex items-center justify-center w-full max-h-64">
                         <img 
                           src="/attached_assets/clemente a busto intero_1754847733100.png" 
                           alt="Clemente AI" 
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
-                      <div className="pb-4">
+                      <div className="mt-4">
                         <p className="font-semibold">Ciao! Sono Clemente, il tuo assistente AI.</p>
                         <p>Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa!</p>
                       </div>

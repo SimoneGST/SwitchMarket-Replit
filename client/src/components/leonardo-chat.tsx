@@ -187,17 +187,17 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
 
       <CardContent className="flex-1 flex flex-col p-0">
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto space-y-4 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-center text-slate-500">
-              <div className="flex-1 flex items-center justify-center w-full">
+            <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
+              <div className="flex-1 flex items-center justify-center w-full max-h-64">
                 <img 
                   src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                   alt="Leonardo AI" 
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
-              <div className="pb-4">
+              <div className="mt-4">
                 <p className="font-semibold">Ciao! Sono Leonardo, il tuo assistente AI per vendite.</p>
                 <p>Dimmi come posso aiutarti con la tua attività!</p>
               </div>
