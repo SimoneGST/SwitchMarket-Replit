@@ -140,8 +140,11 @@ export default function CreateRequest() {
         }
       });
       
+      console.log('🔍 Response completa:', response);
+      console.log('🔍 response.response:', response.response);
+      console.log('🔍 response.response.text:', response.response?.text);
       const responseText = response.response?.text || '';
-      console.log('📨 Risposta ricevuta:', responseText);
+      console.log('📨 Risposta estratta:', responseText);
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
