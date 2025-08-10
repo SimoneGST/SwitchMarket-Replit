@@ -30,6 +30,8 @@ export default function CreateRequest() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isClementeTyping, setIsClementeTyping] = useState(false);
+  const [isClementeSpeaking, setIsClementeSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Dati della richiesta
@@ -114,16 +116,25 @@ export default function CreateRequest() {
     
     try {
       const response = await clemente.chatWithUser(chatInput);
-      console.log('📨 Risposta ricevuta:', typeof response === 'string' ? response.substring(0, 50) : (response.text || '').substring(0, 50));
+      const responseText = typeof response === 'string' ? response : (response?.text || '');
+      console.log('📨 Risposta ricevuta:', responseText.substring(0, 50));
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: typeof response === 'string' ? response : response.text,
+        content: typeof response === 'string' ? response : (response?.text || ''),
         timestamp: new Date(),
-        aiGeneratedImage: typeof response === 'object' ? response.generatedImage : undefined
+        aiGeneratedImage: typeof response === 'object' ? response?.generatedImage : undefined
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
+      
+      // Far parlare Clemente se la voce è abilitata
+      if (voiceEnabled) {
+        setTimeout(() => {
+          const messageText = typeof response === 'string' ? response : (response?.text || '');
+          speakClementeMessage(messageText);
+        }, 500);
+      }
     } catch (error) {
       console.error('❌ Errore comunicazione chat:', error);
       toast({
@@ -190,6 +201,88 @@ export default function CreateRequest() {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
+  // Funzione per far parlare Clemente
+  const speakClementeMessage = (text: string) => {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    
+    // Ferma eventuali discorsi in corso
+    speechSynthesis.cancel();
+    
+    setIsClementeSpeaking(true);
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'it-IT';
+    utterance.rate = 0.9;
+    utterance.pitch = 1.1;
+    
+    // Cerca una voce italiana maschile se disponibile
+    const voices = speechSynthesis.getVoices();
+    const italianVoice = voices.find(voice => 
+      voice.lang.includes('it') && voice.name.toLowerCase().includes('male')
+    ) || voices.find(voice => voice.lang.includes('it'));
+    
+    if (italianVoice) {
+      utterance.voice = italianVoice;
+    }
+    
+    utterance.onend = () => {
+      setIsClementeSpeaking(false);
+    };
+    
+    utterance.onerror = () => {
+      setIsClementeSpeaking(false);
+    };
+    
+    speechSynthesis.speak(utterance);
+  };
+
+  // Comando vocale continuo per generazione richiesta
+  const startContinuousVoiceCommand = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Riconoscimento vocale non supportato');
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'it-IT';
+    
+    recognition.onstart = () => {
+      toast({
+        title: "🎤 Modalità Vocale Attiva",
+        description: "Parla liberamente con Clemente per creare la tua richiesta",
+      });
+    };
+    
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      
+      if (event.results[event.results.length - 1].isFinal) {
+        // Simula invio messaggio quando la frase è completa
+        setChatInput(transcript);
+        setTimeout(() => handleChatMessage(), 100);
+      }
+    };
+    
+    recognition.onerror = () => {
+      toast({
+        title: "Errore riconoscimento vocale",
+        description: "Riprova o usa la tastiera",
+        variant: "destructive"
+      });
+    };
+    
+    recognition.start();
+    
+    // Ferma dopo 30 secondi di inattività
+    setTimeout(() => {
+      recognition.stop();
+    }, 30000);
+  };
+
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -253,13 +346,39 @@ export default function CreateRequest() {
               {!showIntro && (
                 <Card>
               <CardHeader>
-                <CardTitle className="flex items-center text-green-700">
-                  <img 
-                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                    alt="Clemente AI" 
-                    className="w-5 h-5 mr-2"
-                  />
-                  Chat con Clemente
+                <CardTitle className="flex items-center justify-between text-green-700">
+                  <div className="flex items-center">
+                    <img 
+                      src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                      alt="Clemente AI" 
+                      className="w-5 h-5 mr-2"
+                    />
+                    Chat con Clemente
+                    {isClementeSpeaking && (
+                      <div className="ml-2 flex items-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></div>
+                        <span className="text-xs text-green-600">Parlando...</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVoiceEnabled(!voiceEnabled)}
+                      className={voiceEnabled ? 'bg-green-50' : 'bg-slate-50'}
+                    >
+                      {voiceEnabled ? '🔊' : '🔇'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={startContinuousVoiceCommand}
+                      className="bg-blue-50"
+                    >
+                      🎤 Modalità Vocale
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>

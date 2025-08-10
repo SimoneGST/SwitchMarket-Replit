@@ -10,7 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Clemente AI Perfezionato - Conversazione Naturale (10/08/2025)
+### Clemente AI con Supporto Vocale Completo (10/08/2025)
+- **Esperienza Vocale Completa**: Clemente ora parla usando Text-to-Speech italiano
+- **Modalità Conversazione**: Chat hands-free per creazione richieste completamente vocali
+- **Controlli Vocali**: Pulsanti per attivare/disattivare voce e modalità vocale continua
+- **Comandi Vocali Globali**: Sistema di comandi per navigazione e controllo app
+- **Indicatori Visivi**: Mostra quando Clemente sta parlando con animazioni
+- **Preparazione Smart Speakers**: Base per integrazione Google Assistant e Alexa
 - **Conversazione Naturale**: Risposte brevi e colloquiali, una domanda alla volta
 - **Approccio Educativo Bilanciato**: Spiega caratteristiche tecniche ma in modo conciso
 - **Generazione Richieste Complete**: Focus su specifiche dettagliate per i negozianti
