@@ -30,6 +30,11 @@ Preferred communication style: Simple, everyday language.
 - **Supporto TeamSystem**: Connessione con suite gestionale enterprise
 - **Sincronizzazione Automatica**: Aggiornamento prodotti in tempo reale o programmato
 - **Pulsante "Collega Gestionale"**: Accesso diretto dalla dashboard negoziante
+- **Copilot Leonardo Completo (10/08/2025)**: Servizio AI per assistere i negozianti nella gestione clienti
+- **Dashboard Copilot Avanzata**: Configurazione personalità AI, orari operativi, statistiche conversazioni
+- **Chat Leonardo Integrata**: Interfaccia completa con riconoscimento vocale e supporto allegati
+- **API Copilot Complete**: Gestione sessioni, messaggi automatici e analisi conversazioni
+- **Collegamento Dashboard**: Accesso rapido al copilot dalla dashboard negoziante
 
 ## System Architecture
 
