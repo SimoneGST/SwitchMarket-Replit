@@ -418,9 +418,9 @@ export default function CreateRequest() {
             className={mode === 'chat' ? 'bg-green-600 text-white' : ''}
           >
             <img 
-              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+              src="/attached_assets/clemente a busto intero_1754847733100.png" 
               alt="Clemente AI" 
-              className="w-4 h-4 mr-2"
+              className="w-5 h-5 mr-2"
             />
             Parla con Clemente
           </Button>
@@ -458,9 +458,9 @@ export default function CreateRequest() {
                 <CardTitle className="flex items-center justify-between text-green-700">
                   <div className="flex items-center">
                     <img 
-                      src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                      src="/attached_assets/clemente a busto intero_1754847733100.png" 
                       alt="Clemente AI" 
-                      className="w-5 h-5 mr-2"
+                      className="w-6 h-6 mr-2"
                     />
                     Chat con Clemente
                     {isClementeSpeaking && (
@@ -494,8 +494,8 @@ export default function CreateRequest() {
                 {/* Messaggi chat */}
                 <div className="h-96 overflow-y-auto border rounded-lg p-4 mb-4 bg-slate-50">
                   {chatMessages.length === 0 && (
-                    <div className="text-center text-slate-500 mt-20">
-                      <div className="w-20 h-24 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 p-2">
+                    <div className="text-center text-slate-500 mt-8">
+                      <div className="w-32 h-40 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 p-2">
                         <img 
                           src="/attached_assets/clemente a busto intero_1754847733100.png" 
                           alt="Clemente AI" 

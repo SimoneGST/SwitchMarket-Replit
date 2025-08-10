@@ -178,7 +178,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
               <img 
                 src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                 alt="Leonardo AI" 
-                className="w-5 h-5"
+                className="w-6 h-6"
               />
               Chat con Leonardo
           {sessionId && <span className="text-xs bg-blue-100 px-2 py-1 rounded">Copilot Attivo</span>}
@@ -188,6 +188,20 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
       <CardContent className="flex-1 flex flex-col p-0">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 && (
+            <div className="text-center text-slate-500 mt-8">
+              <div className="w-32 h-40 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4 p-2">
+                <img 
+                  src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                  alt="Leonardo AI" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p>Ciao! Sono Leonardo, il tuo assistente AI per vendite.</p>
+              <p>Dimmi come posso aiutarti con la tua attività!</p>
+            </div>
+          )}
+          
           {messages.map((message) => (
             <div
               key={message.id}
@@ -207,7 +221,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
                     <img 
                       src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                       alt="Leonardo AI" 
-                      className="w-4 h-4 object-contain"
+                      className="w-5 h-5 object-contain"
                     />
                   )}
                 </AvatarFallback>
@@ -240,7 +254,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
                   <img 
                     src="/attached_assets/leonardo foto profilo_1754851361956.png" 
                     alt="Leonardo AI" 
-                    className="w-full h-full object-contain"
+                    className="w-5 h-5 object-contain"
                   />
                 </AvatarFallback>
               </Avatar>
