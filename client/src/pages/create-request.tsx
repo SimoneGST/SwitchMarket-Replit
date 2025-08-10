@@ -16,11 +16,13 @@ import { useCharacterIntro } from "@/hooks/useCharacterIntro";
 import AddressAutocomplete from "@/components/address-autocomplete";
 import VoiceSettings from "@/components/voice-settings";
 import { useVoiceSettings } from "@/hooks/useVoiceSettings";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CreateRequest() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   // Stati per la modalità di creazione
   const [mode, setMode] = useState<'chat' | 'manual'>('chat');
@@ -156,10 +158,10 @@ export default function CreateRequest() {
       
       setChatMessages(prev => [...prev, assistantMessage]);
       
-      // Auto-genera la richiesta se Clemente chiede conferma finale per creare la richiesta
-      if (responseText.toLowerCase().includes('creiamo la richiesta') || 
-          responseText.toLowerCase().includes('crei la richiesta') ||
-          responseText.toLowerCase().includes('genero la richiesta')) {
+      // Auto-genera la richiesta solo se Clemente dice specificamente che genererà
+      if (responseText.toLowerCase().includes('genero la richiesta') ||
+          responseText.toLowerCase().includes('creo subito la richiesta') ||
+          (responseText.toLowerCase().includes('genera') && responseText.toLowerCase().includes('richiesta'))) {
         // Attendi un momento per dare tempo all'utente di vedere la conferma
         setTimeout(() => {
           handleGenerateFromChat();
@@ -215,6 +217,18 @@ export default function CreateRequest() {
 
   // Pubblica richiesta
   const handlePublish = () => {
+    // Verifica completamento profilo prima di permettere la pubblicazione
+    if (!user || !user.firstName || !user.lastName || !user.email) {
+      toast({
+        title: "Profilo incompleto",
+        description: "Completa il tuo profilo prima di pubblicare una richiesta.",
+        variant: "destructive",
+      });
+      // Reindirizza alla pagina del profilo
+      window.location.href = '/profile';
+      return;
+    }
+
     // Verifica che ci sia almeno una posizione (manuale o automatica)
     const hasLocation = useCurrentLocation ? currentLocation : (requestData.location && requestData.location.trim());
     
