@@ -60,9 +60,9 @@ export default function Header() {
                 </button>
               </Link>
               {user?.userType === 'customer' ? (
-                <Link href="/create">
+                <Link href="/browse">
                   <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
-                    isActive('/create') 
+                    isActive('/browse') 
                       ? `${primaryColor} ${borderColor}` 
                       : 'text-slate-500 hover:text-slate-700 border-transparent'
                   }`}>

@@ -177,36 +177,18 @@ export default function BrowseRequests() {
     setIsClementeTyping(true);
 
     try {
-      const response = await clemente.processMessage(
-        chatInput,
-        chatMessages,
-        productSchema,
-        requestData
-      );
+      const response = await clemente.chatWithUser(chatInput);
 
       const aiMessage: ChatMessage = {
         role: 'assistant',
-        content: response.message,
+        content: response.text,
         timestamp: new Date(),
-        aiGeneratedImage: response.imageUrl
+        aiGeneratedImage: response.generatedImage
       };
 
       setChatMessages(prev => [...prev, aiMessage]);
 
-      if (response.productSchema) {
-        setProductSchema(response.productSchema);
-      }
-
-      if (response.requestData) {
-        setRequestData(response.requestData);
-      }
-
-      // Pubblica automaticamente se i dati sono completi
-      if (response.requestData && response.shouldPublish) {
-        createRequestMutation.mutate(response.requestData);
-      }
-
-      await speakClementeMessage(response.message);
+      await speakClementeMessage(response.text);
 
     } catch (error) {
       console.error('Errore comunicazione con Clemente:', error);
@@ -584,10 +566,8 @@ export default function BrowseRequests() {
       {/* Voice Settings Modal */}
       {showVoiceSettings && (
         <VoiceSettings 
-          open={showVoiceSettings}
-          onClose={() => setShowVoiceSettings(false)}
           settings={voiceSettings}
-          onUpdate={updateVoiceSettings}
+          onSettingsChange={updateVoiceSettings}
         />
       )}
     </main>
