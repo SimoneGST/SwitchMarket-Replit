@@ -24,20 +24,39 @@ interface ChatMessage {
 }
 
 interface RequestData {
+  // Campi base obbligatori
   title: string;
   description: string;
   category: string;
-  budget?: number;
-  urgencyLevel: 'immediate' | '24h' | '48h' | 'few_days';
-  deliveryPreference: 'pickup' | 'delivery' | 'both';
-  actionRadius?: number;
+  productName: string;
+  
+  // Budget e prezzo
+  budgetMin?: number;
+  budgetMax?: number;
+  
+  // Localizzazione e consegna
   location: string;
-  technicalSpecs?: string;
+  latitude?: number;
+  longitude?: number;
+  useProfileLocation?: boolean;
+  actionRadius: number; // km per ritiro in negozio
+  deliveryPreference: 'pickup' | 'delivery' | 'both';
+  urgencyLevel: 'immediate' | '24h' | '48h' | 'few_days';
+  
+  // Specifiche prodotto dinamiche
   brand?: string;
   model?: string;
-  size?: string;
   color?: string;
   material?: string;
+  size?: string;
+  weight?: string;
+  dimensions?: string;
+  condition?: 'new' | 'used' | 'refurbished';
+  
+  // Campi specifici per categoria
+  attributes?: Record<string, any>;
+  technicalSpecs?: string;
+  notes?: string;
 }
 
 interface VoiceSettings {
@@ -51,8 +70,10 @@ interface VoiceSettings {
 interface ProductSchema {
   category: string;
   requiredFields: string[];
-  optionalFields: string[];
+  categorySpecificFields: string[];
   fieldDescriptions: Record<string, string>;
+  fieldTypes: Record<string, 'text' | 'number' | 'select' | 'boolean'>;
+  selectOptions?: Record<string, string[]>;
 }
 
 // TypeScript declarations for Speech Recognition
@@ -82,8 +103,11 @@ export default function BrowseRequests() {
   const [requestData, setRequestData] = useState<Partial<RequestData>>({
     urgencyLevel: '24h',
     deliveryPreference: 'both',
-    actionRadius: 10
+    actionRadius: 10,
+    useProfileLocation: false,
+    condition: 'new'
   });
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
   const [productSchema, setProductSchema] = useState<ProductSchema | null>(null);
   const [completionProgress, setCompletionProgress] = useState(0);
   
@@ -191,10 +215,22 @@ export default function BrowseRequests() {
 
   // Calcola il progresso di completamento
   useEffect(() => {
-    const requiredFields = ['title', 'description', 'category', 'location'];
-    const completedFields = requiredFields.filter(field => requestData[field as keyof RequestData]);
-    setCompletionProgress((completedFields.length / requiredFields.length) * 100);
-  }, [requestData]);
+    const baseRequiredFields = ['title', 'description', 'category', 'productName', 'location'];
+    let allRequiredFields = [...baseRequiredFields];
+    
+    // Aggiungi campi specifici per categoria se esiste uno schema
+    if (productSchema) {
+      allRequiredFields = [...allRequiredFields, ...productSchema.requiredFields];
+    }
+    
+    const filledFields = allRequiredFields.filter(field => {
+      const value = requestData[field as keyof RequestData];
+      return value !== undefined && value !== null && value !== '';
+    });
+    
+    const progress = Math.max(20, (filledFields.length / allRequiredFields.length) * 100);
+    setCompletionProgress(progress);
+  }, [requestData, productSchema]);
 
   // Funzione Text-to-Speech per Clemente
   const speakClementeMessage = async (text: string) => {
@@ -250,7 +286,9 @@ export default function BrowseRequests() {
       setRequestData({
         urgencyLevel: '24h',
         deliveryPreference: 'both',
-        actionRadius: 10
+        actionRadius: 10,
+        useProfileLocation: false,
+        condition: 'new'
       });
       setProductSchema(null);
       setCompletionProgress(0);
@@ -318,6 +356,32 @@ export default function BrowseRequests() {
     }
   };
 
+  // Geolocalizzazione
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('La geolocalizzazione non è supportata dal tuo browser');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lon: longitude });
+        setRequestData(prev => ({
+          ...prev,
+          latitude,
+          longitude,
+          location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+        }));
+      },
+      (error) => {
+        console.error('Errore geolocalizzazione:', error);
+        alert('Impossibile ottenere la posizione. Verifica le impostazioni del browser.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  };
+
   const startListening = () => {
     if (recognition && !isListening) {
       setIsListening(true);
@@ -332,30 +396,31 @@ export default function BrowseRequests() {
     }
   };
 
+  // Funzioni helper per le etichette
+  const getUrgencyLabel = (urgency: string) => {
+    switch (urgency) {
+      case 'immediate': return 'Immediato';
+      case '24h': return 'Entro 24 ore';
+      case '48h': return 'Entro 48 ore';
+      case 'few_days': return 'Entro qualche giorno';
+      default: return 'Non specificato';
+    }
+  };
+
+  const getDeliveryLabel = (delivery: string) => {
+    switch (delivery) {
+      case 'pickup': return 'Solo ritiro in negozio';
+      case 'delivery': return 'Solo consegna a domicilio';
+      case 'both': return 'Ritiro o consegna';
+      default: return 'Non specificato';
+    }
+  };
+
   const formatTimestamp = (date: Date) => {
     return date.toLocaleTimeString('it-IT', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
-  };
-
-  const getUrgencyLabel = (urgency: string) => {
-    const labels = {
-      'immediate': 'Immediato',
-      '24h': '24 ore',
-      '48h': '48 ore',
-      'few_days': 'Qualche giorno'
-    };
-    return labels[urgency as keyof typeof labels] || urgency;
-  };
-
-  const getDeliveryLabel = (delivery: string) => {
-    const labels = {
-      'pickup': 'Ritiro in negozio',
-      'delivery': 'Consegna a domicilio',
-      'both': 'Entrambi'
-    };
-    return labels[delivery as keyof typeof labels] || delivery;
   };
 
   return (
@@ -566,19 +631,72 @@ export default function BrowseRequests() {
                   </div>
                 )}
                 
-                {requestData.budget && (
+                {/* Budget */}
+                {(requestData.budgetMin || requestData.budgetMax) && (
                   <div>
                     <label className="text-sm font-medium text-slate-700">Budget</label>
                     <p className="text-sm bg-green-50 p-2 rounded border text-green-800 font-medium">
-                      €{requestData.budget}
+                      {requestData.budgetMin && requestData.budgetMax 
+                        ? `€${requestData.budgetMin} - €${requestData.budgetMax}`
+                        : requestData.budgetMin 
+                        ? `Da €${requestData.budgetMin}`
+                        : `Fino a €${requestData.budgetMax}`}
                     </p>
                   </div>
                 )}
 
+                {requestData.productName && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Nome Prodotto</label>
+                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.productName}</p>
+                  </div>
+                )}
+
+                {requestData.location && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Posizione</label>
+                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.location}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={getCurrentLocation}
+                      className="mt-1 text-xs w-full"
+                    >
+                      <i className="fas fa-map-marker-alt mr-1"></i>
+                      {userLocation ? 'Aggiorna Posizione' : 'Rileva Posizione'}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Consegna e urgenza */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Urgenza</label>
+                  <p className="text-sm bg-orange-50 p-2 rounded border">
+                    {requestData.urgencyLevel === 'immediate' ? 'Immediato' :
+                     requestData.urgencyLevel === '24h' ? 'Entro 24 ore' :
+                     requestData.urgencyLevel === '48h' ? 'Entro 48 ore' :
+                     'Entro qualche giorno'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Consegna</label>
+                  <p className="text-sm bg-blue-50 p-2 rounded border">
+                    {requestData.deliveryPreference === 'pickup' ? 'Solo ritiro in negozio' :
+                     requestData.deliveryPreference === 'delivery' ? 'Solo consegna a domicilio' :
+                     'Ritiro o consegna'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Raggio Azione</label>
+                  <p className="text-sm bg-purple-50 p-2 rounded border">{requestData.actionRadius} km</p>
+                </div>
+
                 <Separator />
 
-                {/* Dettagli tecnici */}
-                {(requestData.brand || requestData.model || requestData.size || requestData.color) && (
+                {/* Specifiche aggiuntive prodotto */}
+                {(requestData.brand || requestData.model || requestData.size || requestData.color || requestData.material || requestData.condition) && (
                   <div>
                     <label className="text-sm font-medium text-slate-700 mb-2 block">Specifiche Tecniche</label>
                     <div className="space-y-2">
@@ -604,6 +722,33 @@ export default function BrowseRequests() {
                         <div className="flex justify-between text-sm">
                           <span className="text-slate-600">Colore:</span>
                           <span className="font-medium">{requestData.color}</span>
+                        </div>
+                      )}
+                      {requestData.material && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Materiale:</span>
+                          <span className="font-medium">{requestData.material}</span>
+                        </div>
+                      )}
+                      {requestData.condition && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Condizione:</span>
+                          <span className="font-medium">
+                            {requestData.condition === 'new' ? 'Nuovo' :
+                             requestData.condition === 'used' ? 'Usato' : 'Ricondizionato'}
+                          </span>
+                        </div>
+                      )}
+                      {requestData.weight && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Peso:</span>
+                          <span className="font-medium">{requestData.weight}</span>
+                        </div>
+                      )}
+                      {requestData.dimensions && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Dimensioni:</span>
+                          <span className="font-medium">{requestData.dimensions}</span>
                         </div>
                       )}
                     </div>

@@ -2,20 +2,39 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { findBestProductSchema, generateSmartQuestion, validateCollectedData, generateDynamicProductSchema, type ProductSchema } from './productSchemas';
 
 interface RequestData {
+  // Campi base obbligatori
   title: string;
   description: string;
   category: string;
-  budget?: number;
-  urgencyLevel: 'immediate' | '24h' | '48h' | 'few_days';
-  deliveryPreference: 'pickup' | 'delivery' | 'both';
-  actionRadius?: number;
+  productName: string;
+  
+  // Budget e prezzo
+  budgetMin?: number;
+  budgetMax?: number;
+  
+  // Localizzazione e consegna
   location: string;
-  technicalSpecs?: string;
+  latitude?: number;
+  longitude?: number;
+  useProfileLocation?: boolean;
+  actionRadius: number; // km per ritiro in negozio
+  deliveryPreference: 'pickup' | 'delivery' | 'both';
+  urgencyLevel: 'immediate' | '24h' | '48h' | 'few_days';
+  
+  // Specifiche prodotto dinamiche
   brand?: string;
   model?: string;
-  size?: string;
   color?: string;
   material?: string;
+  size?: string;
+  weight?: string;
+  dimensions?: string;
+  condition?: 'new' | 'used' | 'refurbished';
+  
+  // Campi specifici per categoria
+  attributes?: Record<string, any>;
+  technicalSpecs?: string;
+  notes?: string;
 }
 
 interface ChatMessage {

@@ -10,13 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Sistema Schede Prodotto Intelligenti (11/08/2025)
-- **Generazione Dinamica**: Clemente crea automaticamente schede per prodotti non predefiniti
-- **Schede Strutturate**: Sistema completo per scarpe, abbigliamento, elettronica, mobili, elettrodomestici
-- **AI Analysis**: Backend analizza prodotti sconosciuti e genera schede appropriate
-- **Raccolta Sistematica**: Budget, specifiche tecniche e condizioni sempre raccolte
-- **Obiettivo Compilazione**: Comunicazione diretta e concisa, non discorsiva
-- **Context Tracking**: Frontend gestisce schede e dati raccolti progressivamente
+### Sistema Schede Prodotto Intelligenti v2.0 (11/08/2025)
+- **Schema Completo**: Tutti i campi essenziali: nome prodotto, descrizione, categoria, taglia/misura, materiale, colore, budget min/max, localizzazione
+- **Geolocalizzazione Integrata**: Pulsante "rileva posizione" con coordinate GPS, opzione "usa profilo utente"
+- **Campi Dinamici**: Si adattano automaticamente per categoria (colore/taglia solo per abbigliamento, dimensioni per mobili, specifiche per elettronica)
+- **Sistema Completo**: Urgenza (immediato, 24h, 48h, qualche giorno), consegna (ritiro/delivery/entrambi), raggio azione km
+- **Condizioni Prodotto**: Nuovo, usato, ricondizionato sempre specificati
+- **Progresso Visivo**: Calcolo dinamico completamento con soglia 70% per pubblicazione
+- **No Campi Opzionali**: Tutti i dati necessari sempre raccolti, mai specifiche generiche
 
 ### Risoluzione Definitiva Chat Clemente (11/08/2025)
 - **CORS Express**: Middleware CORS configurato correttamente sul server Express

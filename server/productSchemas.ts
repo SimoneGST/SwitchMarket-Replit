@@ -20,15 +20,44 @@ export interface ProductSchema {
   description: string;
   fields: ProductField[];
   assistantInstructions: string;
+  requiredFields?: string[];
+  categorySpecificFields?: string[];
+  fieldDescriptions?: Record<string, string>;
+  fieldTypes?: Record<string, 'text' | 'number' | 'select' | 'boolean'>;
+  selectOptions?: Record<string, string[]>;
 }
 
 // Definizione delle schede prodotto specifiche
 export const productSchemas: ProductSchema[] = [
   {
     category: "scarpe",
-    subcategory: "sportive",
+    subcategory: "sportive", 
     name: "Scarpe Sportive/Da Palestra",
     description: "Scarpe per attività fisica, palestra, running, fitness",
+    requiredFields: ["productName", "size", "color", "brand"],
+    categorySpecificFields: ["size", "color", "brand", "material", "condition"],
+    fieldDescriptions: {
+      "productName": "Nome specifico del prodotto",
+      "size": "Numero/taglia delle scarpe (35-50)",
+      "color": "Colore preferito o specifico",
+      "brand": "Marca preferita (Nike, Adidas, etc.)",
+      "material": "Materiale (pelle, tessuto, sintetico)",
+      "condition": "Condizione (nuovo, usato, ricondizionato)"
+    },
+    fieldTypes: {
+      "productName": "text",
+      "size": "number", 
+      "color": "select",
+      "brand": "select",
+      "material": "select",
+      "condition": "select"
+    },
+    selectOptions: {
+      "color": ["nero", "bianco", "grigio", "blu", "rosso", "verde", "altro"],
+      "brand": ["Nike", "Adidas", "Puma", "New Balance", "Asics", "Under Armour", "altro"],
+      "material": ["pelle", "tessuto", "sintetico", "mesh", "altro"],
+      "condition": ["new", "used", "refurbished"]
+    },
     fields: [
       {
         key: "type",
@@ -85,8 +114,32 @@ export const productSchemas: ProductSchema[] = [
   {
     category: "abbigliamento",
     subcategory: "casual",
-    name: "Abbigliamento Casual",
+    name: "Abbigliamento Casual", 
     description: "Vestiti per uso quotidiano: magliette, pantaloni, felpe, giacche",
+    requiredFields: ["productName", "size", "color"],
+    categorySpecificFields: ["size", "color", "brand", "material", "condition"],
+    fieldDescriptions: {
+      "productName": "Nome specifico del capo",
+      "size": "Taglia (XS, S, M, L, XL, etc.)",
+      "color": "Colore del capo",
+      "brand": "Marca (opzionale)",
+      "material": "Materiale (cotone, poliestere, etc.)",
+      "condition": "Condizione (nuovo, usato, ricondizionato)"
+    },
+    fieldTypes: {
+      "productName": "text",
+      "size": "select",
+      "color": "select", 
+      "brand": "text",
+      "material": "select",
+      "condition": "select"
+    },
+    selectOptions: {
+      "size": ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+      "color": ["nero", "bianco", "grigio", "blu", "rosso", "verde", "altro"],
+      "material": ["cotone", "poliestere", "lana", "lino", "misto", "altro"],
+      "condition": ["new", "used", "refurbished"]
+    },
     fields: [
       {
         key: "type",
