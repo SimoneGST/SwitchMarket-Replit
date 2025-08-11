@@ -111,17 +111,27 @@ class ClementeAI {
     
     // Se non abbiamo ancora una scheda, prova a identificare il prodotto
     if (!currentSchema) {
-      const detectedSchema = findBestProductSchema(userMessage);
-      if (detectedSchema) {
-        currentSchema = detectedSchema;
-        console.log(`🎯 Scheda rilevata: ${detectedSchema.name}`);
-      } else {
-        // Se non trova una scheda predefinita, prova a generarne una dinamicamente
-        console.log(`🔍 Prodotto non riconosciuto, genero scheda dinamica per: ${userMessage}`);
-        const dynamicSchema = await generateDynamicProductSchema(userMessage, this.model);
-        if (dynamicSchema) {
-          currentSchema = dynamicSchema;
-          console.log(`🆕 Scheda dinamica creata: ${dynamicSchema.name}`);
+      // Prima controlla se è un saluto o messaggio generico
+      const genericMessages = ['ciao', 'salve', 'buongiorno', 'buonasera', 'hello', 'hi'];
+      const isGenericMessage = genericMessages.some(greeting => 
+        userMessage.toLowerCase().trim() === greeting || 
+        userMessage.toLowerCase().includes(`${greeting} `) ||
+        userMessage.toLowerCase().includes(` ${greeting}`)
+      );
+      
+      if (!isGenericMessage) {
+        const detectedSchema = findBestProductSchema(userMessage);
+        if (detectedSchema) {
+          currentSchema = detectedSchema;
+          console.log(`🎯 Scheda rilevata: ${detectedSchema.name}`);
+        } else {
+          // Se non trova una scheda predefinita, prova a generarne una dinamicamente
+          console.log(`🔍 Prodotto non riconosciuto, genero scheda dinamica per: ${userMessage}`);
+          const dynamicSchema = await generateDynamicProductSchema(userMessage, this.model);
+          if (dynamicSchema) {
+            currentSchema = dynamicSchema;
+            console.log(`🆕 Scheda dinamica creata: ${dynamicSchema.name}`);
+          }
         }
       }
     }
@@ -136,20 +146,23 @@ class ClementeAI {
 
 Il cliente ha scritto: "${userMessage}"
 
-OBIETTIVO: Raccogliere le informazioni ESSENZIALI per la richiesta in modo diretto e efficace.
+Se è un SALUTO o messaggio generico (ciao, salve, buongiorno):
+- Rispondi cordialmente e chiedi cosa sta cercando
+- Esempio: "Ciao! Sono Clemente, il tuo assistente per trovare prodotti. Cosa stai cercando oggi?"
 
-IMPORTANTE: Identifica il prodotto e raccogli subito:
-1. Budget (SEMPRE obbligatorio)
-2. Specifiche tecniche/caratteristiche principali
-3. Condizioni (nuovo/usato)
-4. Altre preferenze specifiche
+Se è una RICHIESTA DI PRODOTTO:
+- Identifica il prodotto e raccogli gradualmente le informazioni
+- Caratteristiche specifiche del prodotto
+- Budget (SOLO se è un prodotto commerciale)
+- Condizioni (SOLO per prodotti fisici)
 
-REGOLE:
-- Sii DIRETTO e conciso, massimo 1-2 frasi
-- Una domanda per volta con esempi concreti tra parentesi
-- Non essere troppo discorsivo o ripetitivo
-- Obiettivo: compilare velocemente la richiesta
-- Non ripetere info già fornite
+REGOLE PER IL TONO:
+- Tono conversazionale, cordiale e amichevole
+- Una domanda per volta, naturale e fluida
+- Include esempi quando utile, ma non essere robotico
+- Mantieni l'obiettivo di aiutare il cliente
+- Non ripetere informazioni già fornite
+- Evita formule standard come "Budget? (Es: X-Y€)"
 - Massimo 2 frasi per messaggio
 - Dopo 5 domande di dettaglio, passa sempre alla fase 2
 - Sii diretto e conciso
@@ -253,7 +266,7 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
     if (validation.isValid) {
       // Tutte le info raccolte, chiedi se passare alla configurazione
       return {
-        text: "Perfetto! Passiamo alla configurazione: in che zona cerchi e quanto è urgente?",
+        text: "Perfetto! Ora dimmi in che zona stai cercando e quanto è urgente per te trovarlo.",
         productSchema: schema,
         collectedData: updatedData
       };
@@ -325,13 +338,14 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
   private async generateContextualQuestion(baseQuestion: string, instruction: string, userMessage: string, history: any[]): Promise<string> {
     const prompt = `Sei Clemente. Fai questa domanda: "${baseQuestion}"
 
-REGOLE ASSOLUTE:
-- Massimo 1 frase diretta
-- Include sempre esempi concreti tra parentesi
-- Non essere discorsivo o ripetitivo
-- Obiettivo: compilare velocemente la richiesta
+REGOLE PER IL TONO:
+- Tono conversazionale, cordiale e amichevole
+- Una domanda per volta, naturale e fluida
+- Include esempi concreti tra parentesi quando utile
+- Non essere robotico o troppo tecnico
+- Mantieni l'obiettivo di raccogliere le info per la richiesta
 
-Genera SOLO la domanda concisa.`;
+Genera una domanda cordiale e naturale.`;
 
     try {
       const result = await this.model.generateContent(prompt);

@@ -358,10 +358,10 @@ export async function generateDynamicProductSchema(userInput: string, aiModel: a
   
   const prompt = `Analizza questo prodotto richiesto dall'utente: "${userInput}"
 
-Crea una scheda prodotto strutturata con questi campi OBBLIGATORI che deve sempre raccogliere:
-- Budget (sempre obbligatorio)
+Crea una scheda prodotto strutturata con questi campi appropriati per il prodotto:
+- Budget (SOLO se è un prodotto commerciale con prezzo - non per servizi gratuiti, idee, software open source)
 - Specifiche tecniche appropriate per il prodotto
-- Condizioni (nuovo/usato)
+- Condizioni (SOLO per prodotti fisici)
 
 Rispondi SOLO con un JSON valido in questo formato:
 {
@@ -374,14 +374,14 @@ Rispondi SOLO con un JSON valido in questo formato:
       "key": "budget",
       "label": "Budget",
       "type": "range", 
-      "required": true,
+      "required": false,
       "placeholder": "Es: 50-200€"
     },
     {
       "key": "condition",
       "label": "Condizioni",
       "type": "select",
-      "required": true,
+      "required": false,
       "options": ["nuovo", "usato", "ricondizionato", "indifferente"]
     }
     // Aggiungi altri campi specifici per questo prodotto
@@ -433,16 +433,30 @@ export function generateSmartQuestion(schema: ProductSchema, collectedData: any)
 }
 
 function formatQuestionForField(field: ProductField): string {
-  let question = `${field.label}?`;
-  
-  if (field.options && field.options.length > 0) {
-    const examples = field.options.slice(0, 4).join(', ');
-    question += ` (${examples}${field.options.length > 4 ? '...' : ''})`;
-  } else if (field.placeholder) {
-    question += ` (${field.placeholder})`;
+  // Crea domande più naturali e conversazionali
+  switch (field.key) {
+    case 'budget':
+      return "Hai un budget di riferimento in mente?";
+    case 'condition':
+      return "Preferisci nuovo o va bene anche usato?";
+    case 'size':
+      return "Che numero/taglia?";
+    case 'type':
+      return `Che tipo di ${field.label.toLowerCase()} stai cercando?`;
+    case 'brand':
+      return "Hai qualche marca in mente o va bene qualsiasi?";
+    default:
+      let question = `${field.label}?`;
+      
+      if (field.options && field.options.length > 0) {
+        const examples = field.options.slice(0, 3).join(', ');
+        question = `Per ${field.label.toLowerCase()}, hai preferenze? Ad esempio ${examples}.`;
+      } else if (field.placeholder) {
+        question += ` ${field.placeholder}`;
+      }
+      
+      return question;
   }
-  
-  return question;
 }
 
 // Funzione per validare e strutturare i dati raccolti
