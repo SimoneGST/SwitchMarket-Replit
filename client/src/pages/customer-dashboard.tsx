@@ -153,12 +153,12 @@ export default function CustomerDashboard() {
                   />
                 </div>
               </div>
-              <h3 className="text-lg font-medium text-slate-900 mb-2">Inizia con Clemente</h3>
-              <p className="text-slate-500 mb-4">Non hai ancora creato nessuna richiesta. Parla con Clemente per trovare quello che cerchi!</p>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">Crea la tua prima richiesta</h3>
+              <p className="text-slate-500 mb-4">Non hai ancora creato nessuna richiesta. Chatta con Clemente per trovare quello che cerchi!</p>
               <Link href="/create">
                 <Button className="bg-green-500 hover:bg-green-600">
                   <i className="fas fa-comments mr-2"></i>
-                  Inizia con Clemente
+                  Crea Richiesta
                 </Button>
               </Link>
             </div>
