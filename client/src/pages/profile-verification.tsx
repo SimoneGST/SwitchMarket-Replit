@@ -57,25 +57,35 @@ export default function ProfileVerification() {
     
     if (existingProfile) {
       setProfileData(prev => ({ ...prev, ...existingProfile }));
-      setUserType(existingProfile.userType || 'customer');
-      setConfirmed(existingProfile.profileVerified || false);
+      setUserType((existingProfile as any).userType || 'customer');
+      setConfirmed((existingProfile as any).profileVerified || false);
     }
   }, [user, existingProfile]);
 
   // Mutation per salvare profilo
   const saveProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('POST', '/api/profile/verify', data);
+      console.log('💾 Tentativo salvataggio profilo:', data);
+      const response = await apiRequest('POST', '/api/profile/verify', data);
+      const result = await response.json();
+      console.log('✅ Profilo salvato con successo:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Success callback chiamato:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       toast({
         title: "Profilo Verificato",
         description: "I tuoi dati sono stati confermati e salvati con successo!",
       });
+      // Reindirizza alla home o al profilo dopo il salvataggio
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('❌ Errore salvataggio profilo:', error);
       toast({
         title: "Errore",
         description: "Impossibile salvare il profilo. Riprova.",
@@ -394,7 +404,7 @@ export default function ProfileVerification() {
               <Checkbox 
                 id="confirm" 
                 checked={confirmed}
-                onCheckedChange={setConfirmed}
+                onCheckedChange={(checked) => setConfirmed(!!checked)}
               />
               <Label htmlFor="confirm" className="text-sm font-medium">
                 Confermo che tutti i dati inseriti sono corretti e veritieri. 

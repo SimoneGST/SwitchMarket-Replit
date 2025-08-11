@@ -537,15 +537,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const profileData = req.body;
       
+      console.log('🔍 Profile verification request:', {
+        userId,
+        profileData: { ...profileData, partitaIva: profileData.partitaIva ? '***' : undefined }
+      });
+      
       const updatedUser = await storage.updateUserProfile(userId, {
         ...profileData,
         profileVerified: true
       });
       
+      console.log('✅ Profile updated successfully:', { userId, success: true });
       res.json(updatedUser);
     } catch (error) {
-      console.error("Error verifying profile:", error);
-      res.status(500).json({ message: "Failed to verify profile" });
+      console.error("❌ Error verifying profile:", error);
+      res.status(500).json({ message: "Failed to verify profile", error: error.message });
     }
   });
 
