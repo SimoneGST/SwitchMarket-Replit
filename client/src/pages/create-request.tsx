@@ -134,26 +134,38 @@ export default function CreateRequest() {
     setIsClementeTyping(true);
     
     try {
-      // Usa l'API backend per mantenere la memoria della conversazione
-      const apiResponse = await apiRequest("POST", "/api/clemente/chat", {
-        message: chatInput,
-        context: {
-          conversationHistory: [...chatMessages, userMessage]
-        }
+      console.log('🌐 Invio richiesta a:', window.location.origin + '/api/clemente/chat');
+      
+      // Usa fetch diretto con CORS per evitare problemi di autenticazione
+      const response = await fetch('/api/clemente/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: chatInput,
+          context: {
+            conversationHistory: [...chatMessages, userMessage]
+          }
+        })
       });
       
-      const response = await apiResponse.json();
-      console.log('🔍 Response JSON completa:', response);
-      console.log('🔍 response.response:', response.response);
-      console.log('🔍 response.response.text:', response.response?.text);
-      const responseText = response.response?.text || '';
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('🔍 Response JSON completa:', responseData);
+      console.log('🔍 responseData.response:', responseData.response);
+      console.log('🔍 responseData.response.text:', responseData.response?.text);
+      const responseText = responseData.response?.text || responseData.response || '';
       console.log('📨 Risposta estratta:', responseText);
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: responseText,
         timestamp: new Date(),
-        aiGeneratedImage: response.response?.generatedImage
+        aiGeneratedImage: responseData.response?.generatedImage
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
@@ -189,14 +201,24 @@ export default function CreateRequest() {
   // Genera richiesta dalla chat
   const handleGenerateFromChat = async () => {
     try {
-      const apiResponse = await apiRequest("POST", "/api/clemente/generate-request", {
-        conversationHistory: chatMessages
+      const response = await fetch('/api/clemente/generate-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationHistory: chatMessages
+        })
       });
       
-      const response = await apiResponse.json();
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       
-      if (response.requestData) {
-        setRequestData(response.requestData);
+      const responseData = await response.json();
+      
+      if (responseData.requestData) {
+        setRequestData(responseData.requestData);
         setMode('manual');
         toast({
           title: "Richiesta generata dalla chat!",
