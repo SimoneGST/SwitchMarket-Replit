@@ -58,29 +58,20 @@ export default function Auth() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      const result = await authService.signInWithGoogle();
-      if (result) {
-        // Direct success
-        toast({
-          title: "Accesso effettuato",
-          description: "Benvenuto in Switch Market",
-        });
-        setLocation("/");
-      } else {
-        // Redirect in progress
-        toast({
-          title: "Reindirizzamento...",
-          description: "Ti stiamo reindirizzando per completare l'accesso",
-        });
-        // Don't set loading to false - page will reload
-      }
-    } catch (error: any) {
-      setIsLoading(false);
+      await authService.signInWithGoogle();
       toast({
-        title: "Errore",
-        description: error.message || "Usa l'accesso con email e password.",
+        title: "Accesso effettuato",
+        description: "Benvenuto in Switch Market",
+      });
+      setLocation("/");
+    } catch (error: any) {
+      toast({
+        title: "Errore Google",
+        description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,22 +166,32 @@ export default function Auth() {
               {isLogin ? 'Accedi' : 'Registrati'} come {userType === 'customer' ? 'Cliente' : 'Negoziante'}
             </CardTitle>
 
-            {/* Google Sign In - Disabled temporarily */}
+            {/* Google Sign In */}
             <Button 
-              disabled
-              className={`w-full py-3 text-lg font-semibold opacity-50 cursor-not-allowed ${
+              onClick={handleGoogleAuth}
+              disabled={isLoading}
+              className={`w-full py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 ${
                 userType === 'customer'
-                  ? 'bg-gray-400'
-                  : 'bg-gray-400'
+                  ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
               }`}
             >
-              <i className="fab fa-google mr-3"></i>
-              Google (in manutenzione)
+              {isLoading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin mr-3"></i>
+                  Accesso in corso...
+                </>
+              ) : (
+                <>
+                  <i className="fab fa-google mr-3"></i>
+                  {isLogin ? 'Accedi' : 'Registrati'} con Google
+                </>
+              )}
             </Button>
             
-            <div className="text-center text-sm text-gray-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
-              <i className="fas fa-tools mr-2"></i>
-              <strong>Google in manutenzione</strong> - Usa email e password per accedere
+            <div className="text-center text-xs text-gray-600 bg-yellow-50 border border-yellow-200 p-2 rounded">
+              <i className="fas fa-info-circle mr-1"></i>
+              Se Google non funziona, <strong>aggiungi questo dominio</strong> ai domini autorizzati in Firebase Console
             </div>
             
 

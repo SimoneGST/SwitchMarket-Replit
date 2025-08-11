@@ -36,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Real-time**: Chat e notifiche con aggiornamenti istantanei
 - **Security**: Firestore Security Rules granulari, Google OAuth configurato
 - **Deploy Ready**: Firebase Hosting con CDN, documentazione setup completa
+- **Google Auth Fix**: Risolto problema pagina bianca con configurazione domini autorizzati Firebase Console
 
 ### Funzionalità Avanzate (09/08/2025)
 - **Geolocalizzazione**: actionRadius, deliveryPreference (pickup/delivery/both), urgencyLevel
