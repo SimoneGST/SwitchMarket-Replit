@@ -1,0 +1,1 @@
+{"version":3,"file":"firestore-collections.js","sourceRoot":"","sources":["../src/firestore-collections.ts"],"names":[],"mappings":";;;AA2GA,gCAAgC;AACnB,QAAA,WAAW,GAAG;IACzB,KAAK,EAAE,OAAO;IACd,QAAQ,EAAE,UAAU;IACpB,MAAM,EAAE,QAAQ;IAChB,aAAa,EAAE,eAAe;IAC9B,QAAQ,EAAE,UAAU;IACpB,QAAQ,EAAE,UAAU;IACpB,YAAY,EAAE,cAAc;IAC5B,eAAe,EAAE,gBAAgB;IACjC,iBAAiB,EAAE,kBAAkB;CAC7B,CAAC"}

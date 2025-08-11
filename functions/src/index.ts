@@ -95,10 +95,10 @@ app.post("/api/merchant/verify", async (req: any, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
     
-    res.json({ success: true, message: 'Verification completed' });
+    return res.json({ success: true, message: 'Verification completed' });
   } catch (error) {
     console.error('Error during verification:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -156,10 +156,10 @@ app.get("/api/user", async (req: any, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json({ id: userDoc.id, ...userDoc.data() });
+    return res.json({ id: userDoc.id, ...userDoc.data() });
   } catch (error) {
     console.error("Error getting user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -175,10 +175,10 @@ app.get("/api/auth/user", async (req: any, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json({ id: userDoc.id, ...userDoc.data() });
+    return res.json({ id: userDoc.id, ...userDoc.data() });
   } catch (error) {
     console.error("Error getting user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
