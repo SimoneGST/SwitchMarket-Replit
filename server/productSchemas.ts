@@ -517,10 +517,11 @@ export function validateCollectedData(schema: ProductSchema, data: any): { isVal
   const missingFields: string[] = [];
   const errors: string[] = [];
   
-  schema.fields.forEach(field => {
-    if (field.required && !data[field.key]) {
-      missingFields.push(field.label);
-    }
+  if (schema?.fields) {
+    schema.fields.forEach(field => {
+      if (field.required && !data[field.key]) {
+        missingFields.push(field.label);
+      }
     
     if (data[field.key] && field.validation) {
       const value = data[field.key];
@@ -535,7 +536,8 @@ export function validateCollectedData(schema: ProductSchema, data: any): { isVal
         }
       }
     }
-  });
+    });
+  }
   
   return {
     isValid: missingFields.length === 0 && errors.length === 0,
