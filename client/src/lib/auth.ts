@@ -18,33 +18,41 @@ const googleProvider = new GoogleAuthProvider();
 export const authService = {
   async signInWithGoogle(): Promise<FirebaseUser | null> {
     try {
-      // Configure provider with better settings
+      // Configure provider
       googleProvider.setCustomParameters({
-        prompt: 'select_account',
-        access_type: 'online'
+        prompt: 'select_account'
       });
       
-      // Add required scopes
       googleProvider.addScope('email');
       googleProvider.addScope('profile');
       
-      const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
+      // Try redirect instead of popup to avoid white screen
+      await signInWithRedirect(auth, googleProvider);
+      return null; // Will be handled by redirect result
     } catch (error: any) {
       console.error("Google authentication error:", error);
       
-      // Handle specific errors gracefully
-      if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Accesso annullato.');
-      } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('Popup bloccato dal browser.');
-      } else if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Servizio temporaneamente non disponibile.');
+      if (error.code === 'auth/unauthorized-domain') {
+        throw new Error('Per usare Google, contatta l\'amministratore per autorizzare questo dominio.');
       } else if (error.code === 'auth/network-request-failed') {
         throw new Error('Errore di connessione.');
       }
       
-      throw new Error('Errore durante l\'autenticazione.');
+      throw new Error('Servizio Google temporaneamente non disponibile.');
+    }
+  },
+
+  // Handle redirect result on page load
+  async handleRedirectResult(): Promise<FirebaseUser | null> {
+    try {
+      const result = await getRedirectResult(auth);
+      if (result) {
+        return result.user;
+      }
+      return null;
+    } catch (error: any) {
+      console.error("Redirect error:", error);
+      throw error;
     }
   },
 

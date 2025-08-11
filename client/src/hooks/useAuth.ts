@@ -10,6 +10,18 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check for redirect result first
+    const checkRedirectResult = async () => {
+      try {
+        const { authService } = await import("@/lib/auth");
+        await authService.handleRedirectResult();
+      } catch (error) {
+        console.error("Redirect result error:", error);
+      }
+    };
+    
+    checkRedirectResult();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
       
