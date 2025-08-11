@@ -55,7 +55,7 @@ export default function CreateRequest() {
   });
   
   // Impostazioni vocali
-  const { voiceSettings, updateVoiceSettings } = useVoiceSettings();
+  const { settings: voiceSettings, updateVoiceSettings, speakWithSettings } = useVoiceSettings();
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   
   // Request data state
@@ -273,11 +273,8 @@ export default function CreateRequest() {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
-  // Sintesi vocale
-  const { speakWithSettings } = useVoiceSettings();
-  
   const speakClementeMessage = async (text: string) => {
-    if (!voiceSettings.voiceEnabled) return;
+    if (!voiceSettings?.voiceEnabled) return;
     
     setIsClementeSpeaking(true);
     

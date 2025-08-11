@@ -17,7 +17,7 @@ export default function BrowseRequests() {
     status: "open",
   });
 
-  const { data: requests = [], isLoading } = useQuery({
+  const { data: requests = [], isLoading, error } = useQuery({
     queryKey: ["/api/requests", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -25,7 +25,21 @@ export default function BrowseRequests() {
         if (value) params.append(key, value);
       });
       
-      const response = await fetch(`/api/requests?${params}`);
+      const response = await fetch(`/api/requests?${params}`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Non autenticato, restituisce array vuoto invece di errore
+          return [];
+        }
+        throw new Error(`Errore: ${response.status}`);
+      }
+      
       return response.json();
     },
   });

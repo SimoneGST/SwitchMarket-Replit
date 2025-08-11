@@ -86,9 +86,7 @@ function Router() {
                 <MerchantDashboard />
               )}
             </Route>
-            <Route path="/browse">
-              {!isAuthenticated ? <Auth /> : <BrowseRequests />}
-            </Route>
+            <Route path="/browse" component={BrowseRequests} />
             <Route path="/create">
               {!isAuthenticated ? <Auth /> : <CreateRequest />}
             </Route>
