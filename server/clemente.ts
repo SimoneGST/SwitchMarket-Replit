@@ -353,43 +353,66 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
     };
   }
 
-  // Estrae dati dal messaggio dell'utente
+  // Estrae dati dal messaggio dell'utente con pattern specifici
   private async extractDataFromMessage(userMessage: string, schema: ProductSchema, existingData: any): Promise<any> {
-    const message = userMessage.toLowerCase();
+    const message = userMessage.toLowerCase().trim();
     const newData = { ...existingData };
     
-    // Logica di estrazione semplificata (potrebbe essere migliorata con NLP)
-    schema.fields.forEach(field => {
-      if (!newData[field.key] && field.options) {
-        const matchedOption = field.options.find(option => 
-          message.includes(option.toLowerCase()) || 
-          (option.includes('€') && message.includes('€'))
-        );
-        if (matchedOption) {
-          newData[field.key] = matchedOption;
-        }
+    // Pattern di estrazione per scarpe da spinning
+    if (schema?.name?.includes('spinning') || schema?.name?.includes('scarpe')) {
+      // Tipo di chiusura
+      if (!newData.closureType) {
+        if (message.includes('boa')) newData.closureType = 'boa';
+        else if (message.includes('lacci')) newData.closureType = 'lacci';  
+        else if (message.includes('velcro')) newData.closureType = 'velcro';
       }
       
-      // Estrazione numeri per taglie e prezzi
-      if (!newData[field.key] && field.type === 'number') {
-        const numberMatch = message.match(/\d+/);
-        if (numberMatch && field.key === 'size') {
-          const size = parseInt(numberMatch[0]);
-          if (size >= 35 && size <= 50) { // Range ragionevole per scarpe
-            newData[field.key] = size;
+      // Budget
+      if (!newData.budgetMax && !newData.budgetMin) {
+        const budgetMatch = message.match(/(\d+)(?:\s*(?:euro|€|eur))?/);
+        if (budgetMatch) {
+          const amount = parseInt(budgetMatch[1]);
+          if (amount >= 20 && amount <= 500) {
+            newData.budgetMax = amount;
+            newData.budgetMin = Math.max(20, amount - 30);
           }
         }
       }
       
-      // Estrazione budget
-      if (!newData[field.key] && field.key === 'budget') {
-        const budgetMatch = message.match(/(\d+).*?(\d+).*?€|(\d+)\s*€/);
-        if (budgetMatch) {
-          newData[field.key] = budgetMatch[0];
+      // Taglia scarpe
+      if (!newData.size) {
+        const sizeMatch = message.match(/\b(3[5-9]|4[0-9]|5[0-0])\b/);
+        if (sizeMatch) {
+          newData.size = sizeMatch[1];
         }
       }
-    });
+      
+      // Materiale suola
+      if (!newData.material) {
+        if (message.includes('nylon')) newData.material = 'nylon';
+        else if (message.includes('carbonio')) newData.material = 'carbonio';
+      }
+      
+      // Preferenza comfort vs performance
+      if (!newData.preferenceType) {
+        if (message.includes('comfort') || message.includes('comoda')) newData.preferenceType = 'comfort';
+        else if (message.includes('rigida') || message.includes('performance')) newData.preferenceType = 'performance';
+      }
+    }
     
+    // Pattern generici per tutti i prodotti
+    
+    // Categoria di prodotto
+    if (!newData.category && !newData.productName) {
+      if (message.includes('scarpe')) {
+        newData.category = 'Sport e Tempo Libero';
+        if (message.includes('spinning') || message.includes('palestra')) {
+          newData.productName = 'Scarpe da spinning';
+        }
+      }
+    }
+    
+    console.log('🔍 Dati estratti dal messaggio:', newData);
     return newData;
   }
   

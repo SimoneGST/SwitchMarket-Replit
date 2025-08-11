@@ -97,87 +97,36 @@ class ClementeAI {
     return null;
   }
 
-  // Sistema di chat per ottenere dettagli (ora con supporto file)
-  async chatWithUser(userMessage: string, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string}> {
+  // Sistema di chat per ottenere dettagli (ora con supporto file e memoria)
+  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string, collectedData?: any, productSchema?: any}> {
     if (!this.model) {
       return { text: 'Mi dispiace, il servizio AI non è disponibile al momento. Prova la compilazione manuale.' };
     }
 
-    this.chatHistory.push({
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date()
-    });
-
-    const systemPrompt = `Sei Clemente, esperto assistente di Switch Market che aiuta i clienti a creare richieste perfette per i negozianti locali.
-
-MISSIONE: Trasformare richieste vaghe in specifiche dettagliate e complete, educando il cliente sulle caratteristiche importanti del prodotto.
-
-APPROCCIO EDUCATIVO:
-- Spiega perché certe specifiche sono importanti ("La suola flessibile è fondamentale per lo spinning perché...")
-- Suggerisci caratteristiche che il cliente potrebbe non aver considerato
-- Aiuta a capire le differenze tecniche tra opzioni simili
-- Proponi range di prezzo realistici per il mercato
-
-PROCESSO SEMPLICE:
-1. Conferma il prodotto brevemente
-2. Fai UNA domanda tecnica importante alla volta
-3. Raccogli budget e tempistiche quando necessario
-4. Proponi di creare la richiesta quando hai abbastanza info
-
-IMPORTANTE: Risposte BREVI e NATURALI. Non fare liste o spiegazioni lunghe.
-
-STILE COMUNICAZIONE:
-- Naturale e conversazionale, come un amico esperto
-- UNA domanda alla volta, massimo 2 frasi
-- Spiega brevemente solo quando necessario
-- Tono colloquiale e diretto
-
-ESEMPI GIUSTI:
-"Perfetto! Che tipo di attacco usi di solito: SPD-SL o Look Delta?"
-"Hai un budget in mente?"
-"Per lo spinning è importante la rigidità della suola. La vuoi molto rigida o preferisci un po' di flessibilità?"
-
-Conversazione precedente:
-${this.chatHistory.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
-
-Aiuta il cliente a creare una richiesta completa e precisa.`;
-
     try {
       console.log('🤖 Clemente sta elaborando:', userMessage);
       
-      let finalMessage = userMessage;
-      let analysisResult = '';
-
-      // Se c'è un file allegato, analizzalo prima
-      if (attachedFile && attachedFile.type.startsWith('image/')) {
-        console.log('🖼️ Analizzando immagine allegata:', attachedFile.name);
-        analysisResult = await this.analyzeImage(attachedFile.url, userMessage);
-        finalMessage = `${userMessage}\n\n[Immagine allegata: ${attachedFile.name}]\nAnalisi immagine: ${analysisResult}`;
-      }
-
-      const result = await this.model.generateContent(systemPrompt + '\n\nCliente: ' + finalMessage);
-      const response = result.response.text();
-      
-      console.log('✅ Risposta Clemente:', response.substring(0, 100) + '...');
-      
-      // Determina se dovrebbe generare un'immagine di esempio
-      const shouldGenerateImage = this.shouldGenerateExampleImage(userMessage, response);
-      let generatedImage: string | undefined;
-      
-      if (shouldGenerateImage) {
-        const imageDescription = this.extractImageDescription(userMessage, response);
-        generatedImage = await this.generateExampleImage(imageDescription) || undefined;
-      }
-
-      this.chatHistory.push({
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-        aiGeneratedImage: generatedImage
+      // Invia al server con il contesto completo
+      const response = await fetch('/api/clemente/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: userMessage,
+          context: context,
+          attachedFile: attachedFile
+        })
       });
 
-      return { text: response, generatedImage };
+      if (!response.ok) throw new Error('Errore comunicazione server');
+      
+      const result = await response.json();
+      console.log('✅ Risposta Clemente:', result.response);
+      return { 
+        text: result.response, 
+        generatedImage: result.generatedImage,
+        collectedData: result.collectedData,
+        productSchema: result.productSchema
+      };
     } catch (error: any) {
       console.error('❌ Errore chat Clemente:', error);
       

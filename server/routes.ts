@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clemente AI endpoint with Gemini
+  // Clemente AI endpoint with Gemini e memoria
   app.post('/api/clemente/chat', async (req: any, res) => {
     try {
       const { message, context, attachedFile } = req.body;
@@ -199,12 +199,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Passa il context completo al chat per mantenere la memoria
       const result = await clementeAI.chatWithUser(message, context, attachedFile);
       res.json({
-        response: result,
-        extractedData: context || {}
+        response: result.text,
+        generatedImage: result.generatedImage,
+        collectedData: result.collectedData,
+        productSchema: result.productSchema
       });
     } catch (error) {
       console.error("Error processing Clemente chat:", error);
-      res.status(500).json({ message: "Failed to process chat" });
+      res.status(500).json({ 
+        response: "Mi dispiace, ho avuto un problema tecnico. Puoi riprovare?",
+        message: "Failed to process chat" 
+      });
     }
   });
 

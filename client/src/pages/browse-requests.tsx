@@ -322,7 +322,7 @@ export default function BrowseRequests() {
     }
   });
 
-  // Invia messaggio a Clemente
+  // Invia messaggio a Clemente con memoria dei dati raccolti
   const sendMessage = async () => {
     if (!chatInput.trim() || isClementeTyping) return;
 
@@ -333,11 +333,40 @@ export default function BrowseRequests() {
     };
 
     setChatMessages(prev => [...prev, userMessage]);
+    const currentInput = chatInput;
     setChatInput('');
     setIsClementeTyping(true);
 
     try {
-      const response = await clemente.chatWithUser(chatInput);
+      // Prepara il context con i dati già raccolti e la cronologia chat
+      const context = {
+        conversationHistory: chatMessages.map(msg => ({
+          isAI: msg.role === 'assistant',
+          content: msg.content,
+          timestamp: msg.timestamp
+        })),
+        collectedData: {
+          // Trasferisci i dati già raccolti dalla richiesta in costruzione
+          productName: requestData.productName,
+          category: requestData.category,
+          budgetMin: requestData.budgetMin,
+          budgetMax: requestData.budgetMax,
+          brand: requestData.brand,
+          model: requestData.model,
+          size: requestData.size,
+          color: requestData.color,
+          material: requestData.material,
+          condition: requestData.condition,
+          location: requestData.location,
+          urgencyLevel: requestData.urgencyLevel,
+          deliveryPreference: requestData.deliveryPreference,
+          actionRadius: requestData.actionRadius,
+          description: requestData.description
+        },
+        currentSchema: productSchema
+      };
+
+      const response = await clemente.chatWithUser(currentInput, context, undefined);
 
       const aiMessage: ChatMessage = {
         role: 'assistant',
@@ -347,6 +376,24 @@ export default function BrowseRequests() {
       };
 
       setChatMessages(prev => [...prev, aiMessage]);
+      
+      // Aggiorna automaticamente la richiesta in costruzione con nuovi dati raccolti
+      if (response.collectedData) {
+        setRequestData(prev => ({
+          ...prev,
+          ...response.collectedData,
+          // Assicurati che i campi essenziali non vengano sovrascritti accidentalmente
+          urgencyLevel: response.collectedData.urgencyLevel || prev.urgencyLevel || 'few_days',
+          deliveryPreference: response.collectedData.deliveryPreference || prev.deliveryPreference || 'both',
+          actionRadius: response.collectedData.actionRadius || prev.actionRadius || 10
+        }));
+      }
+
+      // Aggiorna lo schema del prodotto se rilevato
+      if (response.productSchema) {
+        setProductSchema(response.productSchema);
+      }
+
       await speakClementeMessage(response.text);
 
     } catch (error) {
