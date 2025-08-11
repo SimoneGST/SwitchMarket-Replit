@@ -10,13 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Deploy Firebase Ready (11/08/2025)
-- **Firebase Functions**: Backend completo migrato da PostgreSQL a Firestore
+### Deploy Firebase Configurato (11/08/2025)
+- **Firebase Functions**: Backend completo migrato da PostgreSQL a Firestore con CORS fix
 - **API Routes**: Merchant verification, chat Clemente, user management, requests system
-- **Build System**: Script automatizzato build-firebase.js per deploy ottimizzato
-- **Notifiche Toast**: Sistema centralizzato con categorie predefinite e gestione errori automatica
-- **Documentation**: Guida completa deploy Firebase con checklist e troubleshooting
-- **Production Ready**: Configurazione hosting, functions, auth, storage pronta per deploy
+- **Build System**: Frontend ottimizzato (1.34MB bundle) pronto per hosting
+- **Configurazione Deploy**: Guida step-by-step con Firebase Console setup completo
+- **CORS Resolution**: Headers configurati per domini .replit.app e .web.app
+- **Ready for Production**: Tutto configurato per deploy immediato su Firebase
 
 ### Test End-to-End Completati con Successo (11/08/2025)
 - **Geolocalizzazione**: Sistema di filtro geografico con formula Haversine perfettamente funzionante
