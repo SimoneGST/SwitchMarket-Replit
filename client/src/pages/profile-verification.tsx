@@ -48,6 +48,13 @@ export default function ProfileVerification() {
   // Popolamento dati dal profilo Google/esistente
   useEffect(() => {
     if (user) {
+      console.log('👤 Dati utente ricevuti da Firebase:', {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        displayName: user.firstName + ' ' + user.lastName
+      });
+      
       setProfileData(prev => ({
         ...prev,
         firstName: user.firstName || '',
@@ -56,6 +63,7 @@ export default function ProfileVerification() {
     }
     
     if (existingProfile) {
+      console.log('📋 Profilo esistente caricato:', existingProfile);
       setProfileData(prev => ({ ...prev, ...existingProfile }));
       setUserType((existingProfile as any).userType || 'customer');
       setConfirmed((existingProfile as any).profileVerified || false);

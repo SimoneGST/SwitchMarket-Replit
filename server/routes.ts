@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       console.error("❌ Error verifying profile:", error);
-      res.status(500).json({ message: "Failed to verify profile", error: error.message });
+      res.status(500).json({ message: "Failed to verify profile", error: String(error) });
     }
   });
 

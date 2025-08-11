@@ -19,15 +19,48 @@ export function useAuth() {
           let userData = await users.get(firebaseUser.uid);
           
           if (!userData) {
+            // Extract name parts from Google displayName
+            const nameParts = firebaseUser.displayName?.split(" ") || [];
+            const firstName = nameParts[0] || "";
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+            
+            console.log('🔍 Creating new user from Google account:', {
+              displayName: firebaseUser.displayName,
+              extractedFirstName: firstName,
+              extractedLastName: lastName,
+              email: firebaseUser.email
+            });
+            
             // Create new user document
             userData = await users.create({
               id: firebaseUser.uid,
               email: firebaseUser.email || "",
-              firstName: firebaseUser.displayName?.split(" ")[0] || "",
-              lastName: firebaseUser.displayName?.split(" ")[1] || "",
+              firstName,
+              lastName,
               profileImageUrl: firebaseUser.photoURL || "",
               userType: undefined, // Will be set during onboarding
             });
+          } else {
+            // Update existing user with Google data if missing
+            const updates: any = {};
+            if (!userData.firstName && firebaseUser.displayName) {
+              const nameParts = firebaseUser.displayName.split(" ");
+              updates.firstName = nameParts[0] || "";
+              if (nameParts.length > 1) {
+                updates.lastName = nameParts.slice(1).join(" ");
+              }
+            }
+            if (!userData.profileImageUrl && firebaseUser.photoURL) {
+              updates.profileImageUrl = firebaseUser.photoURL;
+            }
+            
+            if (Object.keys(updates).length > 0) {
+              console.log('🔄 Updating existing user with Google data:', updates);
+              const updatedData = await users.update(firebaseUser.uid, updates);
+              if (updatedData) {
+                userData = updatedData;
+              }
+            }
           }
           
           setUser(userData);
