@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import SEOHead from "@/components/seo-head";
 import ConversionTracking from "@/components/marketing/conversion-tracking";
-import NotFound from "@/pages/not-found";
+
 import Landing from "@/pages/landing";
 import HowItWorks from "@/pages/how-it-works";
 import Auth from "@/pages/auth";
@@ -117,8 +117,6 @@ function Router() {
             <Route path="/messages">
               {!isAuthenticated ? <Auth /> : <Messages />}
             </Route>
-            
-            <Route component={NotFound} />
           </>
         )}
       </Switch>
