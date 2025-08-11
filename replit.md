@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Sistema Schede Prodotto Intelligenti (11/08/2025)
+- **Generazione Dinamica**: Clemente crea automaticamente schede per prodotti non predefiniti
+- **Schede Strutturate**: Sistema completo per scarpe, abbigliamento, elettronica, mobili, elettrodomestici
+- **AI Analysis**: Backend analizza prodotti sconosciuti e genera schede appropriate
+- **Raccolta Sistematica**: Budget, specifiche tecniche e condizioni sempre raccolte
+- **Obiettivo Compilazione**: Comunicazione diretta e concisa, non discorsiva
+- **Context Tracking**: Frontend gestisce schede e dati raccolti progressivamente
+
 ### Risoluzione Definitiva Chat Clemente (11/08/2025)
 - **CORS Express**: Middleware CORS configurato correttamente sul server Express
 - **Comunicazione Diretta**: Chat Clemente usa fetch diretto al server locale (no Firebase Functions)

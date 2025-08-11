@@ -170,7 +170,7 @@ export default function CreateRequest() {
       
       // Aggiorna il context con la scheda prodotto e i dati raccolti
       if (responseData.response?.productSchema) {
-        setContext(prev => ({
+        setContext((prev: any) => ({
           ...prev,
           currentSchema: responseData.response.productSchema,
           collectedData: responseData.response.collectedData || {}

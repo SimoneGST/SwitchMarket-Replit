@@ -352,6 +352,63 @@ export function findBestProductSchema(userInput: string): ProductSchema | null {
   return null;
 }
 
+// Genera una nuova scheda prodotto per prodotti non riconosciuti
+export async function generateDynamicProductSchema(userInput: string, aiModel: any): Promise<ProductSchema | null> {
+  if (!aiModel) return null;
+  
+  const prompt = `Analizza questo prodotto richiesto dall'utente: "${userInput}"
+
+Crea una scheda prodotto strutturata con questi campi OBBLIGATORI che deve sempre raccogliere:
+- Budget (sempre obbligatorio)
+- Specifiche tecniche appropriate per il prodotto
+- Condizioni (nuovo/usato)
+
+Rispondi SOLO con un JSON valido in questo formato:
+{
+  "category": "categoria_principale",
+  "subcategory": "sottocategoria_opzionale", 
+  "name": "Nome Descrittivo Prodotto",
+  "description": "Breve descrizione del prodotto",
+  "fields": [
+    {
+      "key": "budget",
+      "label": "Budget",
+      "type": "range", 
+      "required": true,
+      "placeholder": "Es: 50-200€"
+    },
+    {
+      "key": "condition",
+      "label": "Condizioni",
+      "type": "select",
+      "required": true,
+      "options": ["nuovo", "usato", "ricondizionato", "indifferente"]
+    }
+    // Aggiungi altri campi specifici per questo prodotto
+  ],
+  "assistantInstructions": "Istruzioni specifiche per l'assistente per questo tipo di prodotto"
+}
+
+Mantieni la scheda concisa ma completa, massimo 6-7 campi totali.`;
+
+  try {
+    const result = await aiModel.generateContent(prompt);
+    const responseText = result.response.text();
+    
+    // Estrai il JSON dalla risposta
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const schemaData = JSON.parse(jsonMatch[0]);
+      console.log('🆕 Nuova scheda generata dinamicamente:', schemaData.name);
+      return schemaData as ProductSchema;
+    }
+  } catch (error) {
+    console.error('❌ Errore generazione scheda dinamica:', error);
+  }
+  
+  return null;
+}
+
 // Funzione per generare domande intelligenti basate sulla scheda
 export function generateSmartQuestion(schema: ProductSchema, collectedData: any): string | null {
   const missingRequired = schema.fields.filter(field => 
