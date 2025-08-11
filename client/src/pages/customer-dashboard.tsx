@@ -144,14 +144,8 @@ export default function CustomerDashboard() {
         <div className="divide-y divide-slate-200">
           {userRequests.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="p-4 bg-green-50 rounded-xl inline-flex items-center justify-center mb-4">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center p-1">
-                  <img 
-                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                    alt="Clemente AI" 
-                    className="w-full h-full object-contain"
-                  />
-                </div>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-search text-2xl text-green-600"></i>
               </div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">Crea la tua prima richiesta</h3>
               <p className="text-slate-500 mb-4">Non hai ancora creato nessuna richiesta. Chatta con Clemente per trovare quello che cerchi!</p>
