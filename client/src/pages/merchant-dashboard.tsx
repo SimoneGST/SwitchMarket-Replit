@@ -45,20 +45,14 @@ export default function MerchantDashboard() {
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-yellow-800 mb-2">Completa la Verifica</h3>
                 <p className="text-yellow-700 mb-4">
-                  Per accedere a tutte le funzionalità della dashboard negozianti, devi completare 
-                  la verifica della tua attività con P.IVA e Codice Fiscale.
+                  Per accedere a tutte le funzionalità della dashboard negozianti, completa 
+                  la verifica della tua attività con P.IVA o Codice Fiscale.
                 </p>
                 <div className="flex gap-3">
                   <Link href="/merchant-verification">
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <i className="fas fa-check-circle mr-2"></i>
                       Verifica Attività
-                    </Button>
-                  </Link>
-                  <Link href="/merchant-profile">
-                    <Button variant="outline">
-                      <i className="fas fa-user mr-2"></i>
-                      Completa Profilo
                     </Button>
                   </Link>
                 </div>
