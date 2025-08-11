@@ -142,7 +142,22 @@ export default function BrowseRequests() {
   };
 
   useEffect(() => {
+    // Auto-scroll alla fine della chat
     scrollToBottom();
+    
+    // Auto-focus sull'input dopo ogni risposta di Clemente
+    const lastMessage = chatMessages[chatMessages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant' && !isClementeTyping) {
+      // Delay per permettere allo scroll di completarsi e al TTS di partire
+      setTimeout(() => {
+        const inputElement = document.querySelector('textarea[placeholder*="Dimmi cosa stai cercando"]') as HTMLTextAreaElement;
+        if (inputElement && document.activeElement !== inputElement) {
+          inputElement.focus();
+          // Posiziona il cursore alla fine del testo
+          inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+        }
+      }, 800);
+    }
   }, [chatMessages, isClementeTyping]);
 
   // Inizializza riconoscimento vocale
@@ -441,10 +456,10 @@ export default function BrowseRequests() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Colonna Chat Centrale */}
-          <div className="lg:col-span-2 order-1">
-            <Card className="h-[700px] flex flex-col shadow-xl border-2 border-green-200">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto h-[calc(100vh-12rem)]">
+          {/* Colonna Chat Principale - Priorità su mobile */}
+          <div className="flex-1 lg:w-2/3 min-w-0">
+            <Card className="h-full flex flex-col shadow-xl border-2 border-green-200">
               <CardHeader className="pb-4 bg-gradient-to-r from-green-100 to-blue-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -594,9 +609,9 @@ export default function BrowseRequests() {
             </Card>
           </div>
 
-          {/* Colonna Richiesta in Costruzione */}
-          <div className="order-2">
-            <Card className="sticky top-4 shadow-lg border-2 border-blue-200">
+          {/* Colonna Richiesta in Costruzione - Sidebar */}
+          <div className="w-full lg:w-1/3 lg:max-w-sm">
+            <Card className="h-full lg:sticky lg:top-4 shadow-lg border-2 border-blue-200 flex flex-col">
               <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-green-100">
                 <CardTitle className="text-lg text-blue-800">Richiesta in Costruzione</CardTitle>
                 <div className="mt-2">
@@ -608,7 +623,7 @@ export default function BrowseRequests() {
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+              <CardContent className="flex-1 space-y-4 overflow-y-auto p-4">
                 {/* Campi base editabili */}
                 <div>
                   <label className="text-sm font-medium text-slate-700">Nome Prodotto *</label>
@@ -695,7 +710,7 @@ export default function BrowseRequests() {
                   </div>
                   {userLocation && (
                     <p className="text-xs text-slate-500 mt-1">
-                      GPS: {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                      GPS: {userLocation.lat.toFixed(4)}, {userLocation.lon.toFixed(4)}
                     </p>
                   )}
                 </div>
