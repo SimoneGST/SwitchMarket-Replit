@@ -136,11 +136,11 @@ export default function MerchantVerification() {
       console.log("✅ Verification successful:", data);
       toast({
         title: "Verifica Completata!",
-        description: "La tua attività è stata verificata. Leonardo ti aiuterà ora a completare il profilo.",
+        description: "La tua attività è stata verificata con successo. Benvenuto su Switch Market!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Reindirizza a Leonardo copilot per completare il setup
-      setLocation("/leonardo-profile-setup");
+      // Reindirizza alla dashboard merchant
+      setLocation("/merchant-dashboard");
     },
     onError: (error: any) => {
       console.error("❌ Verification error:", error);

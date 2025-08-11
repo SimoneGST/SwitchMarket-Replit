@@ -669,26 +669,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Forma giuridica richiesta" });
       }
 
-      // Aggiorna utente con dati verificati
+      // Aggiorna utente con dati verificati - solo campi essenziali esistenti
       const updateData: any = {
         businessName: verificationData.businessName,
         businessAddress: verificationData.businessAddress,
-        city: verificationData.city,
-        cap: verificationData.cap,
-        province: verificationData.province,
-        legalForm: verificationData.legalForm,
-        verificationStatus: 'verified',
-        businessVerified: true,
-        isActive: true
+        userType: 'merchant'
       };
 
       // Aggiungi il campo fiscale corretto
       if (verificationData.taxType === "piva") {
-        updateData.piva = verificationData.piva;
-        updateData.codiceFiscale = null;
+        updateData.partitaIva = verificationData.piva;
       } else {
         updateData.codiceFiscale = verificationData.codiceFiscale;
-        updateData.piva = null;
       }
 
       const user = await storage.updateUserProfile(userId, updateData);
