@@ -183,9 +183,9 @@ export default function Auth() {
               )}
             </Button>
             
-            <div className="text-center text-xs text-gray-600 bg-yellow-50 border border-yellow-200 p-2 rounded">
+            <div className="text-center text-xs text-gray-600 bg-blue-50 border border-blue-200 p-2 rounded">
               <i className="fas fa-info-circle mr-1"></i>
-              Se Google non funziona, <strong>aggiungi questo dominio</strong> ai domini autorizzati in Firebase Console
+              <strong>Deploy Required:</strong> L'autenticazione Google funziona completamente dopo il deploy su Replit
             </div>
             
 
