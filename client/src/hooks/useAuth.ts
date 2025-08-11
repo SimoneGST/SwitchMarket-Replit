@@ -20,7 +20,9 @@ export function useAuth() {
         // Store error for global handler
         sessionStorage.setItem('authError', 'redirect_failed');
         // Force redirect to auth page
-        window.location.href = '/auth';
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 100);
       }
     };
     
@@ -66,10 +68,7 @@ export function useAuth() {
             }
             
             if (Object.keys(updates).length > 0) {
-              const updatedData = await users.update(firebaseUser.uid, updates);
-              if (updatedData) {
-                userData = updatedData;
-              }
+              userData = await users.update(firebaseUser.uid, updates);
             }
           }
           
