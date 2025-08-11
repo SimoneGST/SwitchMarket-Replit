@@ -136,8 +136,11 @@ export default function BrowseRequests() {
   // Scroll automatico della chat
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current;
-      container.scrollTop = container.scrollHeight;
+      // Trova il contenitore scrollabile dentro ScrollArea
+      const scrollViewport = messagesContainerRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollViewport) {
+        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+      }
     }
   };
 
@@ -493,9 +496,9 @@ export default function BrowseRequests() {
               </CardHeader>
 
               <CardContent className="flex-1 p-0 flex flex-col">
-                {/* Messaggi Chat */}
+                {/* Messaggi Chat con altezza fissa */}
                 <ScrollArea 
-                  className="flex-1 p-4"
+                  className="h-[450px] p-4"
                   ref={messagesContainerRef}
                 >
                   <div className="space-y-4">
