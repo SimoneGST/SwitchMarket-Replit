@@ -55,6 +55,25 @@ interface ProductSchema {
   fieldDescriptions: Record<string, string>;
 }
 
+// TypeScript declarations for Speech Recognition
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: any) => void;
+  onend: () => void;
+  onerror: (event: any) => void;
+}
+
 export default function BrowseRequests() {
   // Stati principali
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -74,8 +93,10 @@ export default function BrowseRequests() {
     leonardoVoice: '',
     voiceSpeed: 1.0,
     voicePitch: 1.0,
-    voiceEnabled: true
+    voiceEnabled: false
   });
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
   const [showCharacterIntro, setShowCharacterIntro] = useState(false);
   
   // Riferimenti
@@ -100,12 +121,40 @@ export default function BrowseRequests() {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
-  // Carica impostazioni vocali dal localStorage
+  // Inizializza riconoscimento vocale
   useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognitionClass = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognitionInstance = new SpeechRecognitionClass();
+      
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'it-IT';
+      
+      recognitionInstance.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setChatInput(transcript);
+        setIsListening(false);
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognitionInstance.onerror = (event: any) => {
+        console.error('Errore riconoscimento vocale:', event.error);
+        setIsListening(false);
+      };
+      
+      setRecognition(recognitionInstance);
+    }
+
+    // Carica impostazioni vocali dal localStorage
     const savedSettings = localStorage.getItem('voiceSettings');
     if (savedSettings) {
       try {
-        setVoiceSettings(JSON.parse(savedSettings));
+        const settings = JSON.parse(savedSettings);
+        setVoiceSettings({ ...settings, voiceEnabled: false }); // Volume sempre disattivato di default
       } catch (error) {
         console.error('Errore caricamento impostazioni vocali:', error);
       }
@@ -269,6 +318,20 @@ export default function BrowseRequests() {
     }
   };
 
+  const startListening = () => {
+    if (recognition && !isListening) {
+      setIsListening(true);
+      recognition.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition && isListening) {
+      recognition.stop();
+      setIsListening(false);
+    }
+  };
+
   const formatTimestamp = (date: Date) => {
     return date.toLocaleTimeString('it-IT', { 
       hour: '2-digit', 
@@ -325,14 +388,27 @@ export default function BrowseRequests() {
                       <p className="text-sm text-slate-600">Assistente AI specializzato in prodotti locali</p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setVoiceSettings(prev => ({ ...prev, voiceEnabled: !prev.voiceEnabled }))}
-                    className={`${voiceSettings.voiceEnabled ? 'text-green-600' : 'text-slate-400'} hover:text-slate-700`}
-                  >
-                    <i className={`fas ${voiceSettings.voiceEnabled ? 'fa-volume-up' : 'fa-volume-mute'}`}></i>
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setVoiceSettings(prev => ({ ...prev, voiceEnabled: !prev.voiceEnabled }))}
+                      className={`${voiceSettings.voiceEnabled ? 'text-green-600' : 'text-slate-400'} hover:text-slate-700`}
+                      title={voiceSettings.voiceEnabled ? 'Disattiva audio' : 'Attiva audio'}
+                    >
+                      <i className={`fas ${voiceSettings.voiceEnabled ? 'fa-volume-up' : 'fa-volume-mute'}`}></i>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={isListening ? stopListening : startListening}
+                      className={`${isListening ? 'text-red-500' : 'text-blue-600'} hover:text-slate-700`}
+                      title={isListening ? 'Interrompi registrazione' : 'Parla al microfono'}
+                      disabled={isClementeTyping}
+                    >
+                      <i className={`fas ${isListening ? 'fa-stop' : 'fa-microphone'} ${isListening ? 'animate-pulse' : ''}`}></i>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
@@ -415,9 +491,9 @@ export default function BrowseRequests() {
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Dimmi cosa stai cercando..."
-                        className="min-h-[60px] resize-none border-2 border-green-200 focus:border-green-400"
-                        disabled={isClementeTyping}
+                        placeholder={isListening ? "Sto ascoltando..." : "Dimmi cosa stai cercando..."}
+                        className={`min-h-[60px] resize-none border-2 ${isListening ? 'border-red-300 bg-red-50' : 'border-green-200'} focus:border-green-400`}
+                        disabled={isClementeTyping || isListening}
                       />
                     </div>
                     <div className="flex flex-col space-y-2">
