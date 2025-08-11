@@ -30,40 +30,28 @@ export default function CustomerDashboard() {
       {/* Hero Section - Cliente (Verde) */}
       <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
         <div className="max-w-4xl">
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
+          <div className="flex items-center mb-6">
+            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
               <img 
                 src="/attached_assets/Clemente foto profilo_1754847201275.png" 
                 alt="Clemente AI" 
-                className="w-10 h-10 rounded-lg object-cover"
+                className="w-14 h-14 rounded-lg object-cover"
               />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold">
-                Dashboard Cliente
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                Ciao {user?.firstName}!
               </h1>
-              <div className="flex items-center text-green-100 text-lg">
-                <span>Ciao {user?.firstName}! Trova quello che cerchi con</span>
-                <img 
-                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                  alt="Clemente" 
-                  className="w-6 h-6 rounded-full mx-2 border border-green-300"
-                />
-                <span>Clemente</span>
-              </div>
+              <p className="text-green-100 text-lg">
+                Parla con Clemente per trovare quello che cerchi
+              </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
+          <div className="flex justify-center">
             <Link href="/create">
               <Button className="bg-white text-green-800 hover:bg-green-50 hover:text-green-900 px-8 py-4 rounded-xl font-bold shadow-2xl border-3 border-green-200 transition-all duration-200">
-                <i className="fas fa-search mr-2"></i>
-                Cerca Prodotti
-              </Button>
-            </Link>
-            <Link href="/customer-profile">
-              <Button variant="outline" className="border-3 border-white bg-white/10 text-white hover:bg-white hover:text-green-800 px-8 py-4 rounded-xl font-bold shadow-2xl backdrop-blur-md transition-all duration-200">
-                <i className="fas fa-user mr-2"></i>
-                Il Mio Profilo
+                <i className="fas fa-comments mr-2"></i>
+                Parla con Clemente
               </Button>
             </Link>
           </div>
@@ -113,77 +101,38 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
-      {/* Clemente Assistant Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="lg:col-span-2">
-          <div className="p-6 border-b border-slate-200 bg-green-50">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 p-1">
-                <img 
-                  src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                  alt="Clemente AI" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Clemente, il tuo assistente AI</h3>
-                <p className="text-sm text-slate-600">Ti aiuta a trovare esattamente quello che cerchi</p>
-              </div>
-              <span className="ml-auto inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                <i className="fas fa-circle text-green-500 text-xs mr-2"></i>
-                Online
-              </span>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        <Card className="hover:shadow-lg transition-all duration-200 border-2 border-blue-100 hover:border-blue-300 group cursor-pointer">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
+              <i className="fas fa-bookmark text-blue-600 text-xl"></i>
             </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <div className="bg-slate-50 rounded-lg p-4">
-                <p className="text-sm text-slate-700 italic">
-                  "Ciao! Sono qui per aiutarti a trovare quello che cerchi. 
-                  Dimmi cosa ti serve e ti aiuterò a creare la richiesta perfetta per i negozianti della tua zona."
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Link href="/create" className="flex-1">
-                  <Button className="w-full bg-green-500 hover:bg-green-600">
-                    <i className="fas fa-comment mr-2"></i>
-                    Inizia una conversazione
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
+            <h3 className="font-semibold text-slate-900 mb-2">Prodotti Salvati</h3>
+            <p className="text-sm text-slate-600">I tuoi preferiti e wishlist</p>
+          </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Azioni Rapide</h3>
-          </div>
-          <div className="p-6 space-y-3">
-            <Link href="/browse" className="block">
-              <button className="w-full text-left p-3 rounded-lg hover:bg-slate-50 transition-colors">
-                <div className="flex items-center">
-                  <i className="fas fa-search text-green-500 w-5"></i>
-                  <span className="ml-3 text-sm font-medium">Cerca prodotti</span>
-                </div>
-              </button>
-            </Link>
-            <Link href="/messages" className="block">
-              <button className="w-full text-left p-3 rounded-lg hover:bg-slate-50 transition-colors">
-                <div className="flex items-center">
-                  <i className="fas fa-message text-green-500 w-5"></i>
-                  <span className="ml-3 text-sm font-medium">I tuoi messaggi</span>
-                </div>
-              </button>
-            </Link>
-            <button className="w-full text-left p-3 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="flex items-center">
-                <i className="fas fa-heart text-green-500 w-5"></i>
-                <span className="ml-3 text-sm font-medium">Prodotti salvati</span>
+        
+        <Link href="/messages">
+          <Card className="hover:shadow-lg transition-all duration-200 border-2 border-purple-100 hover:border-purple-300 group cursor-pointer">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
+                <i className="fas fa-comments text-purple-600 text-xl"></i>
               </div>
-            </button>
-          </div>
+              <h3 className="font-semibold text-slate-900 mb-2">I Tuoi Messaggi</h3>
+              <p className="text-sm text-slate-600">Chat con i negozianti</p>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Card className="hover:shadow-lg transition-all duration-200 border-2 border-orange-100 hover:border-orange-300 group cursor-pointer">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
+              <i className="fas fa-store text-orange-600 text-xl"></i>
+            </div>
+            <h3 className="font-semibold text-slate-900 mb-2">Negozi Salvati</h3>
+            <p className="text-sm text-slate-600">I tuoi negozianti preferiti</p>
+          </CardContent>
         </Card>
       </div>
 
@@ -208,8 +157,8 @@ export default function CustomerDashboard() {
               <p className="text-slate-500 mb-4">Non hai ancora creato nessuna richiesta. Parla con Clemente per trovare quello che cerchi!</p>
               <Link href="/create">
                 <Button className="bg-green-500 hover:bg-green-600">
-                  <i className="fas fa-robot mr-2"></i>
-                  Parla con Clemente
+                  <i className="fas fa-comments mr-2"></i>
+                  Inizia con Clemente
                 </Button>
               </Link>
             </div>

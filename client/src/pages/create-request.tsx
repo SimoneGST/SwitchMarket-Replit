@@ -1,182 +1,150 @@
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { ClementeAI, type RequestData, type ChatMessage } from "@/lib/clemente";
-import CharacterIntro from "@/components/character-intro";
-import { useCharacterIntro } from "@/hooks/useCharacterIntro";
-import AddressAutocomplete from "@/components/address-autocomplete";
-import VoiceSettings from "@/components/voice-settings";
-import { useVoiceSettings } from "@/hooks/useVoiceSettings";
-import { useAuth } from "@/hooks/useAuth";
+import { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import CharacterIntro from '@/components/character-intro';
+import { useCharacterIntro } from '@/hooks/useCharacterIntro';
+import VoiceSettings from '@/components/voice-settings';
+import { useVoiceSettings } from '@/hooks/useVoiceSettings';
+import { ClementeAI } from '@/lib/clemente';
+import { useAuth } from '@/hooks/useAuth';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  aiGeneratedImage?: string;
+}
+
+interface RequestData {
+  title?: string;
+  category?: string;
+  description?: string;
+  [key: string]: any;
+}
+
+interface ProductSchemaState {
+  isActive: boolean;
+  currentSchema: any;
+  collectedData: Record<string, any>;
+}
 
 export default function CreateRequest() {
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Stati per la modalità di creazione
-  const [mode, setMode] = useState<'chat' | 'manual'>('chat');
+  // Modalità fissa: solo chat con Clemente
   const [clemente] = useState(() => new ClementeAI());
   
   // Character intro state - mostrato per i primi 3 accessi
   const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('clemente');
   
-  // Solo per sviluppo - in produzione rimuovere questo useEffect
-  // useEffect(() => {
-  //   localStorage.removeItem('introCount_clemente');
-  //   localStorage.removeItem('neverShowIntro_clemente');
-  // }, []);
-  
-  // Stati per chat con Clemente
+  // Chat states
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
+  const [chatInput, setChatInput] = useState('');
   const [isClementeTyping, setIsClementeTyping] = useState(false);
   const [isClementeSpeaking, setIsClementeSpeaking] = useState(false);
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Hook per le impostazioni vocali
-  const { settings: voiceSettings, updateSettings: updateVoiceSettings, speakWithSettings } = useVoiceSettings();
-
-  // Stati per geolocalizzazione
-  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
-  
-  // Dati della richiesta
-  const [requestData, setRequestData] = useState<Partial<RequestData>>({
-    urgencyLevel: 'few_days',
-    deliveryPreference: 'both',
-    actionRadius: 20,
-    location: ''
-  });
-
-  const createRequestMutation = useMutation({
-    mutationFn: async (data: RequestData) => {
-      // Prima di creare la richiesta, verifica che il profilo sia completo
-      const profile: any = await apiRequest("GET", "/api/profile");
-      if (!profile || !profile.firstName || !profile.lastName || !profile.city || !profile.phone) {
-        throw new Error("Devi completare il profilo prima di pubblicare una richiesta");
-      }
-      return apiRequest("POST", "/api/requests", data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Richiesta creata!",
-        description: "La tua richiesta è stata pubblicata con successo.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/requests/my"] });
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      if (error.message.includes("completare il profilo")) {
-        toast({
-          title: "Profilo incompleto",
-          description: error.message,
-          variant: "destructive",
-          action: (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLocation("/profile-verification")}
-              className="ml-2"
-            >
-              Completa Profilo
-            </Button>
-          ),
-        });
-      } else {
-        toast({
-          title: "Errore",
-          description: error.message || "Impossibile creare la richiesta",
-          variant: "destructive",
-        });
-      }
-    },
-  });
-
-  // Context per schede prodotto intelligenti
-  const [context, setContext] = useState<any>({
+  const [productSchema, setProductSchema] = useState<ProductSchemaState>({
+    isActive: false,
     currentSchema: null,
     collectedData: {}
   });
+  
+  // Impostazioni vocali
+  const { voiceSettings, updateVoiceSettings } = useVoiceSettings();
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  
+  // Request data state
+  const [requestData, setRequestData] = useState<RequestData>({});
 
-  // Aggiunge un messaggio di benvenuto all'inizio della chat
-  const addWelcomeMessage = () => {
+  // Mutation per creare richiesta
+  const createRequestMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Errore nella creazione della richiesta');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Richiesta pubblicata!",
+        description: "La tua richiesta è stata inviata ai negozianti locali.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/requests'] });
+      // Reindirizza alla dashboard
+      window.location.href = '/customer-dashboard';
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Errore pubblicazione",
+        description: error.message || "Si è verificato un errore durante la pubblicazione",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Messaggio di benvenuto automatico
+  useEffect(() => {
     if (chatMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
         role: 'assistant',
-        content: "Ciao! Sono Clemente, il tuo assistente AI per trovare prodotti. Puoi descrivermi cosa stai cercando in modo naturale - ad esempio 'cerco scarpe da running' o 'ho bisogno di una scrivania per casa'. Ti aiuterò a creare una richiesta dettagliata!",
+        content: 'Ciao! Sono Clemente, il tuo assistente AI. Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa per i negozianti della tua zona!',
         timestamp: new Date()
       };
       setChatMessages([welcomeMessage]);
     }
-  };
+  }, []);
 
-  // Chat con Clemente
+  // Gestione invio messaggio chat
   const handleChatMessage = async () => {
-    if (!chatInput.trim()) return;
-    
-    console.log('💬 Invio messaggio a Clemente:', chatInput);
-    
+    if (!chatInput.trim() || isClementeTyping) return;
+
     const userMessage: ChatMessage = {
       role: 'user',
-      content: chatInput,
+      content: chatInput.trim(),
       timestamp: new Date()
     };
-    
+
     setChatMessages(prev => [...prev, userMessage]);
-    setChatInput("");
+    setChatInput('');
     setIsClementeTyping(true);
-    
+
     try {
-      console.log('🌐 Invio richiesta a:', window.location.origin + '/api/clemente/chat');
-      
-      // Usa fetch diretto con CORS per evitare problemi di autenticazione
       const response = await fetch('/api/clemente/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: chatInput,
-          context: {
-            conversationHistory: [...chatMessages, userMessage],
-            currentSchema: context?.currentSchema,
-            collectedData: context?.collectedData || {}
-          }
+          message: chatInput.trim(),
+          conversationHistory: [...chatMessages, userMessage],
+          currentSchema: productSchema.isActive ? productSchema.currentSchema : null,
+          collectedData: productSchema.collectedData
         })
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const responseData = await response.json();
-      console.log('🔍 Response JSON completa:', responseData);
+      const responseText = responseData.response?.message || responseData.message || 'Mi dispiace, non riesco a rispondere.';
       
-      const responseText = responseData.response?.text || responseData.response || '';
-      console.log('📨 Risposta estratta:', responseText);
-      
-      // Aggiorna il context con la scheda prodotto e i dati raccolti
+      // Gestisci schede prodotto dinamiche
       if (responseData.response?.productSchema) {
-        setContext((prev: any) => ({
+        setProductSchema(prev => ({
           ...prev,
+          isActive: true,
           currentSchema: responseData.response.productSchema,
           collectedData: responseData.response.collectedData || {}
         }));
-        console.log('📋 Scheda prodotto rilevata:', responseData.response.productSchema.name);
-        console.log('📊 Dati raccolti:', responseData.response.collectedData);
       }
       
       const assistantMessage: ChatMessage = {
@@ -188,17 +156,16 @@ export default function CreateRequest() {
       
       setChatMessages(prev => [...prev, assistantMessage]);
       
-      // Auto-genera la richiesta solo se Clemente dice specificamente che genererà
+      // Auto-genera la richiesta se Clemente indica che è pronto
       if (responseText.toLowerCase().includes('genero la richiesta') ||
           responseText.toLowerCase().includes('creo subito la richiesta') ||
           (responseText.toLowerCase().includes('genera') && responseText.toLowerCase().includes('richiesta'))) {
-        // Attendi un momento per dare tempo all'utente di vedere la conferma
         setTimeout(() => {
           handleGenerateFromChat();
         }, 1000);
       }
       
-      // Far parlare Clemente se la voce è abilitata
+      // Sintesi vocale se abilitata
       if (voiceSettings.voiceEnabled) {
         setTimeout(() => {
           speakClementeMessage(responseText);
@@ -237,11 +204,15 @@ export default function CreateRequest() {
       
       if (responseData.requestData) {
         setRequestData(responseData.requestData);
-        setMode('manual');
         toast({
           title: "Richiesta generata dalla chat!",
           description: "Clemente ha estratto tutte le informazioni dalla conversazione.",
         });
+        
+        // Pubblica automaticamente la richiesta
+        setTimeout(() => {
+          handlePublish();
+        }, 1500);
       } else {
         throw new Error('Dati richiesta non validi');
       }
@@ -249,7 +220,7 @@ export default function CreateRequest() {
       console.error('Errore generazione da chat:', error);
       toast({
         title: "Errore generazione",
-        description: "Non riesco a generare la richiesta dalla chat. Prova la modalità manuale.",
+        description: "Non riesco a generare la richiesta dalla chat.",
         variant: "destructive",
       });
     }
@@ -257,66 +228,38 @@ export default function CreateRequest() {
 
   // Pubblica richiesta
   const handlePublish = () => {
-    // Verifica completamento profilo prima di permettere la pubblicazione
+    // Verifica completamento profilo
     if (!user || !user.firstName || !user.lastName || !user.email) {
       toast({
         title: "Profilo incompleto",
         description: "Completa il tuo profilo prima di pubblicare una richiesta.",
         variant: "destructive",
       });
-      // Reindirizza alla pagina del profilo
       window.location.href = '/profile';
       return;
     }
 
-    // Verifica che ci sia almeno una posizione (manuale o automatica)
-    const hasLocation = useCurrentLocation ? currentLocation : (requestData.location && requestData.location.trim());
-    
-    if (!requestData.title || !hasLocation || !requestData.category) {
+    if (!requestData.title || !requestData.category) {
       toast({
         title: "Dati mancanti",
-        description: "Completa titolo, categoria e posizione per pubblicare",
+        description: "Clemente deve raccogliere più informazioni prima di pubblicare",
         variant: "destructive",
       });
       return;
     }
 
-    // Prepara i dati per l'invio includendo la geolocalizzazione
-    let locationData = {};
-    if (useCurrentLocation && currentLocation) {
-      locationData = {
-        currentLocation: currentLocation,
-        useCurrentLocation: true,
-        location: currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`,
-        // latitude: currentLocation.lat,
-        // longitude: currentLocation.lng
-      };
-    } else {
-      locationData = {
-        location: requestData.location,
-        useCurrentLocation: false
-      };
-    }
-
     const finalRequestData = {
       ...requestData,
-      ...locationData,
-      // tags: requestData.tags?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       aiContext: {
         messages: chatMessages,
         extractedSpecs: chatMessages.length > 0 ? chatMessages[chatMessages.length - 1].content : ''
       }
     };
 
-    createRequestMutation.mutate(finalRequestData as RequestData);
+    createRequestMutation.mutate(finalRequestData);
   };
 
-  // Aggiorna campo della richiesta
-  const updateField = (field: keyof RequestData, value: any) => {
-    setRequestData(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Scroll automatico solo per l'area messaggi della chat
+  // Scroll automatico
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       const chatContainer = messagesEndRef.current.closest('.overflow-y-auto');
@@ -330,7 +273,9 @@ export default function CreateRequest() {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
-  // Funzione per far parlare Clemente con le impostazioni personalizzate
+  // Sintesi vocale
+  const { speakWithSettings } = useVoiceSettings();
+  
   const speakClementeMessage = async (text: string) => {
     if (!voiceSettings.voiceEnabled) return;
     
@@ -345,685 +290,175 @@ export default function CreateRequest() {
     }
   };
 
-  // Comando vocale continuo per generazione richiesta
-  const startContinuousVoiceCommand = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Riconoscimento vocale non supportato');
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'it-IT';
-    
-    recognition.onstart = () => {
-      toast({
-        title: "🎤 Modalità Vocale Attiva",
-        description: "Parla liberamente con Clemente per creare la tua richiesta",
-      });
-    };
-    
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[event.results.length - 1][0].transcript;
-      
-      if (event.results[event.results.length - 1].isFinal) {
-        // Simula invio messaggio quando la frase è completa
-        setChatInput(transcript);
-        setTimeout(() => handleChatMessage(), 100);
-      }
-    };
-    
-    recognition.onerror = () => {
-      toast({
-        title: "Errore riconoscimento vocale",
-        description: "Riprova o usa la tastiera",
-        variant: "destructive"
-      });
-    };
-    
-    recognition.start();
-    
-    // Ferma dopo 30 secondi di inattività
-    setTimeout(() => {
-      recognition.stop();
-    }, 30000);
-  };
-
-  // Funzione per ottenere posizione corrente
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      toast({
-        title: "Geolocalizzazione non supportata",
-        description: "Il tuo browser non supporta la geolocalizzazione",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsGettingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        try {
-          // Reverse geocoding usando nominatim (gratuito)
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=it`);
-          const data = await response.json();
-          
-          let address = `${latitude}, ${longitude}`;
-          if (data && data.display_name) {
-            address = data.display_name;
-          }
-          
-          setCurrentLocation({
-            lat: latitude,
-            lng: longitude,
-            address: address
-          });
-          
-          setUseCurrentLocation(true);
-          
-          toast({
-            title: "Posizione ottenuta",
-            description: `Posizione corrente: ${address}`,
-          });
-        } catch (error) {
-          console.error('Errore reverse geocoding:', error);
-          setCurrentLocation({
-            lat: latitude,
-            lng: longitude,
-            address: `${latitude}, ${longitude}`
-          });
-          setUseCurrentLocation(true);
-          
-          toast({
-            title: "Posizione ottenuta",
-            description: `Coordinate: ${latitude}, ${longitude}`,
-          });
-        }
-        
-        setIsGettingLocation(false);
-      },
-      (error) => {
-        console.error('Errore geolocalizzazione:', error);
-        toast({
-          title: "Errore geolocalizzazione",
-          description: "Impossibile ottenere la posizione corrente",
-          variant: "destructive"
-        });
-        setIsGettingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minuti
-      }
-    );
-  };
-
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Cerca Prodotti
-        </h1>
-        <p className="text-slate-600">
-          Trova esattamente quello che cerchi con l'aiuto di Clemente o compila manualmente
-        </p>
-      </div>
-
-      {/* Modalità di creazione */}
-      <div className="flex justify-center mb-8">
-        <div className="flex bg-slate-100 rounded-xl p-1">
-          <Button
-            variant={mode === 'chat' ? 'default' : 'ghost'}
-            onClick={() => {
-              setMode('chat');
-              if (chatMessages.length === 0) {
-                addWelcomeMessage();
-              }
-            }}
-            className={mode === 'chat' ? 'bg-green-600 text-white' : ''}
-          >
-            <img 
-              src="/attached_assets/clemente a busto intero_1754847733100.png" 
-              alt="Clemente AI" 
-              className="w-5 h-5 mr-2"
-            />
-            Parla con Clemente
-          </Button>
-          <Button
-            variant={mode === 'manual' ? 'default' : 'ghost'}
-            onClick={() => setMode('manual')}
-            className={mode === 'manual' ? 'bg-green-600 text-white' : ''}
-          >
-            <i className="fas fa-edit mr-2"></i>
-            Compilazione Manuale
-          </Button>
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mr-4 overflow-hidden">
+              <img 
+                src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                alt="Clemente AI" 
+                className="w-14 h-14 rounded-lg object-cover"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                Parla con Clemente
+              </h1>
+              <p className="text-green-100 text-lg">
+                Trova quello che cerchi con il tuo assistente AI
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Pannello sinistro - Input/Chat */}
-        <div>
-          {mode === 'chat' && (
-            <>
-              <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-green-700">
-                  <div className="flex items-center">
+      <div className="max-w-4xl mx-auto">
+        {/* Chat con Clemente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-green-700">
+              <div className="flex items-center">
+                <img 
+                  src="/attached_assets/clemente a busto intero_1754847733100.png" 
+                  alt="Clemente AI" 
+                  className="w-6 h-6 mr-2"
+                />
+                Chat con Clemente
+                {isClementeSpeaking && (
+                  <div className="ml-2 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></div>
+                    <span className="text-xs text-green-600">Parlando...</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                  className="bg-green-50"
+                >
+                  <i className="fas fa-cog mr-1"></i>
+                  Voce
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateVoiceSettings({...voiceSettings, voiceEnabled: !voiceSettings.voiceEnabled})}
+                  className={voiceSettings.voiceEnabled ? 'bg-green-50' : 'bg-slate-50'}
+                >
+                  {voiceSettings.voiceEnabled ? '🔊' : '🔇'}
+                </Button>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          
+          {/* Pannello Impostazioni Vocali */}
+          {showVoiceSettings && (
+            <div className="px-6 pb-4 border-b">
+              <VoiceSettings 
+                settings={voiceSettings}
+                onSettingsChange={updateVoiceSettings}
+              />
+            </div>
+          )}
+          
+          <CardContent>
+            {/* Messaggi chat */}
+            <div className="h-96 overflow-y-auto border rounded-lg mb-4 bg-slate-50 flex flex-col p-4">
+              {chatMessages.length === 0 && (
+                <div className="h-full flex flex-col items-center justify-center text-center text-slate-500">
+                  <div className="flex-1 flex items-center justify-center w-full max-h-64">
                     <img 
                       src="/attached_assets/clemente a busto intero_1754847733100.png" 
                       alt="Clemente AI" 
-                      className="w-6 h-6 mr-2"
+                      className="max-w-full max-h-full object-contain"
                     />
-                    Chat con Clemente
-                    {isClementeSpeaking && (
-                      <div className="ml-2 flex items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></div>
-                        <span className="text-xs text-green-600">Parlando...</span>
-                      </div>
-                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowVoiceSettings(!showVoiceSettings)}
-                      className="bg-green-50"
-                    >
-                      <i className="fas fa-cog mr-1"></i>
-                      Voce
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateVoiceSettings({...voiceSettings, voiceEnabled: !voiceSettings.voiceEnabled})}
-                      className={voiceSettings.voiceEnabled ? 'bg-green-50' : 'bg-slate-50'}
-                    >
-                      {voiceSettings.voiceEnabled ? '🔊' : '🔇'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={startContinuousVoiceCommand}
-                      className="bg-blue-50"
-                    >
-                      🎤 Modalità Vocale
-                    </Button>
+                  <div className="mt-4">
+                    <p className="font-semibold">Ciao! Sono Clemente, il tuo assistente AI.</p>
+                    <p>Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa!</p>
                   </div>
-                </CardTitle>
-              </CardHeader>
-              
-              {/* Pannello Impostazioni Vocali */}
-              {showVoiceSettings && (
-                <div className="px-6 pb-4 border-b">
-                  <VoiceSettings 
-                    settings={voiceSettings}
-                    onSettingsChange={updateVoiceSettings}
-                  />
                 </div>
               )}
               
-              <CardContent>
-                {/* Messaggi chat */}
-                <div className="h-96 overflow-y-auto border rounded-lg mb-4 bg-slate-50 flex flex-col">
-                  {chatMessages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
-                      <div className="flex-1 flex items-center justify-center w-full max-h-64">
-                        <img 
-                          src="/attached_assets/clemente a busto intero_1754847733100.png" 
-                          alt="Clemente AI" 
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <p className="font-semibold">Ciao! Sono Clemente, il tuo assistente AI.</p>
-                        <p>Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa!</p>
-                      </div>
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                  <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    msg.role === 'user' 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-white border border-slate-200'
+                  }`}>
+                    <div className="text-sm">{msg.content}</div>
+                    <div className="text-xs opacity-70 mt-1">
+                      {msg.timestamp.toLocaleTimeString()}
                     </div>
-                  )}
-                  
-                  {chatMessages.map((msg, idx) => (
-                    <div key={idx} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      <div className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        msg.role === 'user' 
-                          ? 'bg-green-600 text-white' 
-                          : 'bg-white border border-slate-200'
-                      }`}>
-                        <div className="text-sm">{msg.content}</div>
-                        <div className="text-xs opacity-70 mt-1">
-                          {msg.timestamp.toLocaleTimeString()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isClementeTyping && (
-                    <div className="text-left mb-4">
-                      <div className="inline-block bg-white border border-slate-200 px-4 py-2 rounded-lg">
-                        <div className="flex items-center space-x-1">
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Elemento per scroll automatico */}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input chat */}
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Scrivi a Clemente..."
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleChatMessage()}
-                      disabled={isClementeTyping}
-                    />
                   </div>
-                  
-                  {/* File Upload Button */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="px-3 py-2"
-                    onClick={() => {
-                      // Creo un input file temporaneo
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = 'image/*,application/pdf,.doc,.docx,.txt';
-                      input.multiple = true;
-                      input.onchange = (e) => {
-                        const files = (e.target as HTMLInputElement).files;
-                        if (files) {
-                          Array.from(files).forEach(file => {
-                            const fileName = file.name;
-                            const fileUrl = URL.createObjectURL(file);
-                            
-                            setChatMessages(prev => [...prev, {
-                              role: 'user',
-                              content: `📎 File allegato: ${fileName}`,
-                              timestamp: new Date()
-                            }]);
-                            
-                            // Simula invio a Clemente per analisi file
-                            setTimeout(() => {
-                              setChatMessages(prev => [...prev, {
-                                role: 'assistant',
-                                content: `Ho ricevuto il file "${fileName}". Puoi descrivermi cosa rappresenta così posso aiutarti meglio con la richiesta?`,
-                                timestamp: new Date()
-                              }]);
-                            }, 1000);
-                          });
-                        }
-                      };
-                      input.click();
-                    }}
-                  >
-                    📎
-                  </Button>
-
-                  {/* Voice Button */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="px-3 py-2"
-                    onClick={() => {
-                      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-                        const recognition = new SpeechRecognition();
-                        recognition.lang = 'it-IT';
-                        recognition.onresult = (event: any) => {
-                          const transcript = event.results[0][0].transcript;
-                          setChatInput(transcript);
-                        };
-                        recognition.start();
-                      } else {
-                        alert('Riconoscimento vocale non supportato dal browser');
-                      }
-                    }}
-                  >
-                    🎤
-                  </Button>
-                  
-                  <Button 
-                    onClick={handleChatMessage}
-                    disabled={!chatInput.trim() || isClementeTyping}
-                    className="bg-green-600 hover:bg-green-700 px-4"
-                  >
-                    ✈️
-                  </Button>
                 </div>
-
-                {/* Genera da chat */}
-                {chatMessages.length > 2 && (
-                  <Button 
-                    onClick={handleGenerateFromChat}
-                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
-                  >
-                    <i className="fas fa-magic mr-2"></i>
-                    Genera Richiesta dalla Conversazione
-                  </Button>
-                )}
-              </CardContent>
-                </Card>
-            </>
-          )}
-        </div>
-
-        {/* Pannello destro - Form richiesta */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="text-green-700">
-                  <i className="fas fa-file-alt mr-2"></i>
-                  Dettagli Richiesta
-                </span>
-                {mode === 'chat' && (
-                  <Badge variant="outline" className="text-green-600">
-                    Compilato da Clemente
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Titolo */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Titolo *
-                </label>
-                <Input
-                  placeholder="Titolo della richiesta"
-                  value={requestData.title || ''}
-                  onChange={(e) => updateField('title', e.target.value)}
-                />
-              </div>
-
-              {/* Categoria */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Categoria *
-                </label>
-                <Select value={requestData.category || ''} onValueChange={(value) => updateField('category', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Elettronica">Elettronica</SelectItem>
-                    <SelectItem value="Casa e Giardino">Casa e Giardino</SelectItem>
-                    <SelectItem value="Sport e Tempo Libero">Sport e Tempo Libero</SelectItem>
-                    <SelectItem value="Veicoli">Veicoli</SelectItem>
-                    <SelectItem value="Abbigliamento">Abbigliamento</SelectItem>
-                    <SelectItem value="Servizi">Servizi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Descrizione */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Descrizione
-                </label>
-                <Textarea
-                  placeholder="Descrizione dettagliata"
-                  value={requestData.description || ''}
-                  onChange={(e) => updateField('description', e.target.value)}
-                  rows={4}
-                />
-              </div>
-
-              {/* Specifiche tecniche */}
-              {requestData.technicalSpecs && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Specifiche Tecniche
-                  </label>
-                  <Textarea
-                    value={requestData.technicalSpecs}
-                    onChange={(e) => updateField('technicalSpecs', e.target.value)}
-                    rows={3}
-                  />
+              ))}
+              
+              {isClementeTyping && (
+                <div className="text-left mb-4">
+                  <div className="inline-block bg-white border border-slate-200 px-4 py-2 rounded-lg">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
+            </div>
 
-              {/* Dettagli prodotto in una griglia */}
-              <div className="grid grid-cols-2 gap-4">
-                {requestData.brand && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Marca</label>
-                    <Input
-                      value={requestData.brand}
-                      onChange={(e) => updateField('brand', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {requestData.model && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Modello</label>
-                    <Input
-                      value={requestData.model}
-                      onChange={(e) => updateField('model', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {requestData.color && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Colore</label>
-                    <Input
-                      value={requestData.color}
-                      onChange={(e) => updateField('color', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {requestData.size && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Dimensioni</label>
-                    <Input
-                      value={requestData.size}
-                      onChange={(e) => updateField('size', e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Budget */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Budget (€)
-                </label>
-                <Input
-                  type="number"
-                  placeholder="Budget massimo"
-                  value={requestData.budget || ''}
-                  onChange={(e) => updateField('budget', e.target.value ? parseFloat(e.target.value) : null)}
-                />
-              </div>
-
-              {/* Posizione */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Posizione di Partenza per la Ricerca *
-                </label>
-                <div className="space-y-3">
-                  {/* Opzioni di selezione posizione */}
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="locationSource"
-                        checked={!useCurrentLocation}
-                        onChange={() => setUseCurrentLocation(false)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Usa indirizzo del profilo</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="locationSource"
-                        checked={useCurrentLocation}
-                        onChange={() => setUseCurrentLocation(true)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Usa posizione corrente</span>
-                    </label>
-                  </div>
-
-                  {/* Input manuale o pulsante geolocalizzazione */}
-                  {!useCurrentLocation ? (
-                    <div>
-                      <AddressAutocomplete
-                        value={requestData.location || ''}
-                        onChange={(value, coordinates) => {
-                          updateField('location', value);
-                          if (coordinates) {
-                            // updateField('latitude', coordinates.lat);
-                            // updateField('longitude', coordinates.lng);
-                          }
-                        }}
-                        placeholder="Inserisci indirizzo di partenza"
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={getCurrentLocation}
-                        disabled={isGettingLocation}
-                        className="w-full"
-                      >
-                        {isGettingLocation ? (
-                          <>
-                            <i className="fas fa-spinner fa-spin mr-2"></i>
-                            Ottenendo posizione...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fas fa-location-dot mr-2"></i>
-                            Ottieni Posizione Corrente
-                          </>
-                        )}
-                      </Button>
-                      
-                      {currentLocation && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center text-green-700">
-                            <i className="fas fa-check-circle mr-2"></i>
-                            <span className="text-sm font-medium">Posizione ottenuta</span>
-                          </div>
-                          <p className="text-sm text-green-600 mt-1">
-                            {currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <p className="text-xs text-slate-500">
-                    Questa posizione sarà usata come centro per calcolare il raggio di ricerca dei negozianti.
-                  </p>
-                </div>
-              </div>
-
-              {/* Preferenza consegna */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Modalità di Consegna
-                </label>
-                <Select value={requestData.deliveryPreference} onValueChange={(value) => updateField('deliveryPreference', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pickup">Solo Ritiro</SelectItem>
-                    <SelectItem value="delivery">Solo Spedizione</SelectItem>
-                    <SelectItem value="both">Entrambe</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Raggio azione (solo se ritiro incluso) */}
-              {(requestData.deliveryPreference === 'pickup' || requestData.deliveryPreference === 'both') && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Raggio Massimo per Ritiro: {requestData.actionRadius}km
-                  </label>
-                  <Slider
-                    value={[requestData.actionRadius || 20]}
-                    onValueChange={(value) => updateField('actionRadius', value[0])}
-                    max={100}
-                    min={5}
-                    step={5}
-                    className="w-full"
-                  />
-                </div>
-              )}
-
-              {/* Urgenza */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Livello di Urgenza
-                </label>
-                <Select value={requestData.urgencyLevel} onValueChange={(value) => updateField('urgencyLevel', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="immediate">Immediato (entro poche ore)</SelectItem>
-                    <SelectItem value="24h">Entro 24 ore</SelectItem>
-                    <SelectItem value="48h">Entro 48 ore</SelectItem>
-                    <SelectItem value="few_days">Alcuni giorni</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Pubblica */}
+            {/* Input chat */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Scrivi qui cosa stai cercando..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleChatMessage()}
+                disabled={isClementeTyping}
+                className="flex-1"
+              />
+              
               <Button 
-                onClick={handlePublish}
-                className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                disabled={createRequestMutation.isPending || !requestData.title || !requestData.category || (!requestData.location && !currentLocation)}
+                onClick={handleChatMessage}
+                disabled={!chatInput.trim() || isClementeTyping}
+                className="bg-green-600 hover:bg-green-700 px-4"
               >
-                {createRequestMutation.isPending ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                    Pubblicazione...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-paper-plane mr-2"></i>
-                    Pubblica Richiesta
-                  </>
-                )}
+                ✈️
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        {/* Character Introduction */}
-        <CharacterIntro
-          character="clemente"
-          show={showIntro}
-          onComplete={completeIntro}
-          onNeverShow={neverShowAgain}
-        />
+            {/* Genera da chat */}
+            {chatMessages.length > 2 && (
+              <Button 
+                onClick={handleGenerateFromChat}
+                className="w-full mt-4 bg-green-600 hover:bg-green-700"
+              >
+                <i className="fas fa-magic mr-2"></i>
+                Genera Richiesta dalla Conversazione
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
+      
+      {/* Character Introduction */}
+      {showIntro && (
+        <div className="fixed inset-0 z-50">
+          <CharacterIntro
+            character="clemente"
+            show={showIntro}
+            onComplete={completeIntro}
+            onNeverShow={neverShowAgain}
+          />
+        </div>
+      )}
     </main>
   );
 }
