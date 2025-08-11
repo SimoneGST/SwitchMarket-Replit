@@ -105,6 +105,12 @@ export default function CreateRequest() {
     },
   });
 
+  // Context per schede prodotto intelligenti
+  const [context, setContext] = useState<any>({
+    currentSchema: null,
+    collectedData: {}
+  });
+
   // Aggiunge un messaggio di benvenuto all'inizio della chat
   const addWelcomeMessage = () => {
     if (chatMessages.length === 0) {
@@ -145,7 +151,9 @@ export default function CreateRequest() {
         body: JSON.stringify({
           message: chatInput,
           context: {
-            conversationHistory: [...chatMessages, userMessage]
+            conversationHistory: [...chatMessages, userMessage],
+            currentSchema: context?.currentSchema,
+            collectedData: context?.collectedData || {}
           }
         })
       });
@@ -156,10 +164,20 @@ export default function CreateRequest() {
       
       const responseData = await response.json();
       console.log('🔍 Response JSON completa:', responseData);
-      console.log('🔍 responseData.response:', responseData.response);
-      console.log('🔍 responseData.response.text:', responseData.response?.text);
+      
       const responseText = responseData.response?.text || responseData.response || '';
       console.log('📨 Risposta estratta:', responseText);
+      
+      // Aggiorna il context con la scheda prodotto e i dati raccolti
+      if (responseData.response?.productSchema) {
+        setContext(prev => ({
+          ...prev,
+          currentSchema: responseData.response.productSchema,
+          collectedData: responseData.response.collectedData || {}
+        }));
+        console.log('📋 Scheda prodotto rilevata:', responseData.response.productSchema.name);
+        console.log('📊 Dati raccolti:', responseData.response.collectedData);
+      }
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',

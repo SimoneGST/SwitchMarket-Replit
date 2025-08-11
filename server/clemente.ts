@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { findBestProductSchema, generateSmartQuestion, validateCollectedData, type ProductSchema } from './productSchemas';
 
 interface RequestData {
   title: string;
@@ -97,42 +98,51 @@ class ClementeAI {
     return null;
   }
 
-  // Sistema di chat per ottenere dettagli (ora con supporto file e context)
-  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string}> {
+  // Sistema di chat intelligente con schede prodotto
+  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string, productSchema?: ProductSchema, collectedData?: any}> {
     if (!this.model) {
       return { text: 'Mi dispiace, il servizio AI non è disponibile al momento. Prova la compilazione manuale.' };
     }
 
     // Usa il context passato dal frontend per mantenere la memoria della conversazione
     const conversationHistory = context?.conversationHistory || [];
+    const collectedData = context?.collectedData || {};
+    let currentSchema = context?.currentSchema;
     
-    const systemPrompt = `Sei Clemente, assistente esperto di Switch Market. Aiuti i clienti a creare richieste complete seguendo un processo strutturato in 2 FASI.
+    // Se non abbiamo ancora una scheda, prova a identificare il prodotto
+    if (!currentSchema) {
+      const detectedSchema = findBestProductSchema(userMessage);
+      if (detectedSchema) {
+        currentSchema = detectedSchema;
+        console.log(`🎯 Scheda rilevata: ${detectedSchema.name}`);
+      }
+    }
+    
+    // Se abbiamo una scheda, usa la logica intelligente
+    if (currentSchema) {
+      return await this.handleSchemaBasedChat(userMessage, currentSchema, collectedData, conversationHistory, attachedFile);
+    }
+    
+    // Fallback: logica generale se non riusciamo a identificare il prodotto
+    const systemPrompt = `Sei Clemente, assistente esperto di Switch Market. 
 
-FASE 1 - RACCOLTA DETTAGLI PRODOTTO (massimo 5 domande):
-1. Conferma il prodotto specifico che cerca
-2. Fai UNA domanda alla volta per raccogliere dettagli ESSENZIALI nell'ordine:
-   - Per SCARPE/ABBIGLIAMENTO: Prima la MISURA/TAGLIA, poi il BUDGET
-   - Per ELETTRONICA/OGGETTI: Prima le specifiche tecniche, poi il BUDGET  
-   - BUDGET è OBBLIGATORIO per tutti i prodotti
-3. Dopo aver raccolto prodotto + specifiche + budget, chiedi: "Vuoi aggiungere altri dettagli o passiamo alla configurazione della richiesta?"
+Il cliente ha scritto: "${userMessage}"
 
-FASE 2 - CONFIGURAZIONE RICHIESTA:
-4. Chiedi zona/indirizzo di ricerca
-5. Chiedi urgenza (subito, entro 24h, 48h, qualche giorno)  
-6. Chiedi preferenza consegna (ritiro in negozio, spedizione, entrambe)
-7. Conferma e genera la richiesta
+IMPORTANTE: Prima di tutto, identifica ESATTAMENTE che prodotto cerca il cliente.
 
-INFORMAZIONI ESSENZIALI DA RACCOGLIERE SEMPRE:
-- TAGLIA/MISURA: Per scarpe, abbigliamento, accessori (es: "Che numero di scarpe porti?")
-- BUDGET: Range di prezzo (es: "Qual è il tuo budget? (50-100€, 100-200€, oltre 200€...)")
-- SPECIFICHE: Marca, tipo, caratteristiche rilevanti
+Se non è chiaro, chiedi: "Che prodotto specifico stai cercando?" con esempi concreti.
 
-REGOLE ASSOLUTE:
-- MAI iniziare con esempi da memoria (es: non dire "zanzariera, finestra, porta")
-- MAI ripetere informazioni che l'utente ha già fornito
-- SEMPRE chiedere misura/taglia per scarpe e abbigliamento
-- SEMPRE chiedere budget se non fornito
-- UNA sola domanda per risposta, specifica e diretta
+Una volta identificato il prodotto, passa alla raccolta sistematica dei dettagli usando sempre questo ordine:
+1. Conferma prodotto specifico
+2. Caratteristiche tecniche principali 
+3. Taglia/misura (se applicabile)
+4. Budget
+5. Altre preferenze
+
+REGOLE:
+- Una domanda per volta
+- Sempre con esempi concreti tra parentesi
+- Non ripetere info già fornite
 - Massimo 2 frasi per messaggio
 - Dopo 5 domande di dettaglio, passa sempre alla fase 2
 - Sii diretto e conciso
@@ -198,7 +208,12 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
 
       // Non aggiornare più la chatHistory locale, il context è gestito dal frontend
 
-      return { text: response, generatedImage };
+      return { 
+        text: response, 
+        generatedImage,
+        productSchema: currentSchema,
+        collectedData: collectedData
+      };
     } catch (error: any) {
       console.error('❌ Errore chat Clemente Server:', error);
       
@@ -210,6 +225,117 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
       } else {
         return { text: `Errore tecnico: ${error?.message || 'Sconosciuto'}. Prova la compilazione manuale.` };
       }
+    }
+  }
+
+  // Gestione intelligente basata su schede prodotto
+  private async handleSchemaBasedChat(
+    userMessage: string, 
+    schema: ProductSchema, 
+    collectedData: any, 
+    conversationHistory: any[], 
+    attachedFile?: {url: string, name: string, type: string}
+  ): Promise<{text: string, generatedImage?: string, productSchema?: ProductSchema, collectedData?: any}> {
+    
+    // Estrai informazioni dal messaggio dell'utente
+    const updatedData = await this.extractDataFromMessage(userMessage, schema, collectedData);
+    
+    // Controlla se abbiamo raccolto tutte le informazioni necessarie
+    const validation = validateCollectedData(schema, updatedData);
+    
+    if (validation.isValid) {
+      // Tutte le info raccolte, chiedi se passare alla configurazione
+      return {
+        text: "Perfetto! Ho tutte le informazioni necessarie. Vuoi aggiungere altri dettagli o passiamo alla configurazione della richiesta (zona, urgenza, modalità consegna)?",
+        productSchema: schema,
+        collectedData: updatedData
+      };
+    }
+    
+    // Genera la prossima domanda intelligente
+    const nextQuestion = generateSmartQuestion(schema, updatedData);
+    
+    if (nextQuestion) {
+      const instruction = schema.assistantInstructions || "";
+      const contextualQuestion = await this.generateContextualQuestion(nextQuestion, instruction, userMessage, conversationHistory);
+      
+      return {
+        text: contextualQuestion,
+        productSchema: schema,
+        collectedData: updatedData
+      };
+    }
+    
+    // Fallback
+    return {
+      text: "Hai altre preferenze specifiche per questo prodotto?",
+      productSchema: schema,
+      collectedData: updatedData
+    };
+  }
+
+  // Estrae dati dal messaggio dell'utente
+  private async extractDataFromMessage(userMessage: string, schema: ProductSchema, existingData: any): Promise<any> {
+    const message = userMessage.toLowerCase();
+    const newData = { ...existingData };
+    
+    // Logica di estrazione semplificata (potrebbe essere migliorata con NLP)
+    schema.fields.forEach(field => {
+      if (!newData[field.key] && field.options) {
+        const matchedOption = field.options.find(option => 
+          message.includes(option.toLowerCase()) || 
+          (option.includes('€') && message.includes('€'))
+        );
+        if (matchedOption) {
+          newData[field.key] = matchedOption;
+        }
+      }
+      
+      // Estrazione numeri per taglie e prezzi
+      if (!newData[field.key] && field.type === 'number') {
+        const numberMatch = message.match(/\d+/);
+        if (numberMatch && field.key === 'size') {
+          const size = parseInt(numberMatch[0]);
+          if (size >= 35 && size <= 50) { // Range ragionevole per scarpe
+            newData[field.key] = size;
+          }
+        }
+      }
+      
+      // Estrazione budget
+      if (!newData[field.key] && field.key === 'budget') {
+        const budgetMatch = message.match(/(\d+).*?(\d+).*?€|(\d+)\s*€/);
+        if (budgetMatch) {
+          newData[field.key] = budgetMatch[0];
+        }
+      }
+    });
+    
+    return newData;
+  }
+  
+  // Genera domanda contestuale usando l'AI
+  private async generateContextualQuestion(baseQuestion: string, instruction: string, userMessage: string, history: any[]): Promise<string> {
+    const prompt = `Sei Clemente. Devi fare questa domanda: "${baseQuestion}"
+
+Istruzioni specifiche: ${instruction}
+
+Contesto conversazione: Il cliente ha appena detto "${userMessage}"
+
+REGOLE:
+- Una frase semplice e diretta
+- Include sempre esempi concreti tra parentesi
+- Non ripetere informazioni già fornite
+- Tono amichevole ma professionale
+
+Genera SOLO la domanda, nient'altro.`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      return result.response.text().trim();
+    } catch (error) {
+      console.error('❌ Errore generazione domanda:', error);
+      return baseQuestion; // Fallback alla domanda base
     }
   }
 
