@@ -26,6 +26,8 @@ import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { initializeGlobalVoiceCommands } from "@/lib/voice-commands";
 import { initializeGoogleAnalytics } from "@/lib/google-analytics";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { setupGlobalErrorHandling } from "@/lib/globalErrorHandler";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -33,10 +35,11 @@ function Router() {
   // Check if user needs onboarding
   const needsOnboarding = isAuthenticated && user && !user.userType;
 
-  // Initialize voice commands and analytics when component mounts
+  // Initialize voice commands, analytics and error handling when component mounts
   useEffect(() => {
     initializeGlobalVoiceCommands();
     initializeGoogleAnalytics();
+    setupGlobalErrorHandling();
   }, []);
 
   return (
@@ -126,12 +129,14 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

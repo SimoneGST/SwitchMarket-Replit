@@ -17,6 +17,10 @@ export function useAuth() {
         await authService.handleRedirectResult();
       } catch (error) {
         console.error("Redirect result error:", error);
+        // Store error for global handler
+        sessionStorage.setItem('authError', 'redirect_failed');
+        // Force redirect to auth page
+        window.location.href = '/auth';
       }
     };
     

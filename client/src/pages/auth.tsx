@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { authService } from "@/lib/auth";
+import { ErrorHandler } from "@/lib/errorHandler";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
@@ -44,12 +45,8 @@ export default function Auth() {
       }
       setLocation("/");
     } catch (error: any) {
-      console.error("Auth error:", error);
-      toast({
-        title: "Errore",
-        description: error.message || "Errore durante l'autenticazione",
-        variant: "destructive",
-      });
+      const appError = ErrorHandler.handleAuthError(error);
+      ErrorHandler.showErrorAndRedirect(appError, setLocation, 2000);
     } finally {
       setIsLoading(false);
     }
@@ -65,11 +62,8 @@ export default function Auth() {
       });
       setLocation("/");
     } catch (error: any) {
-      toast({
-        title: "Errore Google",
-        description: error.message,
-        variant: "destructive",
-      });
+      const appError = ErrorHandler.handleAuthError(error);
+      ErrorHandler.showErrorAndRedirect(appError, setLocation, 2000);
     } finally {
       setIsLoading(false);
     }

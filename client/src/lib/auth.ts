@@ -26,23 +26,12 @@ export const authService = {
       googleProvider.addScope('email');
       googleProvider.addScope('profile');
       
-      // Use popup for better UX
+      // Use popup with error handling
       const result = await signInWithPopup(auth, googleProvider);
       return result.user;
     } catch (error: any) {
-      console.error("Google authentication error:", error);
-      
-      if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Dominio non autorizzato in Firebase Console. Aggiungi questo dominio ai domini autorizzati.');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Accesso annullato.');
-      } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('Popup bloccato dal browser. Abilita i popup per questo sito.');
-      } else if (error.code === 'auth/network-request-failed') {
-        throw new Error('Errore di connessione.');
-      }
-      
-      throw new Error('Errore durante l\'autenticazione Google.');
+      // Re-throw with original error for proper handling
+      throw error;
     }
   },
 
