@@ -20,6 +20,9 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
     enabled: !!conversation.id,
   });
 
+  // Type guard per i messaggi
+  const typedMessages = Array.isArray(messages) ? messages : [];
+
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       return apiRequest("POST", `/api/conversations/${conversation.id}/messages`, {
@@ -79,7 +82,7 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {typedMessages.length === 0 ? (
           <div className="text-center py-8">
             <div className="p-4 bg-slate-50 rounded-xl inline-flex items-center justify-center mb-4">
               <i className="fas fa-comments text-slate-400 text-2xl"></i>
@@ -87,7 +90,7 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
             <p className="text-slate-500">Nessun messaggio ancora. Inizia la conversazione!</p>
           </div>
         ) : (
-          messages.map((message: any) => (
+          typedMessages.map((message: any) => (
             <div key={message.id} className={`flex gap-3 ${
               message.senderId === user?.id ? 'justify-end' : ''
             }`}>

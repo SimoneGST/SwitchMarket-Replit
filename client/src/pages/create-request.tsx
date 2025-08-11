@@ -248,8 +248,8 @@ export default function CreateRequest() {
         currentLocation: currentLocation,
         useCurrentLocation: true,
         location: currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`,
-        latitude: currentLocation.lat,
-        longitude: currentLocation.lng
+        // latitude: currentLocation.lat,
+        // longitude: currentLocation.lng
       };
     } else {
       locationData = {
@@ -261,7 +261,7 @@ export default function CreateRequest() {
     const finalRequestData = {
       ...requestData,
       ...locationData,
-      tags: requestData.tags?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
+      // tags: requestData.tags?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       aiContext: {
         messages: chatMessages,
         extractedSpecs: chatMessages.length > 0 ? chatMessages[chatMessages.length - 1].content : ''
@@ -853,8 +853,8 @@ export default function CreateRequest() {
                         onChange={(value, coordinates) => {
                           updateField('location', value);
                           if (coordinates) {
-                            updateField('latitude', coordinates.lat);
-                            updateField('longitude', coordinates.lng);
+                            // updateField('latitude', coordinates.lat);
+                            // updateField('longitude', coordinates.lng);
                           }
                         }}
                         placeholder="Inserisci indirizzo di partenza"
