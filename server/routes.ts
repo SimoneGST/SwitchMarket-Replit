@@ -62,6 +62,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priceMax: req.query.priceMax ? parseFloat(req.query.priceMax as string) : undefined,
         status: req.query.status as string,
         search: req.query.search as string,
+        merchantLat: req.query.merchantLat ? parseFloat(req.query.merchantLat as string) : undefined,
+        merchantLng: req.query.merchantLng ? parseFloat(req.query.merchantLng as string) : undefined,
+        merchantLocation: req.query.merchantLocation as string,
       };
       
       const requests = await storage.getRequests(filters);
