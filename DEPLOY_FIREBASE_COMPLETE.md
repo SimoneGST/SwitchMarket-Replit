@@ -157,9 +157,16 @@ npm run build:firebase
 # Verifica logs
 firebase functions:log
 
-# Redeploy solo functions
+# Redeploy solo functions (IMPORTANTE per fix CORS)
+cd functions
+npm run build
 firebase deploy --only functions
 ```
+
+### CORS Error (RISOLTO)
+- Firebase Functions ora supportano tutti i domini (.replit.app, .web.app)
+- Headers CORS configurati automaticamente
+- Redeploy functions necessario per applicare fix
 
 ### Auth Error
 - Verifica domini autorizzati in Firebase Console

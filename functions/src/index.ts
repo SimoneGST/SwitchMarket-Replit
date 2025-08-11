@@ -8,9 +8,37 @@ admin.initializeApp();
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: true }));
+// Middleware CORS per tutti i domini
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://switch-market-guastellasimone.replit.app',
+    /\.replit\.app$/,
+    /\.web\.app$/,
+    /\.firebaseapp\.com$/
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Middleware per headers CORS manual in caso di problemi
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // Routes
 app.get("/", (req, res) => {

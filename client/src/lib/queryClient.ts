@@ -21,6 +21,8 @@ export async function apiRequest(
   
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
   
+  console.log('API Request:', { fullUrl, method: options?.method || 'GET', env: import.meta.env.PROD ? 'PROD' : 'DEV' });
+  
   const res = await fetch(fullUrl, {
     ...options,
     headers: {
