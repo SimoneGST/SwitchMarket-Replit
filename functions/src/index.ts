@@ -38,11 +38,104 @@ const authenticateUser = async (req: any, res: any, next: any) => {
   }
 };
 
+// Merchant verification route (public for now)
+app.post("/api/merchant/verify", async (req: any, res) => {
+  try {
+    // Extract auth token manually for this route
+    const token = req.headers.authorization?.split("Bearer ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    
+    const verificationData = req.body;
+    
+    // Update user document with verification data
+    await admin.firestore().collection("users").doc(userId).update({
+      businessName: verificationData.businessName,
+      businessAddress: verificationData.businessAddress,
+      city: verificationData.city,
+      province: verificationData.province,
+      cap: verificationData.cap,
+      partitaIva: verificationData.partitaIva,
+      codiceFiscale: verificationData.codiceFiscale,
+      legalForm: verificationData.legalForm,
+      pivaVerified: true,
+      userType: 'merchant',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    res.json({ success: true, message: 'Verification completed' });
+  } catch (error) {
+    console.error('Error during verification:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Merchant stats route
+app.get("/api/merchant/stats", async (req: any, res) => {
+  try {
+    // Mock stats for now - replace with real Firestore queries
+    const stats = {
+      todayChats: Math.floor(Math.random() * 50) + 10,
+      avgResponseTime: 2,
+      satisfactionRate: 4.8
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting merchant stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Chat/AI endpoints (public)
+app.post("/api/chat/clemente", async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    // Mock response for now - replace with actual Gemini AI integration
+    const responses = [
+      "Ciao! Come posso aiutarti oggi a trovare quello che cerchi?",
+      "Perfetto! Sto cercando negozianti nella tua zona che possano aiutarti.",
+      "Ho trovato alcuni risultati interessanti per te. Vuoi che ti mostri i dettagli?"
+    ];
+    
+    const response = responses[Math.floor(Math.random() * responses.length)];
+    
+    res.json({ response });
+  } catch (error) {
+    console.error('Error in Clemente chat:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Protected routes
 app.use("/api", authenticateUser);
 
 // User routes
 app.get("/api/user", async (req: any, res) => {
+  try {
+    const userDoc = await admin
+      .firestore()
+      .collection("users")
+      .doc(req.user.uid)
+      .get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ id: userDoc.id, ...userDoc.data() });
+  } catch (error) {
+    console.error("Error getting user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/auth/user", async (req: any, res) => {
   try {
     const userDoc = await admin
       .firestore()
@@ -124,6 +217,26 @@ app.get("/api/requests", async (req: any, res) => {
   } catch (error) {
     console.error("Error getting requests:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/requests/nearby", async (req: any, res) => {
+  try {
+    const requestsSnapshot = await admin.firestore().collection("requests")
+      .where('status', '==', 'active')
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get();
+    
+    const requests = requestsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    res.json(requests);
+  } catch (error) {
+    console.error('Error getting requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Deploy Firebase Ready (11/08/2025)
+- **Firebase Functions**: Backend completo migrato da PostgreSQL a Firestore
+- **API Routes**: Merchant verification, chat Clemente, user management, requests system
+- **Build System**: Script automatizzato build-firebase.js per deploy ottimizzato
+- **Notifiche Toast**: Sistema centralizzato con categorie predefinite e gestione errori automatica
+- **Documentation**: Guida completa deploy Firebase con checklist e troubleshooting
+- **Production Ready**: Configurazione hosting, functions, auth, storage pronta per deploy
+
 ### Test End-to-End Completati con Successo (11/08/2025)
 - **Geolocalizzazione**: Sistema di filtro geografico con formula Haversine perfettamente funzionante
 - **Intelligenza Clemente**: Riconoscimento automatico prodotti e generazione schemi dinamici (chitarre, laptop gaming, auto, pasta maker)

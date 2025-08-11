@@ -16,7 +16,7 @@ export async function apiRequest(
   
   // Use local server in development, Firebase Functions in production
   const baseUrl = import.meta.env.PROD 
-    ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
+    ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net/api`
     : "";
   
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
