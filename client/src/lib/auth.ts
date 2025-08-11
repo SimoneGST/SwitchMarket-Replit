@@ -16,27 +16,48 @@ const googleProvider = new GoogleAuthProvider();
 export const authService = {
   async signInWithGoogle(): Promise<FirebaseUser | null> {
     try {
-      console.log("Attempting Google sign-in...");
+      console.log("🔐 Attempting Google sign-in...");
+      console.log("🔧 Firebase Config Check:", {
+        apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? "✓ Set" : "✗ Missing",
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? "✓ Set" : "✗ Missing", 
+        appId: import.meta.env.VITE_FIREBASE_APP_ID ? "✓ Set" : "✗ Missing",
+        authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
+      });
+      
+      // Configure provider
+      googleProvider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
       const result = await signInWithPopup(auth, googleProvider);
-      console.log("Sign-in successful:", result.user);
+      console.log("✅ Google sign-in successful:", {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName
+      });
       return result.user;
     } catch (error: any) {
-      console.error("Google sign-in error details:", {
+      console.error("❌ Google sign-in error details:", {
         code: error.code,
         message: error.message,
-        customData: error.customData
+        customData: error.customData,
+        stack: error.stack
       });
       
       // Handle specific Firebase errors
       if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Dominio non autorizzato. Configura il dominio in Firebase Console.');
+        throw new Error('Dominio non autorizzato. Vai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi questo dominio.');
       } else if (error.code === 'auth/popup-blocked') {
         throw new Error('Popup bloccato dal browser. Abilita i popup per questo sito.');
       } else if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Login annullato dall\'utente.');
+        throw new Error('Login annullato. Riprova e completa l\'autenticazione Google.');
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Errore di rete. Verifica la connessione internet.');
+      } else if (error.code === 'auth/internal-error') {
+        throw new Error('Errore interno Firebase. Verifica la configurazione delle chiavi API.');
       }
       
-      throw error;
+      throw new Error(`Errore autenticazione Google: ${error.message}`);
     }
   },
 
