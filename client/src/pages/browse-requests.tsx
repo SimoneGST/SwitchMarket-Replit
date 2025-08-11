@@ -1,174 +1,218 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from '@/hooks/use-toast';
-import RequestCard from "@/components/request-card";
-import CharacterIntro from '@/components/character-intro';
-import { useCharacterIntro } from '@/hooks/useCharacterIntro';
-import VoiceSettings from '@/components/voice-settings';
-import { useVoiceSettings } from '@/hooks/useVoiceSettings';
-import { ClementeAI } from '@/lib/clemente';
-import { useAuth } from '@/hooks/useAuth';
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import VoiceSettings from "@/components/voice-settings";
+import { ClementeAI } from "@/lib/clemente";
+// import { useAuth } from "@/hooks/use-auth";
+// import { trackEvent } from "@/lib/analytics";
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: 'image' | 'document' | 'other';
   aiGeneratedImage?: string;
 }
 
 interface RequestData {
-  title?: string;
-  category?: string;
-  description?: string;
-  [key: string]: any;
+  title: string;
+  description: string;
+  category: string;
+  budget?: number;
+  urgencyLevel: 'immediate' | '24h' | '48h' | 'few_days';
+  deliveryPreference: 'pickup' | 'delivery' | 'both';
+  actionRadius?: number;
+  location: string;
+  technicalSpecs?: string;
+  brand?: string;
+  model?: string;
+  size?: string;
+  color?: string;
+  material?: string;
 }
 
-interface ProductSchemaState {
-  isActive: boolean;
-  currentSchema: any;
-  collectedData: Record<string, any>;
+interface VoiceSettings {
+  clementeVoice: string;
+  leonardoVoice: string;
+  voiceSpeed: number;
+  voicePitch: number;
+  voiceEnabled: boolean;
+}
+
+interface ProductSchema {
+  category: string;
+  requiredFields: string[];
+  optionalFields: string[];
+  fieldDescriptions: Record<string, string>;
 }
 
 export default function BrowseRequests() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Modalità: tab attiva (browse o create)
-  const [activeTab, setActiveTab] = useState("browse");
-  
-  // Filtri per browsing
-  const [filters, setFilters] = useState({
-    search: "",
-    location: "Milano, MI",
-    category: "",
-    priceMin: "",
-    priceMax: "",
-    status: "open",
-  });
-  
-  // Stati per creazione richiesta con Clemente
-  const [clemente] = useState(() => new ClementeAI());
-  const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('clemente');
+  // Stati principali
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isClementeTyping, setIsClementeTyping] = useState(false);
-  const [isClementeSpeaking, setIsClementeSpeaking] = useState(false);
-  const [productSchema, setProductSchema] = useState<ProductSchemaState>({
-    isActive: false,
-    currentSchema: null,
-    collectedData: {}
+  const [requestData, setRequestData] = useState<Partial<RequestData>>({
+    urgencyLevel: '24h',
+    deliveryPreference: 'both',
+    actionRadius: 10
   });
+  const [productSchema, setProductSchema] = useState<ProductSchema | null>(null);
+  const [completionProgress, setCompletionProgress] = useState(0);
   
   // Impostazioni vocali
-  const { settings: voiceSettings, updateSettings: updateVoiceSettings, speakWithSettings } = useVoiceSettings();
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
+    clementeVoice: '',
+    leonardoVoice: '',
+    voiceSpeed: 1.0,
+    voicePitch: 1.0,
+    voiceEnabled: true
+  });
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   
-  // Request data state
-  const [requestData, setRequestData] = useState<RequestData>({});
+  // Riferimenti
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Istanza Clemente
+  const [clemente] = useState(() => new ClementeAI());
+  // const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const { data: requests = [], isLoading, error } = useQuery({
-    queryKey: ["/api/requests", filters],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
-      
-      const response = await fetch(`/api/requests?${params}`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Non autenticato, restituisce array vuoto invece di errore
-          return [];
-        }
-        throw new Error(`Errore: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-  });
-
-  // Mutation per creare richiesta
-  const createRequestMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch('/api/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Errore nella creazione della richiesta');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Richiesta pubblicata!",
-        description: "La tua richiesta è stata inviata ai negozianti locali.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/requests'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Errore pubblicazione",
-        description: error.message || "Si è verificato un errore durante la pubblicazione",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Messaggio di benvenuto automatico per chat
-  useEffect(() => {
-    if (activeTab === "create" && chatMessages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        role: 'assistant',
-        content: 'Ciao! Sono Clemente, il tuo assistente AI. Dimmi cosa stai cercando e ti aiuterò a creare una richiesta precisa per i negozianti della tua zona!',
-        timestamp: new Date()
-      };
-      setChatMessages([welcomeMessage]);
-    }
-  }, [activeTab, chatMessages.length]);
-
-  // Auto-scroll per chat
+  // Scroll automatico della chat
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages, isClementeTyping]);
 
+  // Carica impostazioni vocali dal localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('voiceSettings');
+    if (savedSettings) {
+      try {
+        setVoiceSettings(JSON.parse(savedSettings));
+      } catch (error) {
+        console.error('Errore caricamento impostazioni vocali:', error);
+      }
+    }
+  }, []);
+
+  // Messaggio di benvenuto automatico
+  useEffect(() => {
+    if (chatMessages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'Ciao! Sono Clemente, il tuo assistente per trovare prodotti locali. Dimmi cosa stai cercando e ti aiuterò a creare una richiesta perfetta per i negozianti della tua zona.',
+        timestamp: new Date()
+      };
+      setChatMessages([welcomeMessage]);
+      
+      // Speak welcome message
+      if (voiceSettings.voiceEnabled) {
+        setTimeout(() => speakClementeMessage(welcomeMessage.content), 500);
+      }
+    }
+  }, [voiceSettings.voiceEnabled]);
+
+  // Calcola il progresso di completamento
+  useEffect(() => {
+    const requiredFields = ['title', 'description', 'category', 'location'];
+    const completedFields = requiredFields.filter(field => requestData[field as keyof RequestData]);
+    setCompletionProgress((completedFields.length / requiredFields.length) * 100);
+  }, [requestData]);
+
+  // Funzione Text-to-Speech per Clemente
   const speakClementeMessage = async (text: string) => {
-    if (!voiceSettings?.voiceEnabled) return;
-    
-    setIsClementeSpeaking(true);
-    
+    if (!voiceSettings.voiceEnabled || !text.trim()) return;
+
     try {
-      await speakWithSettings(text, 'clemente');
+      // Cancel any ongoing speech
+      speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Configurazione voce
+      const voices = speechSynthesis.getVoices();
+      const selectedVoice = voices.find(voice => voice.name === voiceSettings.clementeVoice);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      
+      utterance.rate = voiceSettings.voiceSpeed;
+      utterance.pitch = voiceSettings.voicePitch;
+      utterance.lang = 'it-IT';
+      
+      speechSynthesis.speak(utterance);
     } catch (error) {
-      console.error('Errore sintesi vocale:', error);
-    } finally {
-      setIsClementeSpeaking(false);
+      console.error('Errore Text-to-Speech:', error);
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!chatInput.trim()) return;
+  // Mutation per creare richiesta
+  const createRequestMutation = useMutation({
+    mutationFn: async (data: Partial<RequestData>) => {
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Errore creazione richiesta');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/requests'] });
+      // trackEvent('request_created', 'user_journey', 'clemente_chat');
+      
+      const successMessage: ChatMessage = {
+        role: 'assistant',
+        content: '🎉 Perfetto! Ho creato la tua richiesta. I negozianti della zona la vedranno e ti contatteranno presto!',
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, successMessage]);
+      speakClementeMessage(successMessage.content);
+      
+      // Reset dati
+      setRequestData({
+        urgencyLevel: '24h',
+        deliveryPreference: 'both',
+        actionRadius: 10
+      });
+      setProductSchema(null);
+      setCompletionProgress(0);
+    },
+    onError: (error) => {
+      console.error('Errore creazione richiesta:', error);
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'Mi dispiace, c\'è stato un errore nella creazione della richiesta. Puoi riprovare?',
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    }
+  });
+
+  // Invia messaggio a Clemente
+  const sendMessage = async () => {
+    if (!chatInput.trim() || isClementeTyping) return;
 
     const userMessage: ChatMessage = {
       role: 'user',
-      content: chatInput.trim(),
+      content: chatInput,
       timestamp: new Date()
     };
 
@@ -187,7 +231,6 @@ export default function BrowseRequests() {
       };
 
       setChatMessages(prev => [...prev, aiMessage]);
-
       await speakClementeMessage(response.text);
 
     } catch (error) {
@@ -203,365 +246,361 @@ export default function BrowseRequests() {
     }
   };
 
-  const updateFilter = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const updateVoiceSettings = (newSettings: VoiceSettings) => {
+    setVoiceSettings(newSettings);
+    localStorage.setItem('voiceSettings', JSON.stringify(newSettings));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const formatTimestamp = (date: Date) => {
+    return date.toLocaleTimeString('it-IT', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const getUrgencyLabel = (urgency: string) => {
+    const labels = {
+      'immediate': 'Immediato',
+      '24h': '24 ore',
+      '48h': '48 ore',
+      'few_days': 'Qualche giorno'
+    };
+    return labels[urgency as keyof typeof labels] || urgency;
+  };
+
+  const getDeliveryLabel = (delivery: string) => {
+    const labels = {
+      'pickup': 'Ritiro in negozio',
+      'delivery': 'Consegna a domicilio',
+      'both': 'Entrambi'
+    };
+    return labels[delivery as keyof typeof labels] || delivery;
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header con tabs */}
-      <div className="mb-8">
-        <div className="flex items-center mb-4">
-          <img 
-            src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-            alt="Clemente AI" 
-            className="w-10 h-10 rounded-full mr-4 border-2 border-green-300"
-          />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Cerca Prodotti</h1>
-            <p className="text-slate-600">Trova quello che cerchi o crea una nuova richiesta con Clemente</p>
+    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+              alt="Clemente AI" 
+              className="w-16 h-16 rounded-full mr-4 border-4 border-green-300"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Cerca Prodotti con Clemente</h1>
+              <p className="text-lg text-slate-600">Il tuo assistente AI per trovare prodotti locali</p>
+            </div>
           </div>
         </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="browse" className="flex items-center gap-2">
-              <i className="fas fa-search"></i>
-              Esplora Richieste
-            </TabsTrigger>
-            <TabsTrigger value="create" className="flex items-center gap-2">
-              <i className="fas fa-plus"></i>
-              Crea con Clemente
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="browse" className="mt-6">
-            <div className="flex flex-col lg:flex-row gap-8">
-        {/* Filters Sidebar */}
-        <div className="lg:w-1/4">
-          <Card className="sticky top-24">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Filtri</h3>
-              
-              {/* Location Filter */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Posizione</label>
-                <div className="relative">
-                  <Input
-                    placeholder="Inserisci città"
-                    value={filters.location}
-                    onChange={(e) => updateFilter('location', e.target.value)}
-                    className="pl-10"
-                  />
-                  <i className="fas fa-map-marker-alt text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
-                </div>
-              </div>
 
-              {/* Category Filter */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
-                <Select value={filters.category} onValueChange={(value) => updateFilter('category', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tutte le categorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tutte le categorie</SelectItem>
-                    <SelectItem value="Elettronica">Elettronica</SelectItem>
-                    <SelectItem value="Casa e Giardino">Casa e Giardino</SelectItem>
-                    <SelectItem value="Sport e Tempo Libero">Sport e Tempo Libero</SelectItem>
-                    <SelectItem value="Veicoli">Veicoli</SelectItem>
-                    <SelectItem value="Abbigliamento">Abbigliamento</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Price Range */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Fascia di Prezzo</label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.priceMin}
-                    onChange={(e) => updateFilter('priceMin', e.target.value)}
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.priceMax}
-                    onChange={(e) => updateFilter('priceMax', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Stato</label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <Checkbox 
-                      checked={filters.status === 'open'}
-                      onCheckedChange={(checked) => updateFilter('status', checked ? 'open' : '')}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Colonna Chat Centrale */}
+          <div className="lg:col-span-2 order-1">
+            <Card className="h-[700px] flex flex-col shadow-xl border-2 border-green-200">
+              <CardHeader className="pb-4 bg-gradient-to-r from-green-100 to-blue-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <img 
+                      src="/attached_assets/clemente a busto intero_1754847733100.png" 
+                      alt="Clemente AI" 
+                      className="w-12 h-16 mr-4"
+                      style={{ objectFit: 'contain' }}
                     />
-                    <span className="ml-2 text-sm text-slate-600">Aperte</span>
-                  </label>
-                  <label className="flex items-center">
-                    <Checkbox 
-                      checked={filters.status === 'negotiating'}
-                      onCheckedChange={(checked) => updateFilter('status', checked ? 'negotiating' : '')}
-                    />
-                    <span className="ml-2 text-sm text-slate-600">In negoziazione</span>
-                  </label>
+                    <div>
+                      <CardTitle className="text-xl text-green-800">Chat con Clemente</CardTitle>
+                      <p className="text-sm text-slate-600">Assistente AI specializzato in prodotti locali</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowVoiceSettings(true)}
+                    className="text-slate-500 hover:text-slate-700"
+                  >
+                    <i className="fas fa-cog"></i>
+                  </Button>
                 </div>
-              </div>
+              </CardHeader>
 
-              <Button className="w-full bg-primary hover:bg-primary/90">
-                <i className="fas fa-search mr-2"></i>
-                Applica Filtri
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Results Area */}
-        <div className="lg:w-3/4">
-          {/* Search Bar */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="relative">
-                <Input
-                  placeholder="Cosa stai cercando?"
-                  value={filters.search}
-                  onChange={(e) => updateFilter('search', e.target.value)}
-                  className="pl-12 pr-20 py-3 text-lg"
-                />
-                <i className="fas fa-search text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2 text-lg"></i>
-                <Button 
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90"
-                  size="sm"
+              <CardContent className="flex-1 p-0 flex flex-col">
+                {/* Messaggi Chat */}
+                <ScrollArea 
+                  className="flex-1 p-4"
+                  ref={messagesContainerRef}
                 >
-                  Cerca
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Results Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <img 
-                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
-                alt="Leonardo AI" 
-                className="w-8 h-8 rounded-full mr-3 border-2 border-blue-300"
-              />
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Richieste Trovate</h2>
-                <p className="text-sm text-slate-500">
-                  {requests.length} risultati per "{filters.search || 'tutte le richieste'}" a {filters.location}
-                </p>
-              </div>
-            </div>
-            <Select defaultValue="recent">
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">Più recenti</SelectItem>
-                <SelectItem value="price-high">Prezzo più alto</SelectItem>
-                <SelectItem value="price-low">Prezzo più basso</SelectItem>
-                <SelectItem value="distance">Distanza</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Request Cards Grid */}
-          <div className="space-y-4">
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-slate-500">Caricamento richieste...</p>
-              </div>
-            ) : requests.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="p-4 bg-slate-50 rounded-xl inline-flex items-center justify-center mb-4">
-                  <i className="fas fa-search text-slate-400 text-2xl"></i>
-                </div>
-                <h3 className="text-lg font-medium text-slate-900 mb-2">Nessuna richiesta trovata</h3>
-                <p className="text-slate-500">Prova a modificare i filtri di ricerca</p>
-              </div>
-            ) : (
-              requests.map((request: any) => (
-                <RequestCard key={request.id} request={request} />
-              ))
-            )}
-          </div>
-
-          {/* Pagination */}
-          {requests.length > 0 && (
-            <div className="flex items-center justify-between mt-8">
-              <p className="text-sm text-slate-500">Mostrando 1-{requests.length} di {requests.length} risultati</p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>
-                  <i className="fas fa-chevron-left"></i>
-                </Button>
-                <Button size="sm" className="bg-primary text-white">1</Button>
-                <Button variant="outline" size="sm">2</Button>
-                <Button variant="outline" size="sm">3</Button>
-                <Button variant="outline" size="sm">
-                  <i className="fas fa-chevron-right"></i>
-                </Button>
-              </div>
-            </div>
-          )}
-            </div>
-          </div>
-          </TabsContent>
-          
-          <TabsContent value="create" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Chat Section */}
-              <div className="order-2 lg:order-1">
-                <Card className="h-[600px] flex flex-col">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <img 
-                          src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                          alt="Clemente AI" 
-                          className="w-8 h-8 rounded-full mr-3 border-2 border-green-300"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">Chat con Clemente</CardTitle>
-                          <p className="text-sm text-slate-500">Il tuo assistente AI per creare richieste</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowVoiceSettings(true)}
-                        className="text-slate-400 hover:text-slate-600"
-                      >
-                        <i className="fas fa-cog"></i>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="flex-1 flex flex-col p-0">
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-                      {chatMessages.map((message, index) => (
-                        <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] rounded-lg p-3 ${
-                            message.role === 'user' 
-                              ? 'bg-primary text-white' 
-                              : 'bg-slate-100 text-slate-900'
-                          }`}>
-                            <p className="text-sm">{message.content}</p>
-                            {message.aiGeneratedImage && (
+                  <div className="space-y-4">
+                    {chatMessages.map((message, index) => (
+                      <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] rounded-lg p-3 ${
+                          message.role === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-green-100 text-slate-800 border border-green-200'
+                        }`}>
+                          {message.role === 'assistant' && (
+                            <div className="flex items-center mb-2">
                               <img 
-                                src={message.aiGeneratedImage} 
-                                alt="AI Generated" 
-                                className="mt-2 rounded-lg max-w-full"
+                                src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                                alt="Clemente" 
+                                className="w-6 h-6 rounded-full mr-2 border border-green-300"
                               />
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {isClementeTyping && (
-                        <div className="flex justify-start">
-                          <div className="bg-slate-100 rounded-lg p-3">
-                            <div className="flex space-x-1">
-                              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                    
-                    {/* Input */}
-                    <div className="p-4 border-t">
-                      <div className="flex gap-3">
-                        <div className="flex-1 relative">
-                          <Input
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            placeholder="Dimmi cosa stai cercando..."
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            className="pr-12"
-                          />
-                          {isClementeSpeaking && (
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                              <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                              <span className="text-xs font-medium text-green-700">Clemente</span>
                             </div>
                           )}
-                        </div>
-                        <Button 
-                          onClick={handleSendMessage}
-                          disabled={!chatInput.trim() || isClementeTyping}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          <i className="fas fa-paper-plane"></i>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Clemente Preview */}
-              <div className="order-1 lg:order-2">
-                <Card className="h-[600px] bg-gradient-to-b from-green-50 to-green-100">
-                  <CardContent className="h-full flex flex-col justify-center items-center p-6">
-                    <div className="text-center">
-                      <img 
-                        src="/attached_assets/clemente a busto intero_1754847733100.png" 
-                        alt="Clemente assistente AI" 
-                        className="w-48 h-auto mx-auto mb-6 rounded-2xl shadow-lg"
-                      />
-                      <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                        Ciao! Sono Clemente
-                      </h3>
-                      <p className="text-slate-600 mb-4">
-                        Il tuo assistente AI per trovare i prodotti perfetti
-                      </p>
-                      <div className="space-y-2 text-sm text-slate-500">
-                        <div className="flex items-center justify-center">
-                          <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                          <span>Analisi intelligente delle tue esigenze</span>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                          <span>Ricerca locale personalizzata</span>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                          <span>Connessione diretta con negozianti</span>
+                          
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                          
+                          {message.aiGeneratedImage && (
+                            <div className="mt-3">
+                              <img 
+                                src={message.aiGeneratedImage} 
+                                alt="Immagine generata da Clemente" 
+                                className="max-w-full h-auto rounded-md border"
+                              />
+                            </div>
+                          )}
+                          
+                          {message.fileUrl && (
+                            <div className="mt-3 p-2 bg-slate-100 rounded border">
+                              <div className="flex items-center text-xs text-slate-600">
+                                <i className={`fas ${
+                                  message.fileType === 'image' ? 'fa-image' : 
+                                  message.fileType === 'document' ? 'fa-file-text' : 'fa-file'
+                                } mr-2`}></i>
+                                <span>{message.fileName || 'File allegato'}</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className={`text-xs mt-2 opacity-70 ${
+                            message.role === 'user' ? 'text-blue-100' : 'text-slate-500'
+                          }`}>
+                            {formatTimestamp(message.timestamp)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+                    ))}
+                    
+                    {isClementeTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-green-100 border border-green-200 rounded-lg p-3 max-w-[80%]">
+                          <div className="flex items-center mb-2">
+                            <img 
+                              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                              alt="Clemente" 
+                              className="w-6 h-6 rounded-full mr-2 border border-green-300"
+                            />
+                            <span className="text-xs font-medium text-green-700">Clemente</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="animate-bounce bg-green-400 w-2 h-2 rounded-full"></div>
+                            <div className="animate-bounce bg-green-400 w-2 h-2 rounded-full" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="animate-bounce bg-green-400 w-2 h-2 rounded-full" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div ref={chatEndRef} />
+                </ScrollArea>
 
-      {/* Character Introduction Modal */}
-      {showIntro && (
-        <div className="fixed inset-0 z-50">
-          <CharacterIntro
-            character="clemente"
-            show={showIntro}
-            onComplete={completeIntro}
-            onNeverShow={neverShowAgain}
-          />
+                {/* Input Area */}
+                <div className="p-4 border-t border-slate-200 bg-slate-50">
+                  <div className="flex items-end space-x-2">
+                    <div className="flex-1">
+                      <Textarea
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Dimmi cosa stai cercando..."
+                        className="min-h-[60px] resize-none border-2 border-green-200 focus:border-green-400"
+                        disabled={isClementeTyping}
+                      />
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      <Button
+                        onClick={sendMessage}
+                        disabled={!chatInput.trim() || isClementeTyping}
+                        className="bg-green-600 hover:bg-green-700 text-white px-6"
+                      >
+                        <i className="fas fa-paper-plane"></i>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-green-300 text-green-700 hover:bg-green-50"
+                      >
+                        <i className="fas fa-paperclip"></i>
+                      </Button>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*,.pdf,.doc,.docx"
+                    onChange={(e) => {
+                      // TODO: Handle file upload
+                      console.log('File selezionato:', e.target.files?.[0]);
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Colonna Richiesta in Costruzione */}
+          <div className="order-2">
+            <Card className="sticky top-4 shadow-lg border-2 border-blue-200">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-green-100">
+                <CardTitle className="text-lg text-blue-800">Richiesta in Costruzione</CardTitle>
+                <div className="mt-2">
+                  <div className="flex items-center justify-between text-sm text-slate-600 mb-1">
+                    <span>Completamento</span>
+                    <span>{Math.round(completionProgress)}%</span>
+                  </div>
+                  <Progress value={completionProgress} className="h-2" />
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {/* Informazioni di base */}
+                {requestData.title && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Prodotto</label>
+                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.title}</p>
+                  </div>
+                )}
+                
+                {requestData.description && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Descrizione</label>
+                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.description}</p>
+                  </div>
+                )}
+                
+                {requestData.category && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Categoria</label>
+                    <Badge variant="secondary" className="block w-fit mt-1">{requestData.category}</Badge>
+                  </div>
+                )}
+                
+                {requestData.budget && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Budget</label>
+                    <p className="text-sm bg-green-50 p-2 rounded border text-green-800 font-medium">
+                      €{requestData.budget}
+                    </p>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Dettagli tecnici */}
+                {(requestData.brand || requestData.model || requestData.size || requestData.color) && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-2 block">Specifiche Tecniche</label>
+                    <div className="space-y-2">
+                      {requestData.brand && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Marca:</span>
+                          <span className="font-medium">{requestData.brand}</span>
+                        </div>
+                      )}
+                      {requestData.model && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Modello:</span>
+                          <span className="font-medium">{requestData.model}</span>
+                        </div>
+                      )}
+                      {requestData.size && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Taglia:</span>
+                          <span className="font-medium">{requestData.size}</span>
+                        </div>
+                      )}
+                      {requestData.color && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Colore:</span>
+                          <span className="font-medium">{requestData.color}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Preferenze consegna */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Urgenza</label>
+                    <Badge variant="outline" className="block w-fit mt-1">
+                      {getUrgencyLabel(requestData.urgencyLevel || '')}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Consegna</label>
+                    <Badge variant="outline" className="block w-fit mt-1">
+                      {getDeliveryLabel(requestData.deliveryPreference || '')}
+                    </Badge>
+                  </div>
+                  
+                  {requestData.actionRadius && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Raggio di azione</label>
+                      <p className="text-sm bg-blue-50 p-2 rounded border text-blue-800">
+                        {requestData.actionRadius} km
+                      </p>
+                    </div>
+                  )}
+                  
+                  {requestData.location && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Posizione</label>
+                      <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.location}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Pulsante creazione richiesta */}
+                {completionProgress >= 75 && (
+                  <div className="pt-4">
+                    <Button
+                      onClick={() => createRequestMutation.mutate(requestData)}
+                      disabled={createRequestMutation.isPending}
+                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                    >
+                      {createRequestMutation.isPending ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin mr-2"></i>
+                          Creazione...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-rocket mr-2"></i>
+                          Pubblica Richiesta
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Voice Settings Modal */}
       {showVoiceSettings && (
