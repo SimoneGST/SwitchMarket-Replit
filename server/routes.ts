@@ -604,18 +604,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const verificationData = req.body;
-      
-      const user = await storage.updateUserProfile(userId, {
-        ...verificationData,
-        verificationStatus: 'verified', // Auto-verifica per demo
-        pivaVerified: true,
+
+      // Validazione lato server
+      if (!verificationData.businessName || verificationData.businessName.length < 2) {
+        return res.status(400).json({ message: "Nome attività richiesto" });
+      }
+
+      if (!verificationData.taxType || !["piva", "cf"].includes(verificationData.taxType)) {
+        return res.status(400).json({ message: "Tipo identificativo fiscale richiesto" });
+      }
+
+      // Validazione P.IVA o C.F. in base al tipo selezionato
+      if (verificationData.taxType === "piva") {
+        if (!verificationData.piva || verificationData.piva.length !== 11) {
+          return res.status(400).json({ message: "Partita IVA non valida" });
+        }
+      } else {
+        if (!verificationData.codiceFiscale || verificationData.codiceFiscale.length !== 16) {
+          return res.status(400).json({ message: "Codice Fiscale non valido" });
+        }
+      }
+
+      if (!verificationData.businessAddress || verificationData.businessAddress.length < 5) {
+        return res.status(400).json({ message: "Indirizzo completo richiesto" });
+      }
+
+      if (!verificationData.city || verificationData.city.length < 2) {
+        return res.status(400).json({ message: "Città richiesta" });
+      }
+
+      if (!verificationData.cap || !/^[0-9]{5}$/.test(verificationData.cap)) {
+        return res.status(400).json({ message: "CAP non valido" });
+      }
+
+      if (!verificationData.province || verificationData.province.length !== 2) {
+        return res.status(400).json({ message: "Provincia non valida" });
+      }
+
+      if (!verificationData.legalForm) {
+        return res.status(400).json({ message: "Forma giuridica richiesta" });
+      }
+
+      // Aggiorna utente con dati verificati
+      const updateData: any = {
+        businessName: verificationData.businessName,
+        businessAddress: verificationData.businessAddress,
+        city: verificationData.city,
+        cap: verificationData.cap,
+        province: verificationData.province,
+        legalForm: verificationData.legalForm,
+        verificationStatus: 'verified',
+        businessVerified: true,
         isActive: true
+      };
+
+      // Aggiungi il campo fiscale corretto
+      if (verificationData.taxType === "piva") {
+        updateData.piva = verificationData.piva;
+        updateData.codiceFiscale = null;
+      } else {
+        updateData.codiceFiscale = verificationData.codiceFiscale;
+        updateData.piva = null;
+      }
+
+      const user = await storage.updateUserProfile(userId, updateData);
+
+      res.json({ 
+        success: true, 
+        message: "Verifica completata con successo",
+        user: user 
       });
-      
-      res.json(user);
     } catch (error) {
-      console.error("Error submitting verification:", error);
-      res.status(500).json({ message: "Failed to submit verification" });
+      console.error("Error during merchant verification:", error);
+      res.status(500).json({ message: "Errore durante la verifica. Riprova." });
     }
   });
 

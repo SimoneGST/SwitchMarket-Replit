@@ -12,14 +12,80 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
+// Validazione Codice Fiscale italiano
+const validateCodiceFiscale = (cf: string): boolean => {
+  if (cf.length !== 16) return false;
+  const cfRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
+  if (!cfRegex.test(cf.toUpperCase())) return false;
+  
+  // Controllo carattere di controllo
+  const controlChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const oddValues: {[key: string]: number} = {
+    '0': 1, '1': 0, '2': 5, '3': 7, '4': 9, '5': 13, '6': 15, '7': 17, '8': 19, '9': 21,
+    'A': 1, 'B': 0, 'C': 5, 'D': 7, 'E': 9, 'F': 13, 'G': 15, 'H': 17, 'I': 19, 'J': 21,
+    'K': 2, 'L': 4, 'M': 18, 'N': 20, 'O': 11, 'P': 3, 'Q': 6, 'R': 8, 'S': 12, 'T': 14,
+    'U': 16, 'V': 10, 'W': 22, 'X': 25, 'Y': 24, 'Z': 23
+  };
+  const evenValues: {[key: string]: number} = {
+    '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+    'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9,
+    'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19,
+    'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24, 'Z': 25
+  };
+  
+  let sum = 0;
+  for (let i = 0; i < 15; i++) {
+    const char = cf.charAt(i).toUpperCase();
+    if (i % 2 === 0) {
+      sum += oddValues[char] || 0;
+    } else {
+      sum += evenValues[char] || 0;
+    }
+  }
+  
+  const expectedControl = controlChars[sum % 26];
+  return cf.charAt(15).toUpperCase() === expectedControl;
+};
+
+// Validazione Partita IVA italiana
+const validatePartitaIva = (piva: string): boolean => {
+  if (piva.length !== 11) return false;
+  if (!/^[0-9]+$/.test(piva)) return false;
+  
+  // Algoritmo di controllo P.IVA
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    let digit = parseInt(piva.charAt(i));
+    if (i % 2 === 1) {
+      digit *= 2;
+      if (digit > 9) digit = digit - 9;
+    }
+    sum += digit;
+  }
+  
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return checkDigit === parseInt(piva.charAt(10));
+};
+
 const verificationSchema = z.object({
-  piva: z.string().min(11, "P.IVA deve essere di almeno 11 caratteri").max(11, "P.IVA deve essere di 11 caratteri"),
-  codiceFiscale: z.string().min(16, "Codice Fiscale deve essere di 16 caratteri").max(16, "Codice Fiscale deve essere di 16 caratteri"),
   businessName: z.string().min(2, "Nome attività richiesto"),
+  taxType: z.enum(["piva", "cf"], { required_error: "Seleziona tipo di identificativo fiscale" }),
+  piva: z.string().optional(),
+  codiceFiscale: z.string().optional(),
   businessAddress: z.string().min(5, "Indirizzo completo richiesto"),
   city: z.string().min(2, "Città richiesta"),
-  cap: z.string().min(5, "CAP richiesto").max(5, "CAP deve essere di 5 cifre"),
-  province: z.string().min(2, "Provincia richiesta").max(2, "Provincia deve essere di 2 caratteri"),
+  province: z.string().min(2, "Provincia richiesta"),
+  cap: z.string().regex(/^[0-9]{5}$/, "CAP deve essere di 5 cifre"),
+  legalForm: z.string().min(1, "Forma giuridica richiesta"),
+}).refine((data) => {
+  if (data.taxType === "piva") {
+    return data.piva && validatePartitaIva(data.piva);
+  } else {
+    return data.codiceFiscale && validateCodiceFiscale(data.codiceFiscale);
+  }
+}, {
+  message: "Inserisci un Codice Fiscale o Partita IVA validi",
+  path: ["taxType"]
 });
 
 type VerificationForm = z.infer<typeof verificationSchema>;
@@ -33,15 +99,19 @@ export default function MerchantVerification() {
   const form = useForm<VerificationForm>({
     resolver: zodResolver(verificationSchema),
     defaultValues: {
+      businessName: "",
+      taxType: "piva" as const,
       piva: "",
       codiceFiscale: "",
-      businessName: "",
       businessAddress: "",
       city: "",
-      cap: "",
       province: "",
+      cap: "",
+      legalForm: "",
     },
   });
+
+  const watchTaxType = form.watch("taxType");
 
   const verificationMutation = useMutation({
     mutationFn: async (data: VerificationForm) => {
@@ -98,7 +168,64 @@ export default function MerchantVerification() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="businessName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Attività/Ragione Sociale *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Es. Ferramenta Rossi SRL" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="taxType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo di Identificativo Fiscale *</FormLabel>
+                        <FormControl>
+                          <div className="flex gap-6 mt-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                value="piva"
+                                checked={field.value === "piva"}
+                                onChange={() => {
+                                  field.onChange("piva");
+                                  form.setValue("codiceFiscale", "");
+                                }}
+                                className="text-blue-600"
+                              />
+                              <span className="font-medium">Partita IVA</span>
+                              <span className="text-xs text-slate-500">(società, aziende)</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                value="cf"
+                                checked={field.value === "cf"}
+                                onChange={() => {
+                                  field.onChange("cf");
+                                  form.setValue("piva", "");
+                                }}
+                                className="text-blue-600"
+                              />
+                              <span className="font-medium">Codice Fiscale</span>
+                              <span className="text-xs text-slate-500">(artigiani, professionisti)</span>
+                            </label>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {watchTaxType === "piva" && (
                     <FormField
                       control={form.control}
                       name="piva"
@@ -117,10 +244,15 @@ export default function MerchantVerification() {
                             />
                           </FormControl>
                           <FormMessage />
+                          <p className="text-xs text-slate-500">
+                            Inserisci 11 cifre della tua Partita IVA
+                          </p>
                         </FormItem>
                       )}
                     />
+                  )}
 
+                  {watchTaxType === "cf" && (
                     <FormField
                       control={form.control}
                       name="codiceFiscale"
@@ -130,26 +262,47 @@ export default function MerchantVerification() {
                           <FormControl>
                             <Input 
                               {...field} 
-                              placeholder="RSSMRA80A01H501Z"
+                              placeholder="RSSMRA85M01H501X"
                               maxLength={16}
-                              style={{ textTransform: 'uppercase' }}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                              onChange={(e) => {
+                                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                field.onChange(value);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
+                          <p className="text-xs text-slate-500">
+                            Per artigiani, professionisti e attività senza P.IVA
+                          </p>
                         </FormItem>
                       )}
                     />
-                  </div>
+                  )}
 
                   <FormField
                     control={form.control}
-                    name="businessName"
+                    name="legalForm"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nome Attività/Ragione Sociale *</FormLabel>
+                        <FormLabel>Forma Giuridica *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Es. Ferramenta Rossi SRL" />
+                          <select 
+                            {...field}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            <option value="">Seleziona forma giuridica</option>
+                            <option value="ditta_individuale">Ditta Individuale</option>
+                            <option value="snc">Società in Nome Collettivo (SNC)</option>
+                            <option value="sas">Società in Accomandita Semplice (SAS)</option>
+                            <option value="srl">Società a Responsabilità Limitata (SRL)</option>
+                            <option value="spa">Società per Azioni (SPA)</option>
+                            <option value="sapa">Società in Accomandita per Azioni (SAPA)</option>
+                            <option value="cooperativa">Cooperativa</option>
+                            <option value="associazione">Associazione</option>
+                            <option value="fondazione">Fondazione</option>
+                            <option value="libero_professionista">Libero Professionista</option>
+                            <option value="artigiano">Artigiano</option>
+                          </select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -218,7 +371,6 @@ export default function MerchantVerification() {
                               {...field} 
                               placeholder="MI"
                               maxLength={2}
-                              style={{ textTransform: 'uppercase' }}
                               onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                             />
                           </FormControl>
@@ -266,15 +418,15 @@ export default function MerchantVerification() {
                 <div className="flex items-start gap-3">
                   <i className="fas fa-file-alt text-blue-600 mt-1"></i>
                   <div>
-                    <h4 className="font-medium">Partita IVA</h4>
-                    <p className="text-slate-600">Numero di 11 cifre rilasciato dall'Agenzia delle Entrate</p>
+                    <h4 className="font-medium">Partita IVA o Codice Fiscale</h4>
+                    <p className="text-slate-600">Puoi inserire la P.IVA (società) o il C.F. (artigiani/professionisti)</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <i className="fas fa-id-card text-blue-600 mt-1"></i>
+                  <i className="fas fa-check-circle text-green-600 mt-1"></i>
                   <div>
-                    <h4 className="font-medium">Codice Fiscale</h4>
-                    <p className="text-slate-600">Codice alfanumerico di 16 caratteri</p>
+                    <h4 className="font-medium">Validazione Automatica</h4>
+                    <p className="text-slate-600">Controllo algoritmi di verifica italiani</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
