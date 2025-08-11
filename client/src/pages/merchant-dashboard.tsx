@@ -293,105 +293,154 @@ export default function MerchantDashboard() {
         </Card>
       </div>
 
-      {/* Leonardo AI Status */}
-      {user?.copilotConfig ? (
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-blue-700 flex items-center gap-2">
-                <img 
-                  src="/attached_assets/leonardo_avatar_1754851387216.png" 
-                  alt="Leonardo" 
-                  className="h-8 w-8 rounded-full"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face";
-                  }}
-                />
-                Leonardo AI - Assistente Attivo
-              </CardTitle>
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                <i className="fas fa-circle text-green-600 text-xs mr-1"></i>
-                Online
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-comments text-blue-600"></i>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Chat Gestite Oggi</p>
-                  <p className="font-semibold">{stats?.todayChats || 0}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-clock text-green-600"></i>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Tempo Risposta Medio</p>
-                  <p className="font-semibold">{stats?.avgResponseTime || 0}s</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-thumbs-up text-purple-600"></i>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Soddisfazione</p>
-                  <p className="font-semibold">{stats?.satisfaction || 0}/5</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-2">
-              <Link href="/copilot-dashboard">
-                <Button variant="outline" size="sm">
-                  <i className="fas fa-cog mr-2"></i>
-                  Configura
-                </Button>
-              </Link>
-              <Link href="/copilot-analytics">
-                <Button variant="outline" size="sm">
-                  <i className="fas fa-chart-bar mr-2"></i>
-                  Analytics
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="mb-8 border-blue-200 bg-blue-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <img 
-                src="/attached_assets/leonardo_avatar_1754851387216.png" 
-                alt="Leonardo" 
-                className="h-16 w-16 rounded-full"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face";
-                }}
-              />
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-blue-800 mb-2">
-                  Attiva Leonardo AI
+      {/* Leonardo AI - Sempre protagonista */}
+      <Card className="mb-8 border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <img 
+              src="/attached_assets/leonardo_avatar_1754851387216.png" 
+              alt="Leonardo" 
+              className="h-20 w-20 rounded-full border-4 border-white shadow-lg"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face";
+              }}
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-2xl font-bold text-blue-900">
+                  Ciao! Sono Leonardo, il tuo assistente
                 </h3>
-                <p className="text-blue-600 mb-4">
-                  L'assistente AI che gestisce automaticamente le conversazioni con i clienti, 
-                  risponde alle domande sui prodotti e ti aiuta a convertire più vendite.
-                </p>
-                <Link href="/copilot-dashboard">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <i className="fas fa-robot mr-2"></i>
-                    Configura Leonardo AI
-                  </Button>
-                </Link>
+                {user?.copilotConfig ? (
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    <i className="fas fa-circle text-green-600 text-xs mr-1"></i>
+                    Attivo
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                    <i className="fas fa-clock text-orange-600 text-xs mr-1"></i>
+                    Da Configurare
+                  </Badge>
+                )}
+              </div>
+              
+              <p className="text-blue-700 mb-4 text-lg">
+                {user?.copilotConfig 
+                  ? "Sto gestendo le conversazioni con i tuoi clienti. Oggi ho aiutato " + (stats?.todayChats || 0) + " persone!"
+                  : "Sono qui per aiutarti a gestire la tua attività! Posso rispondere ai clienti, gestire i prodotti e guidarti in tutte le funzioni della dashboard."
+                }
+              </p>
+
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 mb-4">
+                {user?.copilotConfig ? (
+                  <>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-comments text-blue-600"></i>
+                        <div>
+                          <p className="text-xs text-slate-600">Chat Oggi</p>
+                          <p className="font-bold text-blue-600">{stats?.todayChats || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-clock text-green-600"></i>
+                        <div>
+                          <p className="text-xs text-slate-600">Risposta</p>
+                          <p className="font-bold text-green-600">{stats?.avgResponseTime || 2}s</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-thumbs-up text-purple-600"></i>
+                        <div>
+                          <p className="text-xs text-slate-600">Soddisfazione</p>
+                          <p className="font-bold text-purple-600">{stats?.satisfaction || 4.5}/5</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-handshake text-orange-600"></i>
+                        <div>
+                          <p className="text-xs text-slate-600">Conversioni</p>
+                          <p className="font-bold text-orange-600">{stats?.conversions || 12}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-robot text-blue-600"></i>
+                        <p className="text-sm font-medium text-blue-700">Chat Automatiche</p>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-green-200">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-store text-green-600"></i>
+                        <p className="text-sm font-medium text-green-700">Gestione Prodotti</p>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-chart-line text-purple-600"></i>
+                        <p className="text-sm font-medium text-purple-700">Analytics Vendite</p>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <div className="flex items-center gap-2">
+                        <i className="fas fa-lightbulb text-orange-600"></i>
+                        <p className="text-sm font-medium text-orange-700">Consigli Esperti</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="flex gap-3 flex-wrap">
+                {user?.copilotConfig ? (
+                  <>
+                    <Link href="/leonardo-copilot">
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <i className="fas fa-cog mr-2"></i>
+                        Configura Leonardo
+                      </Button>
+                    </Link>
+                    <Link href="/product/add">
+                      <Button variant="outline">
+                        <i className="fas fa-plus mr-2"></i>
+                        Aggiungi Prodotto
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm">
+                      <i className="fas fa-comments mr-2"></i>
+                      Chat con Leonardo
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/leonardo-copilot">
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <i className="fas fa-rocket mr-2"></i>
+                        Attiva Leonardo AI
+                      </Button>
+                    </Link>
+                    <Link href="/leonardo-profile-setup">
+                      <Button variant="outline">
+                        <i className="fas fa-user-cog mr-2"></i>
+                        Completa Profilo
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

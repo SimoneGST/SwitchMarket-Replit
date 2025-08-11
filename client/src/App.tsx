@@ -27,6 +27,7 @@ import StoreShowcase from "@/pages/store-showcase";
 import ProductForm from "@/pages/product-form";
 import MerchantIntegrations from "@/pages/merchant-integrations";
 import LeonardoCopilot from "@/pages/leonardo-copilot";
+import LeonardoProfileSetup from "@/pages/leonardo-profile-setup";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { initializeGlobalVoiceCommands } from "@/lib/voice-commands";
@@ -137,6 +138,9 @@ function Router() {
             </Route>
             <Route path="/leonardo-copilot">
               {!isAuthenticated ? <Auth /> : <LeonardoCopilot />}
+            </Route>
+            <Route path="/leonardo-profile-setup">
+              {!isAuthenticated ? <Auth /> : <LeonardoProfileSetup />}
             </Route>
           </>
         )}

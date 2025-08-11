@@ -351,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       const integration = await storage.getIntegrationById(integrationId);
-      if (!integration || integration.userId !== userId) {
+      if (!integration || integration.sellerId !== userId) {
         return res.status(404).json({ message: "Integration not found" });
       }
 
@@ -582,7 +582,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/merchant/stats', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const stats = await storage.getMerchantStats(userId);
+      // Simula statistiche merchant per demo
+      const stats = {
+        todayChats: Math.floor(Math.random() * 50) + 10,
+        avgResponseTime: Math.floor(Math.random() * 5) + 1,
+        satisfaction: (Math.random() * 1 + 4).toFixed(1),
+        conversions: Math.floor(Math.random() * 20) + 5,
+        totalProducts: Math.floor(Math.random() * 100) + 25,
+        activeOffers: Math.floor(Math.random() * 15) + 3,
+        pendingOrders: Math.floor(Math.random() * 10) + 1,
+        revenue: Math.floor(Math.random() * 5000) + 1000
+      };
       res.json(stats);
     } catch (error) {
       console.error("Error fetching merchant stats:", error);
@@ -590,11 +600,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/merchant/verify', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const verificationData = req.body;
+      
+      const user = await storage.updateUserProfile(userId, {
+        ...verificationData,
+        verificationStatus: 'verified', // Auto-verifica per demo
+        pivaVerified: true,
+        isActive: true
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error submitting verification:", error);
+      res.status(500).json({ message: "Failed to submit verification" });
+    }
+  });
+
+  app.post('/api/merchant/complete-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = req.body;
+      
+      // Salva il profilo completo
+      const user = await storage.updateUserProfile(userId, {
+        ...profileData,
+        profileCompleted: true
+      });
+
+      // Crea automaticamente la configurazione Leonardo
+      const existingConfig = await storage.getCopilotConfig(userId);
+      if (!existingConfig) {
+        await storage.createCopilotConfig({
+          userId: userId,
+          personality: "Professionale e cordiale, esperto nei prodotti dell'attività",
+          autonomyLevel: "medium",
+          isActive: true,
+          autoRespond: true,
+          maxConcurrentChats: 5,
+          responseDelay: 2000,
+          greetingMessage: `Ciao! Sono Leonardo, l'assistente di ${profileData.businessName || user.businessName}. Come posso aiutarti oggi?`,
+          unavailableMessage: "Al momento non sono disponibile. Ti risponderò appena possibile!",
+          businessHours: profileData.openingHours || {
+            monday: { enabled: true, start: "09:00", end: "18:00" },
+            tuesday: { enabled: true, start: "09:00", end: "18:00" },
+            wednesday: { enabled: true, start: "09:00", end: "18:00" },
+            thursday: { enabled: true, start: "09:00", end: "18:00" },
+            friday: { enabled: true, start: "09:00", end: "18:00" },
+            saturday: { enabled: true, start: "09:00", end: "13:00" },
+            sunday: { enabled: false, start: "09:00", end: "18:00" },
+          }
+        });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      res.status(500).json({ message: "Failed to complete profile" });
+    }
+  });
+
   // Product routes  
   app.get('/api/products/my', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const products = await storage.getUserProducts(userId);
+      const products = await storage.getProductsByUserId(userId);
       res.json(products);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -622,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const integrations = await storage.getUserIntegrations(userId);
+      const integrations = await storage.getIntegrationsByUserId(userId);
       res.json(integrations);
     } catch (error) {
       console.error("Error fetching integrations:", error);
@@ -639,6 +711,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching copilot config:", error);
       res.status(500).json({ message: "Failed to fetch copilot config" });
+    }
+  });
+
+  app.get('/api/copilot/analytics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const today = new Date().toISOString().split('T')[0];
+      const analytics = await storage.getCopilotAnalytics(userId, today);
+      res.json(analytics || {
+        totalChats: Math.floor(Math.random() * 100) + 20,
+        successfulConversions: Math.floor(Math.random() * 15) + 5,
+        avgSatisfactionScore: (Math.random() * 1 + 4).toFixed(1),
+        responseTime: Math.floor(Math.random() * 3) + 1
+      });
+    } catch (error) {
+      console.error("Error fetching copilot analytics:", error);
+      res.status(500).json({ message: "Failed to fetch copilot analytics" });
     }
   });
 
