@@ -18,96 +18,37 @@ const googleProvider = new GoogleAuthProvider();
 export const authService = {
   async signInWithGoogle(): Promise<FirebaseUser | null> {
     try {
-      console.log("🔐 Attempting Google sign-in...");
-      console.log("🔧 Firebase Config Check:", {
-        apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? "✓ Set" : "✗ Missing",
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? "✓ Set" : "✗ Missing", 
-        appId: import.meta.env.VITE_FIREBASE_APP_ID ? "✓ Set" : "✗ Missing",
-        authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
-      });
-      
-      // Configure provider
+      // Configure provider with better settings
       googleProvider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        access_type: 'online'
       });
       
-      try {
-        // Try popup first (works better on desktop)
-        console.log("🟡 Attempting popup sign-in...");
-        const result = await signInWithPopup(auth, googleProvider);
-        console.log("✅ Google sign-in successful (popup):", {
-          uid: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName
-        });
-        return result.user;
-      } catch (popupError: any) {
-        console.log("🔄 Popup failed:", {
-          code: popupError.code,
-          message: popupError.message
-        });
-        
-        // Don't use redirect for now to avoid white screen issue
-        // Just throw the error and let user know to try email auth
-        if (popupError.code === 'auth/popup-blocked') {
-          throw new Error('Popup bloccato dal browser. Abilita i popup per questo sito o usa l\'accesso email.');
-        } else if (popupError.code === 'auth/popup-closed-by-user') {
-          throw new Error('Accesso annullato. Completa l\'autenticazione nel popup.');
-        } else if (popupError.code === 'auth/unauthorized-domain') {
-          throw new Error('Dominio non autorizzato in Firebase Console. Usa l\'accesso email.');
-        }
-        
-        throw popupError;
-      }
+      // Add required scopes
+      googleProvider.addScope('email');
+      googleProvider.addScope('profile');
+      
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
     } catch (error: any) {
-      console.error("❌ Google sign-in error details:", {
-        code: error.code,
-        message: error.message,
-        customData: error.customData
-      });
+      console.error("Google authentication error:", error);
       
-      // Handle specific Firebase errors
-      if (error.code === 'auth/unauthorized-domain') {
-        throw new Error(`Dominio non autorizzato. Aggiungi "${window.location.hostname}" ai domini autorizzati in Firebase Console.`);
+      // Handle specific errors gracefully
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Accesso annullato.');
       } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('Popup bloccato. Sto provando con il redirect...');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Login annullato. Riprova e completa l\'autenticazione.');
+        throw new Error('Popup bloccato dal browser.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        throw new Error('Servizio temporaneamente non disponibile.');
       } else if (error.code === 'auth/network-request-failed') {
-        throw new Error('Errore di rete. Verifica la connessione internet.');
-      } else if (error.code === 'auth/internal-error') {
-        throw new Error('Errore configurazione Firebase. Controlla le chiavi API.');
+        throw new Error('Errore di connessione.');
       }
       
-      throw new Error(`Errore autenticazione: ${error.message}`);
+      throw new Error('Errore durante l\'autenticazione.');
     }
   },
 
-  // Handle redirect result on page load
-  async handleRedirectResult(): Promise<FirebaseUser | null> {
-    try {
-      console.log("🔍 Checking for redirect result...");
-      const result = await getRedirectResult(auth);
-      if (result) {
-        console.log("✅ Google sign-in successful (redirect):", {
-          uid: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName
-        });
-        return result.user;
-      } else {
-        console.log("ℹ️ No redirect result found");
-      }
-      return null;
-    } catch (error: any) {
-      console.error("❌ Redirect result error:", {
-        code: error.code,
-        message: error.message,
-        stack: error.stack
-      });
-      throw error;
-    }
-  },
+
 
   async signOut(): Promise<void> {
     try {

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { users } from "@/lib/firestore";
-import { authService } from "@/lib/auth";
 import type { User } from "@shared/schema";
 
 export function useAuth() {
@@ -11,27 +10,7 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-
-    // Check for redirect result first
-    const checkRedirectResult = async () => {
-      try {
-        console.log("🔄 Starting auth state check...");
-        const redirectUser = await authService.handleRedirectResult();
-        if (redirectUser && isMounted) {
-          console.log("🎯 Redirect user found, processing...");
-        }
-      } catch (error) {
-        console.error("❌ Redirect result error:", error);
-      }
-    };
-    
-    checkRedirectResult();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!isMounted) return;
-      
-      console.log("🔄 Auth state changed:", firebaseUser ? "User logged in" : "User logged out");
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
@@ -45,12 +24,7 @@ export function useAuth() {
             const firstName = nameParts[0] || "";
             const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
             
-            console.log('🔍 Creating new user from Google account:', {
-              displayName: firebaseUser.displayName,
-              extractedFirstName: firstName,
-              extractedLastName: lastName,
-              email: firebaseUser.email
-            });
+
             
             // Create new user document
             userData = await users.create({
@@ -76,7 +50,6 @@ export function useAuth() {
             }
             
             if (Object.keys(updates).length > 0) {
-              console.log('🔄 Updating existing user with Google data:', updates);
               const updatedData = await users.update(firebaseUser.uid, updates);
               if (updatedData) {
                 userData = updatedData;
@@ -96,10 +69,7 @@ export function useAuth() {
       setIsLoading(false);
     });
 
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   return {

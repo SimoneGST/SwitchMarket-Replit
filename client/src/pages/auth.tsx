@@ -58,44 +58,18 @@ export default function Auth() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      const result = await authService.signInWithGoogle();
-      if (result) {
-        // Popup success
-        toast({
-          title: "Accesso effettuato!",
-          description: "Benvenuto in Switch Market",
-        });
-        setLocation("/");
-      } else {
-        // Redirect in progress
-        toast({
-          title: "Reindirizzamento in corso...",
-          description: "Ti stiamo reindirizzando per completare l'accesso",
-        });
-      }
+      await authService.signInWithGoogle();
+      toast({
+        title: "Accesso effettuato",
+        description: "Benvenuto in Switch Market",
+      });
+      setLocation("/");
     } catch (error: any) {
-      console.error("Google auth error:", error);
-      
-      if (error.message.includes("Dominio non autorizzato") || 
-          error.message.includes("unauthorized-domain")) {
-        toast({
-          title: "Google temporaneamente non disponibile",
-          description: "Usa l'accesso con email e password qui sotto.",
-          variant: "destructive",
-        });
-      } else if (error.message.includes("Popup bloccato")) {
-        toast({
-          title: "Popup bloccato",
-          description: "Abilita i popup per questo sito o usa l'accesso email.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Errore",
-          description: error.message || "Errore durante l'accesso con Google. Prova con email.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Errore",
+        description: error.message || "Errore durante l'accesso. Prova con email e password.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -215,10 +189,7 @@ export default function Auth() {
               )}
             </Button>
             
-            {/* Info per problemi Google */}
-            <div className="text-xs text-slate-500 text-center -mt-2 bg-slate-50 p-2 rounded">
-              💡 Se l'accesso Google si blocca o la pagina diventa bianca, usa l'accesso email qui sotto
-            </div>
+
 
             {/* Divider */}
             <div className="relative">
