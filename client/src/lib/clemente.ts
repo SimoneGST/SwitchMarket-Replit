@@ -66,7 +66,8 @@ class ClementeAI {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const arrayBuffer = await blob.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const base64 = btoa(String.fromCharCode.apply(null, Array.from(uint8Array)));
       
       const prompt = userMessage 
         ? `Analizza questa immagine in relazione alla richiesta: "${userMessage}". Come può aiutarmi a trovare quello che cerco?`

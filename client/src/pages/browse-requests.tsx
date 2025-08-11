@@ -875,6 +875,45 @@ export default function BrowseRequests() {
                     <i className="fas fa-save mr-1"></i>
                     Salva
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      // Test rapido per verificare la connessione Clemente
+                      setChatInput('');
+                      const testMessage: ChatMessage = {
+                        role: 'user',
+                        content: 'ciao',
+                        timestamp: new Date()
+                      };
+                      setChatMessages(prev => [...prev, testMessage]);
+                      setIsClementeTyping(true);
+                      
+                      try {
+                        const response = await clemente.chatWithUser('ciao');
+                        const aiMessage: ChatMessage = {
+                          role: 'assistant',
+                          content: response.text,
+                          timestamp: new Date()
+                        };
+                        setChatMessages(prev => [...prev, aiMessage]);
+                      } catch (error) {
+                        console.error('Test fallito:', error);
+                        const errorMessage: ChatMessage = {
+                          role: 'assistant',
+                          content: 'Test di connessione fallito.',
+                          timestamp: new Date()
+                        };
+                        setChatMessages(prev => [...prev, errorMessage]);
+                      } finally {
+                        setIsClementeTyping(false);
+                      }
+                    }}
+                    title="Testa la connessione con Clemente"
+                  >
+                    <i className="fas fa-lightning mr-1"></i>
+                    Test
+                  </Button>
                 </div>
 
                 {/* Pulsante creazione richiesta */}

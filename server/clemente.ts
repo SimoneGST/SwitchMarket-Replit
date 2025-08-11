@@ -117,6 +117,37 @@ class ClementeAI {
     return null;
   }
 
+  // Sistema di retry robusto per gestire sovraccarichi API
+  private async retryWithBackoff<T>(
+    operation: () => Promise<T>, 
+    maxRetries: number = 3, 
+    baseDelay: number = 1000
+  ): Promise<T> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        const isRetryableError = 
+          error.message?.includes('overloaded') || 
+          error.message?.includes('503') ||
+          error.message?.includes('502') ||
+          error.message?.includes('timeout') ||
+          error.status === 503 ||
+          error.status === 502;
+
+        if (!isRetryableError || attempt === maxRetries) {
+          throw error;
+        }
+
+        // Backoff esponenziale: 1s, 2s, 4s
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        console.log(`⏳ Tentativo ${attempt}/${maxRetries} fallito, riprovo tra ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error('Max retries exceeded');
+  }
+
   // Sistema di chat intelligente con schede prodotto
   async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string, productSchema?: ProductSchema, collectedData?: any}> {
     if (!this.model) {
@@ -231,7 +262,10 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
         finalMessage = `${userMessage}\n\n[Immagine allegata: ${attachedFile.name}]\nAnalisi immagine: ${analysisResult}`;
       }
 
-      const result = await this.model.generateContent(systemPrompt + '\n\nCliente: ' + finalMessage);
+      // Usa retry con backoff per gestire sovraccarichi API
+      const result = await this.retryWithBackoff(async () => {
+        return await this.model.generateContent(systemPrompt + '\n\nCliente: ' + finalMessage);
+      });
       const response = result.response.text();
       
       console.log('✅ Risposta Clemente Server:', response.substring(0, 100) + '...');
@@ -256,14 +290,20 @@ NON ripetere domande su cose già specificate. Aiuta il cliente a creare una ric
     } catch (error: any) {
       console.error('❌ Errore chat Clemente Server:', error);
       
-      // Risposta di fallback più informativa
-      if (error?.message?.includes('API key')) {
-        return { text: 'Problema con la chiave API. Controlla la configurazione di GOOGLE_API_KEY.' };
-      } else if (error?.message?.includes('quota')) {
-        return { text: 'Quota API esaurita. Riprova più tardi.' };
-      } else {
-        return { text: `Errore tecnico: ${error?.message || 'Sconosciuto'}. Prova la compilazione manuale.` };
+      // Gestione errori più user-friendly
+      let errorMessage = 'Mi dispiace, ho avuto un problema tecnico. Puoi riprovare o compilare manualmente la richiesta usando il pannello a destra.';
+      
+      if (error?.message?.includes('overloaded') || error?.message?.includes('503') || error?.status === 503) {
+        errorMessage = 'Il servizio AI è temporaneamente sovraccarico. Ho provato più volte, puoi riprovare tra un minuto o compilare manualmente la richiesta.';
+      } else if (error?.message?.includes('quota') || error?.message?.includes('limit')) {
+        errorMessage = 'Quota API esaurita per oggi. Puoi compilare manualmente la richiesta usando il pannello a destra.';
+      } else if (error?.message?.includes('SAFETY')) {
+        errorMessage = 'La tua richiesta è stata bloccata per sicurezza. Prova a riformularla in modo diverso.';
+      } else if (error?.message?.includes('API key')) {
+        errorMessage = 'Problema di configurazione del servizio AI. Riprova tra qualche minuto.';
       }
+      
+      return { text: errorMessage };
     }
   }
 
@@ -450,7 +490,9 @@ ${conversationText}
 Crea una richiesta completa che i negozianti possano capire perfettamente.`;
 
     try {
-      const result = await this.model.generateContent(extractionPrompt);
+      const result = await this.retryWithBackoff(async () => {
+        return await this.model.generateContent(extractionPrompt);
+      });
       const jsonText = result.response.text().trim();
       
       // Rimuovi eventuali markdown o testo extra
@@ -500,7 +542,9 @@ Rispondi SOLO con JSON valido:
 Espandi "${userInput}" in una richiesta completa e dettagliata.`;
 
     try {
-      const result = await this.model.generateContent(quickPrompt);
+      const result = await this.retryWithBackoff(async () => {
+        return await this.model.generateContent(quickPrompt);
+      });
       const jsonText = result.response.text().trim();
       
       // Rimuovi eventuali markdown
