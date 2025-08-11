@@ -15,7 +15,7 @@ export async function apiRequest(
   const { auth } = await import("./firebase");
   const token = await auth.currentUser?.getIdToken();
   
-  // Use Firebase Functions URL for production
+  // Use local server in development, Firebase Functions in production
   const baseUrl = import.meta.env.PROD 
     ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
     : "";
@@ -44,7 +44,7 @@ export const getQueryFn: <T>(options: {
     const { auth } = await import("./firebase");
     const token = await auth.currentUser?.getIdToken();
     
-    // Use Firebase Functions URL for production
+    // Use local server in development, Firebase Functions in production
     const baseUrl = import.meta.env.PROD 
       ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
       : "";
