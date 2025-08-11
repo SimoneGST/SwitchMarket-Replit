@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Risoluzione Definitiva Chat Clemente (11/08/2025)
+- **CORS Express**: Middleware CORS configurato correttamente sul server Express
+- **Comunicazione Diretta**: Chat Clemente usa fetch diretto al server locale (no Firebase Functions)
+- **Sistema Robusto**: Eliminati problemi di autenticazione per API pubblica di chat
+- **Error Handling**: Gestione errori completa senza pagine bianche
+- **Preparazione Deploy**: Firebase CLI installato per deployment production
+
 ### Branding e SEO Professionale (10/08/2025)
 - **Visual Identity**: Logo e assistenti AI integrati in tutte le pagine, mobile nav ottimizzato
 - **SEO Completo**: Meta tags italiani, Schema.org, Open Graph, robots.txt, sitemap
