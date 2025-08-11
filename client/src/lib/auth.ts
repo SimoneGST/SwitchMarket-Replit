@@ -33,6 +33,7 @@ export const authService = {
       
       try {
         // Try popup first (works better on desktop)
+        console.log("🟡 Attempting popup sign-in...");
         const result = await signInWithPopup(auth, googleProvider);
         console.log("✅ Google sign-in successful (popup):", {
           uid: result.user.uid,
@@ -41,16 +42,19 @@ export const authService = {
         });
         return result.user;
       } catch (popupError: any) {
-        console.log("🔄 Popup failed, trying redirect...", popupError.code);
+        console.log("🔄 Popup failed:", {
+          code: popupError.code,
+          message: popupError.message
+        });
         
-        // If popup fails, try redirect (works better on mobile/restricted environments)
-        if (popupError.code === 'auth/popup-blocked' || 
-            popupError.code === 'auth/popup-closed-by-user' ||
-            popupError.code === 'auth/unauthorized-domain') {
-          
-          console.log("🔄 Using redirect method...");
-          await signInWithRedirect(auth, googleProvider);
-          return null; // Redirect will reload the page
+        // Don't use redirect for now to avoid white screen issue
+        // Just throw the error and let user know to try email auth
+        if (popupError.code === 'auth/popup-blocked') {
+          throw new Error('Popup bloccato dal browser. Abilita i popup per questo sito o usa l\'accesso email.');
+        } else if (popupError.code === 'auth/popup-closed-by-user') {
+          throw new Error('Accesso annullato. Completa l\'autenticazione nel popup.');
+        } else if (popupError.code === 'auth/unauthorized-domain') {
+          throw new Error('Dominio non autorizzato in Firebase Console. Usa l\'accesso email.');
         }
         
         throw popupError;
@@ -91,10 +95,16 @@ export const authService = {
           displayName: result.user.displayName
         });
         return result.user;
+      } else {
+        console.log("ℹ️ No redirect result found");
       }
       return null;
     } catch (error: any) {
-      console.error("❌ Redirect result error:", error);
+      console.error("❌ Redirect result error:", {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   },

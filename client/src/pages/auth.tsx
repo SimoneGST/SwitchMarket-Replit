@@ -76,16 +76,23 @@ export default function Auth() {
     } catch (error: any) {
       console.error("Google auth error:", error);
       
-      if (error.message.includes("Dominio non autorizzato")) {
+      if (error.message.includes("Dominio non autorizzato") || 
+          error.message.includes("unauthorized-domain")) {
         toast({
-          title: "Configurazione necessaria",
-          description: "Il dominio deve essere autorizzato in Firebase. Usa l'accesso email per ora.",
+          title: "Google temporaneamente non disponibile",
+          description: "Usa l'accesso con email e password qui sotto.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes("Popup bloccato")) {
+        toast({
+          title: "Popup bloccato",
+          description: "Abilita i popup per questo sito o usa l'accesso email.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Errore",
-          description: error.message || "Errore durante l'accesso con Google",
+          description: error.message || "Errore durante l'accesso con Google. Prova con email.",
           variant: "destructive",
         });
       }
@@ -209,8 +216,8 @@ export default function Auth() {
             </Button>
             
             {/* Info per problemi Google */}
-            <div className="text-xs text-slate-500 text-center -mt-2">
-              Se l'accesso Google non funziona, usa email e password qui sotto
+            <div className="text-xs text-slate-500 text-center -mt-2 bg-slate-50 p-2 rounded">
+              💡 Se l'accesso Google si blocca o la pagina diventa bianca, usa l'accesso email qui sotto
             </div>
 
             {/* Divider */}

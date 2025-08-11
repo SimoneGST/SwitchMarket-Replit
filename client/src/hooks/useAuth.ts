@@ -11,18 +11,27 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     // Check for redirect result first
     const checkRedirectResult = async () => {
       try {
-        await authService.handleRedirectResult();
+        console.log("🔄 Starting auth state check...");
+        const redirectUser = await authService.handleRedirectResult();
+        if (redirectUser && isMounted) {
+          console.log("🎯 Redirect user found, processing...");
+        }
       } catch (error) {
-        console.error("Redirect result error:", error);
+        console.error("❌ Redirect result error:", error);
       }
     };
     
     checkRedirectResult();
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!isMounted) return;
+      
+      console.log("🔄 Auth state changed:", firebaseUser ? "User logged in" : "User logged out");
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
@@ -87,7 +96,10 @@ export function useAuth() {
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return {
