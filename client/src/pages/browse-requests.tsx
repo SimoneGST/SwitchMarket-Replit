@@ -608,186 +608,258 @@ export default function BrowseRequests() {
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-4">
-                {/* Informazioni di base */}
-                {requestData.title && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">Prodotto</label>
-                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.title}</p>
-                  </div>
-                )}
-                
-                {requestData.description && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">Descrizione</label>
-                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.description}</p>
-                  </div>
-                )}
-                
-                {requestData.category && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">Categoria</label>
-                    <Badge variant="secondary" className="block w-fit mt-1">{requestData.category}</Badge>
-                  </div>
-                )}
-                
-                {/* Budget */}
-                {(requestData.budgetMin || requestData.budgetMax) && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">Budget</label>
-                    <p className="text-sm bg-green-50 p-2 rounded border text-green-800 font-medium">
-                      {requestData.budgetMin && requestData.budgetMax 
-                        ? `€${requestData.budgetMin} - €${requestData.budgetMax}`
-                        : requestData.budgetMin 
-                        ? `Da €${requestData.budgetMin}`
-                        : `Fino a €${requestData.budgetMax}`}
-                    </p>
-                  </div>
-                )}
+              <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+                {/* Campi base editabili */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Nome Prodotto *</label>
+                  <input
+                    type="text"
+                    value={requestData.productName || ''}
+                    onChange={(e) => setRequestData(prev => ({ ...prev, productName: e.target.value }))}
+                    className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                    placeholder="Es: Scarpe da spinning con chiusura BOA"
+                  />
+                </div>
 
-                {requestData.productName && (
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Descrizione</label>
+                  <textarea
+                    value={requestData.description || ''}
+                    onChange={(e) => setRequestData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                    rows={3}
+                    placeholder="Aggiungi dettagli specifici..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Categoria</label>
+                  <select
+                    value={requestData.category || ''}
+                    onChange={(e) => setRequestData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Seleziona categoria</option>
+                    <option value="scarpe">Scarpe</option>
+                    <option value="abbigliamento">Abbigliamento</option>
+                    <option value="elettronica">Elettronica</option>
+                    <option value="casa">Casa e Giardino</option>
+                    <option value="sport">Sport e Tempo Libero</option>
+                    <option value="altro">Altro</option>
+                  </select>
+                </div>
+                
+                {/* Budget editabile */}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Nome Prodotto</label>
-                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.productName}</p>
+                    <label className="text-sm font-medium text-slate-700">Budget Min (€)</label>
+                    <input
+                      type="number"
+                      value={requestData.budgetMin || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, budgetMin: e.target.value ? Number(e.target.value) : undefined }))}
+                      className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                      placeholder="50"
+                    />
                   </div>
-                )}
-
-                {requestData.location && (
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Posizione</label>
-                    <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.location}</p>
+                    <label className="text-sm font-medium text-slate-700">Budget Max (€)</label>
+                    <input
+                      type="number"
+                      value={requestData.budgetMax || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, budgetMax: e.target.value ? Number(e.target.value) : undefined }))}
+                      className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                      placeholder="150"
+                    />
+                  </div>
+                </div>
+
+                {/* Localizzazione editabile */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Posizione</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={requestData.location || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, location: e.target.value }))}
+                      className="flex-1 text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                      placeholder="Es: Milano centro, Via Roma 123"
+                    />
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={getCurrentLocation}
-                      className="mt-1 text-xs w-full"
+                      className="text-xs"
                     >
-                      <i className="fas fa-map-marker-alt mr-1"></i>
-                      {userLocation ? 'Aggiorna Posizione' : 'Rileva Posizione'}
+                      <i className="fas fa-map-marker-alt"></i>
                     </Button>
                   </div>
-                )}
-
-                {/* Consegna e urgenza */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700">Urgenza</label>
-                  <p className="text-sm bg-orange-50 p-2 rounded border">
-                    {requestData.urgencyLevel === 'immediate' ? 'Immediato' :
-                     requestData.urgencyLevel === '24h' ? 'Entro 24 ore' :
-                     requestData.urgencyLevel === '48h' ? 'Entro 48 ore' :
-                     'Entro qualche giorno'}
-                  </p>
+                  {userLocation && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      GPS: {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                    </p>
+                  )}
                 </div>
 
+                {/* Specifiche prodotto editabili */}
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Consegna</label>
-                  <p className="text-sm bg-blue-50 p-2 rounded border">
-                    {requestData.deliveryPreference === 'pickup' ? 'Solo ritiro in negozio' :
-                     requestData.deliveryPreference === 'delivery' ? 'Solo consegna a domicilio' :
-                     'Ritiro o consegna'}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-slate-700">Raggio Azione</label>
-                  <p className="text-sm bg-purple-50 p-2 rounded border">{requestData.actionRadius} km</p>
-                </div>
-
-                <Separator />
-
-                {/* Specifiche aggiuntive prodotto */}
-                {(requestData.brand || requestData.model || requestData.size || requestData.color || requestData.material || requestData.condition) && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 mb-2 block">Specifiche Tecniche</label>
-                    <div className="space-y-2">
-                      {requestData.brand && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Marca:</span>
-                          <span className="font-medium">{requestData.brand}</span>
-                        </div>
-                      )}
-                      {requestData.model && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Modello:</span>
-                          <span className="font-medium">{requestData.model}</span>
-                        </div>
-                      )}
-                      {requestData.size && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Taglia:</span>
-                          <span className="font-medium">{requestData.size}</span>
-                        </div>
-                      )}
-                      {requestData.color && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Colore:</span>
-                          <span className="font-medium">{requestData.color}</span>
-                        </div>
-                      )}
-                      {requestData.material && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Materiale:</span>
-                          <span className="font-medium">{requestData.material}</span>
-                        </div>
-                      )}
-                      {requestData.condition && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Condizione:</span>
-                          <span className="font-medium">
-                            {requestData.condition === 'new' ? 'Nuovo' :
-                             requestData.condition === 'used' ? 'Usato' : 'Ricondizionato'}
-                          </span>
-                        </div>
-                      )}
-                      {requestData.weight && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Peso:</span>
-                          <span className="font-medium">{requestData.weight}</span>
-                        </div>
-                      )}
-                      {requestData.dimensions && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Dimensioni:</span>
-                          <span className="font-medium">{requestData.dimensions}</span>
-                        </div>
-                      )}
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Specifiche Prodotto</label>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600">Marca</label>
+                        <input
+                          type="text"
+                          value={requestData.brand || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, brand: e.target.value }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                          placeholder="Nike, Adidas..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600">Modello</label>
+                        <input
+                          type="text"
+                          value={requestData.model || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, model: e.target.value }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                          placeholder="Air Force 1..."
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600">Taglia/Misura</label>
+                        <input
+                          type="text"
+                          value={requestData.size || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, size: e.target.value }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                          placeholder="42, L, XL..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600">Colore</label>
+                        <input
+                          type="text"
+                          value={requestData.color || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, color: e.target.value }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                          placeholder="nero, bianco..."
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600">Materiale</label>
+                        <input
+                          type="text"
+                          value={requestData.material || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, material: e.target.value }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                          placeholder="pelle, tessuto..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600">Condizione</label>
+                        <select
+                          value={requestData.condition || ''}
+                          onChange={(e) => setRequestData(prev => ({ ...prev, condition: e.target.value as 'new' | 'used' | 'refurbished' }))}
+                          className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                        >
+                          <option value="">Scegli</option>
+                          <option value="new">Nuovo</option>
+                          <option value="used">Usato</option>
+                          <option value="refurbished">Ricondizionato</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
 
                 <Separator />
 
-                {/* Preferenze consegna */}
+                {/* Consegna e urgenza editabili */}
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium text-slate-700">Urgenza</label>
-                    <Badge variant="outline" className="block w-fit mt-1">
-                      {getUrgencyLabel(requestData.urgencyLevel || '')}
-                    </Badge>
+                    <select
+                      value={requestData.urgencyLevel || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, urgencyLevel: e.target.value as 'immediate' | '24h' | '48h' | 'few_days' }))}
+                      className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Seleziona urgenza</option>
+                      <option value="immediate">Immediato (entro oggi)</option>
+                      <option value="24h">Entro 24 ore</option>
+                      <option value="48h">Entro 48 ore</option>
+                      <option value="few_days">Entro qualche giorno</option>
+                    </select>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Consegna</label>
-                    <Badge variant="outline" className="block w-fit mt-1">
-                      {getDeliveryLabel(requestData.deliveryPreference || '')}
-                    </Badge>
+                    <label className="text-sm font-medium text-slate-700">Modalità Consegna</label>
+                    <select
+                      value={requestData.deliveryPreference || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, deliveryPreference: e.target.value as 'pickup' | 'delivery' | 'both' }))}
+                      className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Seleziona modalità</option>
+                      <option value="pickup">Solo ritiro in negozio</option>
+                      <option value="delivery">Solo consegna a domicilio</option>
+                      <option value="both">Ritiro o consegna</option>
+                    </select>
                   </div>
-                  
-                  {requestData.actionRadius && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-700">Raggio di azione</label>
-                      <p className="text-sm bg-blue-50 p-2 rounded border text-blue-800">
-                        {requestData.actionRadius} km
-                      </p>
-                    </div>
-                  )}
-                  
-                  {requestData.location && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-700">Posizione</label>
-                      <p className="text-sm bg-slate-50 p-2 rounded border">{requestData.location}</p>
-                    </div>
-                  )}
+
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Raggio di Azione (km)</label>
+                    <input
+                      type="number"
+                      value={requestData.actionRadius || ''}
+                      onChange={(e) => setRequestData(prev => ({ ...prev, actionRadius: e.target.value ? Number(e.target.value) : undefined }))}
+                      className="w-full text-sm bg-white p-2 rounded border border-slate-300 focus:border-blue-500 focus:outline-none"
+                      placeholder="10"
+                      min="1"
+                      max="100"
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Pulsanti di controllo */}
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRequestData({
+                      title: '',
+                      description: '',
+                      category: '',
+                      productName: '',
+                      location: '',
+                      urgencyLevel: 'few_days',
+                      deliveryPreference: 'both',
+                      actionRadius: 10
+                    })}
+                    className="flex-1"
+                  >
+                    <i className="fas fa-trash mr-1"></i>
+                    Reset
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Salva in localStorage
+                      localStorage.setItem('switchmarket_draft_request', JSON.stringify(requestData));
+                      alert('Bozza salvata!');
+                    }}
+                    className="flex-1"
+                  >
+                    <i className="fas fa-save mr-1"></i>
+                    Salva
+                  </Button>
                 </div>
 
                 {/* Pulsante creazione richiesta */}
