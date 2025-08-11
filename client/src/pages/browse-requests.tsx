@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import VoiceSettings from "@/components/voice-settings";
+// import VoiceSettings from "@/components/voice-settings";
 import { ClementeAI } from "@/lib/clemente";
 // import { useAuth } from "@/hooks/use-auth";
 // import { trackEvent } from "@/lib/analytics";
@@ -76,7 +76,7 @@ export default function BrowseRequests() {
     voicePitch: 1.0,
     voiceEnabled: true
   });
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [showCharacterIntro, setShowCharacterIntro] = useState(false);
   
   // Riferimenti
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -112,22 +112,33 @@ export default function BrowseRequests() {
     }
   }, []);
 
-  // Messaggio di benvenuto automatico
+  // Animazione introduttiva e messaggio di benvenuto
   useEffect(() => {
+    const hasSeenIntro = localStorage.getItem('clemente_intro_seen');
+    if (!hasSeenIntro) {
+      setShowCharacterIntro(true);
+      localStorage.setItem('clemente_intro_seen', 'true');
+      
+      // Auto-close animation after 3 seconds
+      setTimeout(() => setShowCharacterIntro(false), 3000);
+    }
+
     if (chatMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
         role: 'assistant',
         content: 'Ciao! Sono Clemente, il tuo assistente per trovare prodotti locali. Dimmi cosa stai cercando e ti aiuterò a creare una richiesta perfetta per i negozianti della tua zona.',
         timestamp: new Date()
       };
-      setChatMessages([welcomeMessage]);
       
-      // Speak welcome message
-      if (voiceSettings.voiceEnabled) {
-        setTimeout(() => speakClementeMessage(welcomeMessage.content), 500);
-      }
+      // Aggiungi messaggio dopo l'animazione
+      setTimeout(() => {
+        setChatMessages([welcomeMessage]);
+        if (voiceSettings.voiceEnabled) {
+          setTimeout(() => speakClementeMessage(welcomeMessage.content), 500);
+        }
+      }, hasSeenIntro ? 0 : 3000);
     }
-  }, [voiceSettings.voiceEnabled]);
+  }, []);
 
   // Calcola il progresso di completamento
   useEffect(() => {
@@ -309,12 +320,6 @@ export default function BrowseRequests() {
               <CardHeader className="pb-4 bg-gradient-to-r from-green-100 to-blue-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <img 
-                      src="/attached_assets/clemente a busto intero_1754847733100.png" 
-                      alt="Clemente AI" 
-                      className="w-12 h-16 mr-4"
-                      style={{ objectFit: 'contain' }}
-                    />
                     <div>
                       <CardTitle className="text-xl text-green-800">Chat con Clemente</CardTitle>
                       <p className="text-sm text-slate-600">Assistente AI specializzato in prodotti locali</p>
@@ -323,10 +328,10 @@ export default function BrowseRequests() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowVoiceSettings(true)}
-                    className="text-slate-500 hover:text-slate-700"
+                    onClick={() => setVoiceSettings(prev => ({ ...prev, voiceEnabled: !prev.voiceEnabled }))}
+                    className={`${voiceSettings.voiceEnabled ? 'text-green-600' : 'text-slate-400'} hover:text-slate-700`}
                   >
-                    <i className="fas fa-cog"></i>
+                    <i className={`fas ${voiceSettings.voiceEnabled ? 'fa-volume-up' : 'fa-volume-mute'}`}></i>
                   </Button>
                 </div>
               </CardHeader>
@@ -347,11 +352,6 @@ export default function BrowseRequests() {
                         }`}>
                           {message.role === 'assistant' && (
                             <div className="flex items-center mb-2">
-                              <img 
-                                src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                                alt="Clemente" 
-                                className="w-6 h-6 rounded-full mr-2 border border-green-300"
-                              />
                               <span className="text-xs font-medium text-green-700">Clemente</span>
                             </div>
                           )}
@@ -393,11 +393,6 @@ export default function BrowseRequests() {
                       <div className="flex justify-start">
                         <div className="bg-green-100 border border-green-200 rounded-lg p-3 max-w-[80%]">
                           <div className="flex items-center mb-2">
-                            <img 
-                              src="/attached_assets/Clemente foto profilo_1754847201275.png" 
-                              alt="Clemente" 
-                              className="w-6 h-6 rounded-full mr-2 border border-green-300"
-                            />
                             <span className="text-xs font-medium text-green-700">Clemente</span>
                           </div>
                           <div className="flex items-center space-x-1">
@@ -602,13 +597,33 @@ export default function BrowseRequests() {
         </div>
       </div>
 
-      {/* Voice Settings Modal */}
-      {showVoiceSettings && (
-        <VoiceSettings 
-          settings={voiceSettings}
-          onSettingsChange={updateVoiceSettings}
-        />
+      {/* Character Introduction Animation */}
+      {showCharacterIntro && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+            <div className="mb-6">
+              <img 
+                src="/attached_assets/clemente a busto intero_1754847733100.png" 
+                alt="Clemente AI" 
+                className="w-32 h-40 mx-auto animate-pulse"
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+            <h2 className="text-2xl font-bold text-green-800 mb-2">Benvenuto!</h2>
+            <p className="text-slate-600 mb-4">
+              Sono Clemente, il tuo assistente AI per trovare prodotti locali. 
+              Ti aiuterò a creare richieste perfette per i negozianti della tua zona.
+            </p>
+            <div className="flex items-center justify-center space-x-2 text-green-600">
+              <div className="animate-bounce w-2 h-2 bg-green-400 rounded-full"></div>
+              <div className="animate-bounce w-2 h-2 bg-green-400 rounded-full" style={{ animationDelay: '0.1s' }}></div>
+              <div className="animate-bounce w-2 h-2 bg-green-400 rounded-full" style={{ animationDelay: '0.2s' }}></div>
+            </div>
+          </div>
+        </div>
       )}
+
+
     </main>
   );
 }
