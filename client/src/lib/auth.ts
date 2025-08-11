@@ -1,5 +1,7 @@
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   createUserWithEmailAndPassword,
@@ -29,35 +31,71 @@ export const authService = {
         prompt: 'select_account'
       });
       
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("✅ Google sign-in successful:", {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName
-      });
-      return result.user;
+      try {
+        // Try popup first (works better on desktop)
+        const result = await signInWithPopup(auth, googleProvider);
+        console.log("✅ Google sign-in successful (popup):", {
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName
+        });
+        return result.user;
+      } catch (popupError: any) {
+        console.log("🔄 Popup failed, trying redirect...", popupError.code);
+        
+        // If popup fails, try redirect (works better on mobile/restricted environments)
+        if (popupError.code === 'auth/popup-blocked' || 
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.code === 'auth/unauthorized-domain') {
+          
+          console.log("🔄 Using redirect method...");
+          await signInWithRedirect(auth, googleProvider);
+          return null; // Redirect will reload the page
+        }
+        
+        throw popupError;
+      }
     } catch (error: any) {
       console.error("❌ Google sign-in error details:", {
         code: error.code,
         message: error.message,
-        customData: error.customData,
-        stack: error.stack
+        customData: error.customData
       });
       
       // Handle specific Firebase errors
       if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Dominio non autorizzato. Vai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi questo dominio.');
+        throw new Error(`Dominio non autorizzato. Aggiungi "${window.location.hostname}" ai domini autorizzati in Firebase Console.`);
       } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('Popup bloccato dal browser. Abilita i popup per questo sito.');
+        throw new Error('Popup bloccato. Sto provando con il redirect...');
       } else if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Login annullato. Riprova e completa l\'autenticazione Google.');
+        throw new Error('Login annullato. Riprova e completa l\'autenticazione.');
       } else if (error.code === 'auth/network-request-failed') {
         throw new Error('Errore di rete. Verifica la connessione internet.');
       } else if (error.code === 'auth/internal-error') {
-        throw new Error('Errore interno Firebase. Verifica la configurazione delle chiavi API.');
+        throw new Error('Errore configurazione Firebase. Controlla le chiavi API.');
       }
       
-      throw new Error(`Errore autenticazione Google: ${error.message}`);
+      throw new Error(`Errore autenticazione: ${error.message}`);
+    }
+  },
+
+  // Handle redirect result on page load
+  async handleRedirectResult(): Promise<FirebaseUser | null> {
+    try {
+      console.log("🔍 Checking for redirect result...");
+      const result = await getRedirectResult(auth);
+      if (result) {
+        console.log("✅ Google sign-in successful (redirect):", {
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName
+        });
+        return result.user;
+      }
+      return null;
+    } catch (error: any) {
+      console.error("❌ Redirect result error:", error);
+      throw error;
     }
   },
 

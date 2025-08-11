@@ -58,19 +58,37 @@ export default function Auth() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      await authService.signInWithGoogle();
-      toast({
-        title: "Accesso effettuato!",
-        description: "Benvenuto in Switch Market",
-      });
-      setLocation("/");
+      const result = await authService.signInWithGoogle();
+      if (result) {
+        // Popup success
+        toast({
+          title: "Accesso effettuato!",
+          description: "Benvenuto in Switch Market",
+        });
+        setLocation("/");
+      } else {
+        // Redirect in progress
+        toast({
+          title: "Reindirizzamento in corso...",
+          description: "Ti stiamo reindirizzando per completare l'accesso",
+        });
+      }
     } catch (error: any) {
       console.error("Google auth error:", error);
-      toast({
-        title: "Errore",
-        description: error.message || "Errore durante l'accesso con Google",
-        variant: "destructive",
-      });
+      
+      if (error.message.includes("Dominio non autorizzato")) {
+        toast({
+          title: "Configurazione necessaria",
+          description: "Il dominio deve essere autorizzato in Firebase. Usa l'accesso email per ora.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: error.message || "Errore durante l'accesso con Google",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -189,6 +207,11 @@ export default function Auth() {
                 </>
               )}
             </Button>
+            
+            {/* Info per problemi Google */}
+            <div className="text-xs text-slate-500 text-center -mt-2">
+              Se l'accesso Google non funziona, usa email e password qui sotto
+            </div>
 
             {/* Divider */}
             <div className="relative">

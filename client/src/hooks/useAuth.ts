@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { users } from "@/lib/firestore";
+import { authService } from "@/lib/auth";
 import type { User } from "@shared/schema";
 
 export function useAuth() {
@@ -10,6 +11,17 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check for redirect result first
+    const checkRedirectResult = async () => {
+      try {
+        await authService.handleRedirectResult();
+      } catch (error) {
+        console.error("Redirect result error:", error);
+      }
+    };
+    
+    checkRedirectResult();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
       
