@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { showToast, showErrorToast, showLoadingToast } from "@/lib/toast-notifications";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -134,27 +135,29 @@ export default function MerchantVerification() {
     },
     onSuccess: (data) => {
       console.log("✅ Verification successful:", data);
-      toast({
-        title: "Verifica Completata!",
-        description: "La tua attività è stata verificata con successo. Benvenuto su Switch Market!",
-      });
+      showToast('verification', 'success');
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       // Reindirizza alla dashboard merchant
-      setLocation("/merchant-dashboard");
+      setTimeout(() => setLocation("/merchant-dashboard"), 1500);
     },
     onError: (error: any) => {
       console.error("❌ Verification error:", error);
-      const errorMessage = error.message || "Errore durante l'invio della verifica. Riprova.";
-      toast({
-        title: "Errore Verifica",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      
+      // Gestione errori specifici
+      if (error.message?.includes('P.IVA')) {
+        showToast('verification', 'invalidPiva');
+      } else if (error.message?.includes('Codice Fiscale')) {
+        showToast('verification', 'invalidCF');
+      } else {
+        showToast('verification', 'error', error.message);
+      }
     },
   });
 
   const handleSubmit = async (data: VerificationForm) => {
     setIsVerifying(true);
+    showToast('verification', 'processing');
+    
     // Simula una verifica automatica
     setTimeout(() => {
       verificationMutation.mutate({

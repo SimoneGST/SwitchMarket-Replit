@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { showToast } from "@/lib/toast-notifications";
 import { useLocation } from "wouter";
 import { authService } from "@/lib/auth";
 import { ErrorHandler } from "@/lib/errorHandler";
@@ -32,21 +33,14 @@ export default function Auth() {
     try {
       if (isLogin) {
         await authService.signInWithEmail(email, password);
-        toast({
-          title: "Accesso effettuato!",
-          description: "Benvenuto in Switch Market",
-        });
+        showToast('auth', 'loginSuccess');
       } else {
         await authService.signUpWithEmail(email, password, userType);
-        toast({
-          title: "Account creato!",
-          description: "Il tuo account è stato creato con successo",
-        });
+        showToast('auth', 'loginSuccess', "Account creato con successo!");
       }
-      setLocation("/");
+      setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {
-      const appError = ErrorHandler.handleAuthError(error);
-      ErrorHandler.showErrorAndRedirect(appError, setLocation, 2000);
+      showToast('auth', 'loginError', error.message);
     } finally {
       setIsLoading(false);
     }
@@ -56,14 +50,10 @@ export default function Auth() {
     setIsLoading(true);
     try {
       await authService.signInWithGoogle();
-      toast({
-        title: "Accesso effettuato",
-        description: "Benvenuto in Switch Market",
-      });
-      setLocation("/");
+      showToast('auth', 'loginSuccess');
+      setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {
-      const appError = ErrorHandler.handleAuthError(error);
-      ErrorHandler.showErrorAndRedirect(appError, setLocation, 2000);
+      showToast('auth', 'loginError', error.message);
     } finally {
       setIsLoading(false);
     }

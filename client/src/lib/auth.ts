@@ -12,6 +12,7 @@ import {
 import { auth } from "./firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { showToast } from "./toast-notifications";
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -54,8 +55,10 @@ export const authService = {
   async signOut(): Promise<void> {
     try {
       await signOut(auth);
+      showToast('auth', 'logoutSuccess');
     } catch (error) {
       console.error("Sign-out error:", error);
+      showToast('system', 'serverError');
       throw error;
     }
   },
