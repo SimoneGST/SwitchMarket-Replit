@@ -22,6 +22,11 @@ import ProfileVerification from "@/pages/profile-verification";
 import CustomerProfile from "@/pages/customer-profile";
 import MerchantProfile from "@/pages/merchant-profile";
 import Messages from "@/pages/messages";
+import MerchantVerification from "@/pages/merchant-verification";
+import StoreShowcase from "@/pages/store-showcase";
+import ProductForm from "@/pages/product-form";
+import MerchantIntegrations from "@/pages/merchant-integrations";
+import LeonardoCopilot from "@/pages/leonardo-copilot";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { initializeGlobalVoiceCommands } from "@/lib/voice-commands";
@@ -114,6 +119,24 @@ function Router() {
             </Route>
             <Route path="/messages">
               {!isAuthenticated ? <Auth /> : <Messages />}
+            </Route>
+            <Route path="/merchant-verification">
+              {!isAuthenticated ? <Auth /> : <MerchantVerification />}
+            </Route>
+            <Route path="/store-showcase">
+              {!isAuthenticated ? <Auth /> : <StoreShowcase />}
+            </Route>
+            <Route path="/product/add">
+              {!isAuthenticated ? <Auth /> : <ProductForm />}
+            </Route>
+            <Route path="/product/edit/:id">
+              {({ params }) => !isAuthenticated ? <Auth /> : <ProductForm productId={params.id} />}
+            </Route>
+            <Route path="/merchant-integrations">
+              {!isAuthenticated ? <Auth /> : <MerchantIntegrations />}
+            </Route>
+            <Route path="/leonardo-copilot">
+              {!isAuthenticated ? <Auth /> : <LeonardoCopilot />}
             </Route>
           </>
         )}

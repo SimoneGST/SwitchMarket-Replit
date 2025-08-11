@@ -49,7 +49,13 @@ export const users = pgTable("users", {
   businessCity: varchar("business_city"),
   businessPostalCode: varchar("business_postal_code"),
   businessDescription: text("business_description"),
+  businessWebsite: varchar("business_website"),
+  businessHours: text("business_hours"),
   profileVerified: boolean("profile_verified").default(false),
+  pivaVerified: boolean("piva_verified").default(false),
+  cfVerified: boolean("cf_verified").default(false),
+  verificationDocuments: jsonb("verification_documents"), // Array of document URLs
+  copilotConfig: jsonb("copilot_config"), // Leonardo AI settings
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -110,13 +116,72 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tabella prodotti per negozianti
+export const products = pgTable("products", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sellerId: varchar("seller_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  subcategory: text("subcategory"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  condition: varchar("condition", { length: 50 }).notNull(), // new, excellent, good, fair, poor
+  stock: integer("stock").notNull().default(1),
+  images: text("images").array(), // Array of image URLs
+  attributes: jsonb("attributes"), // Product specifications
+  keywords: text("keywords").array(),
+  isActive: boolean("is_active").default(true),
+  sku: varchar("sku"), // Stock Keeping Unit
+  weight: decimal("weight", { precision: 8, scale: 3 }), // in kg
+  dimensions: jsonb("dimensions"), // { length, width, height }
+  warranty: text("warranty"),
+  brand: varchar("brand"),
+  model: varchar("model"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabella collegamenti gestionali
+export const integrations = pgTable("integrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sellerId: varchar("seller_id").notNull().references(() => users.id),
+  type: varchar("type", { length: 50 }).notNull(), // fatture_cloud, danea, teamsystem
+  name: varchar("name").notNull(),
+  apiKey: varchar("api_key"),
+  apiSecret: varchar("api_secret"),
+  endpoint: varchar("endpoint"),
+  isActive: boolean("is_active").default(true),
+  config: jsonb("config"), // Integration-specific settings
+  lastSync: timestamp("last_sync"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabella configurazioni copilot Leonardo
+export const copilotConfigs = pgTable("copilot_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sellerId: varchar("seller_id").notNull().references(() => users.id),
+  personality: text("personality").notNull().default("Professionale e cordiale"),
+  autonomyLevel: varchar("autonomy_level", { length: 20 }).default("medium"), // low, medium, high
+  autoRespond: boolean("auto_respond").default(false),
+  businessHours: jsonb("business_hours"), // { start, end, days }
+  templates: jsonb("templates"), // Pre-defined response templates
+  escalationRules: jsonb("escalation_rules"), // When to escalate to human
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   requests: many(requests),
   offers: many(offers),
   sentMessages: many(messages),
   buyerConversations: many(conversations, { relationName: "buyerConversations" }),
   sellerConversations: many(conversations, { relationName: "sellerConversations" }),
+  products: many(products),
+  integrations: many(integrations),
+  copilotConfig: one(copilotConfigs),
 }));
 
 export const requestsRelations = relations(requests, ({ one, many }) => ({
@@ -172,6 +237,27 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
+export const productsRelations = relations(products, ({ one }) => ({
+  seller: one(users, {
+    fields: [products.sellerId],
+    references: [users.id],
+  }),
+}));
+
+export const integrationsRelations = relations(integrations, ({ one }) => ({
+  seller: one(users, {
+    fields: [integrations.sellerId],
+    references: [users.id],
+  }),
+}));
+
+export const copilotConfigsRelations = relations(copilotConfigs, ({ one }) => ({
+  seller: one(users, {
+    fields: [copilotConfigs.sellerId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertRequestSchema = createInsertSchema(requests).omit({
   id: true,
@@ -196,128 +282,37 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   createdAt: true,
 });
 
+export const insertProductSchema = createInsertSchema(products).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertIntegrationSchema = createInsertSchema(integrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCopilotConfigSchema = createInsertSchema(copilotConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
-
-// Gestionale Integration Schema
-export const integrations = pgTable("integrations", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  gestionaleType: varchar("gestionale_type", { length: 50 }).notNull(), // 'fattureincloud', 'danea', 'zucchetti', 'teamsystem'
-  apiKey: varchar("api_key").notNull(),
-  companyId: varchar("company_id"),
-  baseUrl: varchar("base_url"),
-  isActive: boolean("is_active").default(true),
-  syncFrequency: varchar("sync_frequency", { length: 20 }).default('daily'), // 'realtime', 'hourly', 'daily'
-  lastSync: timestamp("last_sync"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  integrationId: integer("integration_id").references(() => integrations.id, { onDelete: "cascade" }),
-  externalId: varchar("external_id"), // ID nel gestionale esterno
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  category: varchar("category", { length: 100 }),
-  brand: varchar("brand", { length: 100 }),
-  sku: varchar("sku", { length: 100 }),
-  barcode: varchar("barcode", { length: 50 }),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
-  quantity: integer("quantity").default(0),
-  minQuantity: integer("min_quantity").default(0),
-  unit: varchar("unit", { length: 20 }).default('pz'), // pz, kg, lt, mq, etc
-  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default('22.00'),
-  isActive: boolean("is_active").default(true),
-  images: text("images").array(), // URLs delle immagini
-  attributes: jsonb("attributes"), // Attributi personalizzati
-  syncStatus: varchar("sync_status", { length: 20 }).default('synced'), // 'synced', 'pending', 'error'
-  lastSyncAt: timestamp("last_sync_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const syncLogs = pgTable("sync_logs", {
-  id: serial("id").primaryKey(),
-  integrationId: integer("integration_id").notNull().references(() => integrations.id, { onDelete: "cascade" }),
-  syncType: varchar("sync_type", { length: 50 }).notNull(), // 'products', 'inventory', 'orders'
-  status: varchar("status", { length: 20 }).notNull(), // 'success', 'error', 'partial'
-  recordsProcessed: integer("records_processed").default(0),
-  recordsSuccess: integer("records_success").default(0),
-  recordsError: integer("records_error").default(0),
-  errorDetails: text("error_details"),
-  startedAt: timestamp("started_at").defaultNow(),
-  completedAt: timestamp("completed_at"),
-});
-
-// Relations
-export const integrationRelations = relations(integrations, ({ one, many }) => ({
-  user: one(users, {
-    fields: [integrations.userId],
-    references: [users.id],
-  }),
-  products: many(products),
-  syncLogs: many(syncLogs),
-}));
-
-export const productRelations = relations(products, ({ one }) => ({
-  user: one(users, {
-    fields: [products.userId],
-    references: [users.id],
-  }),
-  integration: one(integrations, {
-    fields: [products.integrationId],
-    references: [integrations.id],
-  }),
-}));
-
-export const syncLogRelations = relations(syncLogs, ({ one }) => ({
-  integration: one(integrations, {
-    fields: [syncLogs.integrationId],
-    references: [integrations.id],
-  }),
-}));
-
-// Copilot configurations table
-export const copilotConfigs = pgTable("copilot_configs", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  isEnabled: boolean("is_enabled").default(true).notNull(),
-  businessHours: jsonb("business_hours").default({
-    monday: { enabled: true, start: "09:00", end: "18:00" },
-    tuesday: { enabled: true, start: "09:00", end: "18:00" },
-    wednesday: { enabled: true, start: "09:00", end: "18:00" },
-    thursday: { enabled: true, start: "09:00", end: "18:00" },
-    friday: { enabled: true, start: "09:00", end: "18:00" },
-    saturday: { enabled: true, start: "09:00", end: "13:00" },
-    sunday: { enabled: false, start: "09:00", end: "18:00" }
-  }).notNull(),
-  autoResponses: jsonb("auto_responses").default({
-    greeting: "Ciao! Sono Leonardo, l'assistente di {businessName}. Come posso aiutarti oggi?",
-    unavailable: "Al momento non sono disponibile. Ti risponderò appena possibile!",
-    closing: "Grazie per averci contattato! Ti ricontatteremo presto."
-  }).notNull(),
-  maxConcurrentChats: integer("max_concurrent_chats").default(5).notNull(),
-  responseDelay: integer("response_delay").default(2000).notNull(), // milliseconds
-  personalitySettings: jsonb("personality_settings").default({
-    tone: "professionale", // professionale, amichevole, informale
-    expertise: "generale", // generale, tecnico, commerciale
-    proactivity: "medio" // basso, medio, alto
-  }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export type Product = typeof products.$inferSelect;
+export type Integration = typeof integrations.$inferSelect;
+export type CopilotConfig = typeof copilotConfigs.$inferSelect;
 
 // Copilot chat sessions table
 export const copilotSessions = pgTable("copilot_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   merchantId: varchar("merchant_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   customerId: varchar("customer_id").references(() => users.id).notNull(),
-  requestId: integer("request_id").references(() => requests.id),
+  requestId: varchar("request_id").references(() => requests.id),
   status: varchar("status", { length: 20 }).default("active").notNull(), // active, completed, transferred, abandoned
   isAiHandled: boolean("is_ai_handled").default(true).notNull(),
   handoverReason: text("handover_reason"),
@@ -332,7 +327,7 @@ export const copilotSessions = pgTable("copilot_sessions", {
 
 // Copilot analytics table
 export const copilotAnalytics = pgTable("copilot_analytics", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   date: varchar("date", { length: 10 }).notNull(),
   totalChats: integer("total_chats").default(0),
@@ -343,21 +338,6 @@ export const copilotAnalytics = pgTable("copilot_analytics", {
   totalRevenue: decimal("total_revenue", { precision: 10, scale: 2 }).default("0"),
   conversionsCount: integer("conversions_count").default(0),
 });
-
-// Types
-export type Integration = typeof integrations.$inferSelect;
-export type InsertIntegration = typeof integrations.$inferInsert;
-export type Product = typeof products.$inferSelect;
-export type InsertProduct = typeof products.$inferInsert;
-export type SyncLog = typeof syncLogs.$inferSelect;
-export type InsertSyncLog = typeof syncLogs.$inferInsert;
-
-export type CopilotConfig = typeof copilotConfigs.$inferSelect;
-export type InsertCopilotConfig = typeof copilotConfigs.$inferInsert;
-export type CopilotSession = typeof copilotSessions.$inferSelect;
-export type InsertCopilotSession = typeof copilotSessions.$inferInsert;
-export type CopilotAnalytics = typeof copilotAnalytics.$inferSelect;
-export type InsertCopilotAnalytics = typeof copilotAnalytics.$inferInsert;
 
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 export type Request = typeof requests.$inferSelect;

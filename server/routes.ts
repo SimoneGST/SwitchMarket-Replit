@@ -578,6 +578,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Merchant-specific routes
+  app.get('/api/merchant/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stats = await storage.getMerchantStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching merchant stats:", error);
+      res.status(500).json({ message: "Failed to fetch merchant stats" });
+    }
+  });
+
+  // Product routes  
+  app.get('/api/products/my', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const products = await storage.getUserProducts(userId);
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post('/api/products', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const productData = {
+        ...req.body,
+        sellerId: userId
+      };
+      
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Integration routes
+  app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const integrations = await storage.getUserIntegrations(userId);
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ message: "Failed to fetch integrations" });
+    }
+  });
+
+  // Copilot configuration routes
+  app.get('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const config = await storage.getCopilotConfig(userId);
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching copilot config:", error);
+      res.status(500).json({ message: "Failed to fetch copilot config" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

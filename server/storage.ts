@@ -6,7 +6,6 @@ import {
   messages,
   integrations,
   products,
-  syncLogs,
   copilotConfigs,
   copilotSessions,
   copilotAnalytics,
@@ -21,17 +20,8 @@ import {
   type Message,
   type InsertMessage,
   type Integration,
-  type InsertIntegration,
   type Product,
-  type InsertProduct,
-  type SyncLog,
-  type InsertSyncLog,
   type CopilotConfig,
-  type InsertCopilotConfig,
-  type CopilotSession,
-  type InsertCopilotSession,
-  type CopilotAnalytics,
-  type InsertCopilotAnalytics,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
