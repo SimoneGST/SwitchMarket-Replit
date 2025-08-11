@@ -115,24 +115,39 @@ export default function MerchantVerification() {
 
   const verificationMutation = useMutation({
     mutationFn: async (data: VerificationForm) => {
-      return apiRequest("/api/merchant/verify", {
+      console.log("🔐 Verifying authentication...");
+      const { auth } = await import("@/lib/firebase");
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser) {
+        throw new Error("Non sei autenticato. Effettua il login prima di procedere.");
+      }
+      
+      console.log("✅ User authenticated:", currentUser.uid);
+      console.log("📤 Sending verification data:", { ...data, piva: data.piva ? '***' : undefined, codiceFiscale: data.codiceFiscale ? '***' : undefined });
+      
+      const response = await apiRequest("/api/merchant/verify", {
         method: "POST",
         body: JSON.stringify(data),
       });
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("✅ Verification successful:", data);
       toast({
-        title: "Verifica Inviata",
-        description: "I tuoi dati sono stati inviati per la verifica. Leonardo ti aiuterà a completare il profilo.",
+        title: "Verifica Completata!",
+        description: "La tua attività è stata verificata. Leonardo ti aiuterà ora a completare il profilo.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       // Reindirizza a Leonardo copilot per completare il setup
       setLocation("/leonardo-profile-setup");
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("❌ Verification error:", error);
+      const errorMessage = error.message || "Errore durante l'invio della verifica. Riprova.";
       toast({
-        title: "Errore",
-        description: "Errore durante l'invio della verifica. Riprova.",
+        title: "Errore Verifica",
+        description: errorMessage,
         variant: "destructive",
       });
     },

@@ -8,9 +8,8 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
+  options: RequestInit = {}
 ): Promise<Response> {
   const { auth } = await import("./firebase");
   const token = await auth.currentUser?.getIdToken();
@@ -23,12 +22,12 @@ export async function apiRequest(
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
   
   const res = await fetch(fullUrl, {
-    method,
+    ...options,
     headers: {
-      ...(data ? { "Content-Type": "application/json" } : {}),
+      "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
     },
-    body: data ? JSON.stringify(data) : undefined,
   });
 
   await throwIfResNotOk(res);

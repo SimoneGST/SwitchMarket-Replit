@@ -1,20 +1,52 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+// Firebase Auth middleware
+const authenticate = async (req: any, res: any, next: any) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const { initializeApp, cert, getApps } = await import('firebase-admin/app');
+    const { getAuth } = await import('firebase-admin/auth');
+
+    // Initialize Firebase Admin if not already initialized
+    if (!getApps().length) {
+      const serviceAccount = {
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      };
+      
+      initializeApp({
+        credential: cert(serviceAccount),
+      });
+    }
+
+    const auth = getAuth();
+    const decodedToken = await auth.verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Auth error:', error);
+    res.status(401).json({ message: "Unauthorized" });
+  }
+};
 import { insertRequestSchema, insertOfferSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { copilotService } from "./copilotService";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Firebase Auth setup - no middleware needed since we check per route
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -23,9 +55,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/complete-profile', isAuthenticated, async (req: any, res) => {
+  app.post('/api/auth/complete-profile', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const profileData = req.body;
       
       const updatedUser = await storage.updateUserProfile(userId, profileData);
@@ -37,9 +69,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Request routes
-  app.post('/api/requests', isAuthenticated, async (req: any, res) => {
+  app.post('/api/requests', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const requestData = insertRequestSchema.parse({
         ...req.body,
         buyerId: userId,
@@ -75,9 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/requests/my', isAuthenticated, async (req: any, res) => {
+  app.get('/api/requests/my', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const requests = await storage.getUserRequests(userId);
       res.json(requests);
     } catch (error) {
@@ -100,9 +132,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Offer routes
-  app.post('/api/offers', isAuthenticated, async (req: any, res) => {
+  app.post('/api/offers', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const offerData = insertOfferSchema.parse({
         ...req.body,
         sellerId: userId,
@@ -127,9 +159,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Conversation routes
-  app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/conversations', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const conversations = await storage.getUserConversations(userId);
       res.json(conversations);
     } catch (error) {
@@ -138,9 +170,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/conversations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/conversations', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const { requestId, sellerId, offerId } = req.body;
       
       const conversation = await storage.createConversation({
@@ -157,9 +189,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
+  app.get('/api/conversations/:id/messages', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const conversationId = req.params.id;
       
       // Mark messages as read
@@ -173,9 +205,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
+  app.post('/api/conversations/:id/messages', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const conversationId = req.params.id;
       
       const messageData = insertMessageSchema.parse({
@@ -240,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leonardo AI endpoint for merchants
-  app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
+  app.post('/api/leonardo/chat', authenticate, async (req: any, res) => {
     try {
       const { message, context } = req.body;
       const { leonardoChat } = await import('./gemini');
@@ -254,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload for AI assistants
-  app.post('/api/objects/upload', isAuthenticated, async (req, res) => {
+  app.post('/api/objects/upload', authenticate, async (req, res) => {
     try {
       const { ObjectStorageService } = await import('./objectStorage');
       const objectStorageService = new ObjectStorageService();
@@ -282,9 +314,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gestionale Integration Routes
   
   // Get user integrations
-  app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/integrations', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const integrations = await storage.getIntegrationsByUserId(userId);
       res.json(integrations);
     } catch (error) {
@@ -294,14 +326,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Test integration connection
-  app.post('/api/integrations/test', isAuthenticated, async (req: any, res) => {
+  app.post('/api/integrations/test', authenticate, async (req: any, res) => {
     try {
       const { gestionaleType, apiKey, companyId, baseUrl } = req.body;
       const { createGestionaleService } = await import('./integrations/gestionaleService');
       
       const mockIntegration = {
         id: 0,
-        userId: req.user.claims.sub,
+        userId: req.user.uid,
         gestionaleType,
         apiKey,
         companyId,
@@ -328,9 +360,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new integration
-  app.post('/api/integrations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/integrations', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const integrationData = {
         ...req.body,
         userId,
@@ -345,10 +377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Sync integration data
-  app.post('/api/integrations/:id/sync', isAuthenticated, async (req: any, res) => {
+  app.post('/api/integrations/:id/sync', authenticate, async (req: any, res) => {
     try {
       const integrationId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       
       const integration = await storage.getIntegrationById(integrationId);
       if (!integration || integration.sellerId !== userId) {
@@ -369,9 +401,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get products
-  app.get('/api/products', isAuthenticated, async (req: any, res) => {
+  app.get('/api/products', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const products = await storage.getProductsByUserId(userId);
       res.json(products);
     } catch (error) {
@@ -383,9 +415,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===== COPILOT ROUTES =====
   
   // Get or create copilot configuration
-  app.get('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+  app.get('/api/copilot/config', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       let config = await storage.getCopilotConfig(userId);
       
       if (!config) {
@@ -426,9 +458,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update copilot configuration
-  app.put('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+  app.put('/api/copilot/config', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       await storage.updateCopilotConfig(userId, req.body);
       res.json({ success: true });
     } catch (error) {
@@ -450,9 +482,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Initialize copilot session
-  app.post('/api/copilot/session', isAuthenticated, async (req: any, res) => {
+  app.post('/api/copilot/session', authenticate, async (req: any, res) => {
     try {
-      const customerId = req.user.claims.sub;
+      const customerId = req.user.uid;
       const { merchantId, requestId } = req.body;
       
       const session = await copilotService.initializeSession(merchantId, customerId, requestId);
@@ -464,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate copilot response
-  app.post('/api/copilot/message', isAuthenticated, async (req: any, res) => {
+  app.post('/api/copilot/message', authenticate, async (req: any, res) => {
     try {
       const { sessionId, message } = req.body;
       
@@ -477,7 +509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Transfer to human
-  app.post('/api/copilot/transfer', isAuthenticated, async (req: any, res) => {
+  app.post('/api/copilot/transfer', authenticate, async (req: any, res) => {
     try {
       const { sessionId, reason } = req.body;
       
@@ -490,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Complete copilot session
-  app.post('/api/copilot/complete', isAuthenticated, async (req: any, res) => {
+  app.post('/api/copilot/complete', authenticate, async (req: any, res) => {
     try {
       const { sessionId, satisfaction, summary } = req.body;
       
@@ -503,9 +535,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get merchant active sessions
-  app.get('/api/copilot/sessions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/copilot/sessions', authenticate, async (req: any, res) => {
     try {
-      const merchantId = req.user.claims.sub;
+      const merchantId = req.user.uid;
       const sessions = await storage.getMerchantActiveSessions(merchantId);
       res.json(sessions);
     } catch (error) {
@@ -515,9 +547,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get copilot analytics
-  app.get('/api/copilot/analytics', isAuthenticated, async (req: any, res) => {
+  app.get('/api/copilot/analytics', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const days = parseInt(req.query.days as string) || 7;
       
       const stats = await copilotService.getPerformanceStats(userId, days);
@@ -529,9 +561,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== PROFILE API =====
-  app.get('/api/profile', isAuthenticated, async (req: any, res) => {
+  app.get('/api/profile', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -540,9 +572,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/profile/verify', isAuthenticated, async (req: any, res) => {
+  app.post('/api/profile/verify', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const profileData = req.body;
       
       console.log('🔍 Profile verification request:', {
@@ -564,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== LEONARDO CHAT API =====
-  app.post('/api/leonardo/chat', isAuthenticated, async (req: any, res) => {
+  app.post('/api/leonardo/chat', authenticate, async (req: any, res) => {
     try {
       const { message, context, attachedFiles } = req.body;
       
@@ -579,9 +611,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Merchant-specific routes
-  app.get('/api/merchant/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/merchant/stats', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       // Simula statistiche merchant per demo
       const stats = {
         todayChats: Math.floor(Math.random() * 50) + 10,
@@ -600,9 +632,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/merchant/verify', isAuthenticated, async (req: any, res) => {
+  app.post('/api/merchant/verify', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const verificationData = req.body;
 
       // Validazione lato server
@@ -680,9 +712,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/merchant/complete-profile', isAuthenticated, async (req: any, res) => {
+  app.post('/api/merchant/complete-profile', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const profileData = req.body;
       
       // Salva il profilo completo
@@ -724,9 +756,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product routes  
-  app.get('/api/products/my', isAuthenticated, async (req: any, res) => {
+  app.get('/api/products/my', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const products = await storage.getProductsByUserId(userId);
       res.json(products);
     } catch (error) {
@@ -735,9 +767,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/products', isAuthenticated, async (req: any, res) => {
+  app.post('/api/products', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const productData = {
         ...req.body,
         sellerId: userId
@@ -752,9 +784,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Integration routes
-  app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/integrations', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const integrations = await storage.getIntegrationsByUserId(userId);
       res.json(integrations);
     } catch (error) {
@@ -764,9 +796,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Copilot configuration routes
-  app.get('/api/copilot/config', isAuthenticated, async (req: any, res) => {
+  app.get('/api/copilot/config', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const config = await storage.getCopilotConfig(userId);
       res.json(config);
     } catch (error) {
@@ -775,9 +807,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/copilot/analytics', isAuthenticated, async (req: any, res) => {
+  app.get('/api/copilot/analytics', authenticate, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const today = new Date().toISOString().split('T')[0];
       const analytics = await storage.getCopilotAnalytics(userId, today);
       res.json(analytics || {
