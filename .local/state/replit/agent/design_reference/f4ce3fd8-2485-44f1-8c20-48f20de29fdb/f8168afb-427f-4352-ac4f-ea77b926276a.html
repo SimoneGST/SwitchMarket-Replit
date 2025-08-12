@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch Market - Commercio Locale AI-First</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#2563EB',
+                    secondary: '#059669',
+                    accent: '#F59E0B',
+                }
+            },
+            fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+            }
+        }
+    };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="h-full bg-slate-50 font-sans">
+    <!-- @COMPONENT: AppLayout [main application wrapper] -->
+    <div id="app" class="min-h-full">
+        <!-- @COMPONENT: NavigationHeader [main navigation] -->
+        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <i class="fas fa-exchange-alt text-primary text-2xl mr-2"></i>
+                            <span class="text-xl font-bold text-slate-900">Switch Market</span>
+                        </div>
+                        <div class="hidden md:ml-10 md:flex space-x-8">
+                            <button data-tab="home" class="text-primary border-b-2 border-primary px-1 pb-4 text-sm font-medium">
+                                Home
+                            </button>
+                            <button data-tab="browse" class="text-slate-500 hover:text-slate-700 px-1 pb-4 text-sm font-medium">
+                                Sfoglia Richieste
+                            </button>
+                            <button data-tab="create" class="text-slate-500 hover:text-slate-700 px-1 pb-4 text-sm font-medium">
+                                Pubblica Richiesta
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 text-slate-400 hover:text-slate-500">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="sr-only">Notifiche</span>
+                        </button>
+                        <button data-tab="messages" class="p-2 text-slate-400 hover:text-slate-500 relative">
+                            <i class="fas fa-message text-lg"></i>
+                            <span class="absolute -top-1 -right-1 h-4 w-4 bg-accent text-white text-xs rounded-full flex items-center justify-center" data-mock="true">3</span>
+                        </button>
+                        <div class="flex items-center space-x-3">
+                            <!-- Mock user profile -->
+                            <img class="h-8 w-8 rounded-full object-cover" data-mock-image="true" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" alt="Profile">
+                            <span class="text-sm font-medium text-slate-700" data-bind="user.displayName" data-mock="true">Mario R.</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- @COMPONENT: MainContent [dynamic content area] -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- @COMPONENT: HomePage [landing and dashboard] -->
+            <div id="home-tab" class="tab-content">
+                <!-- Hero Section -->
+                <div class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 md:p-12 mb-8 text-white">
+                    <div class="max-w-4xl">
+                        <h1 class="text-3xl md:text-5xl font-bold mb-4">
+                            Il Futuro del <br class="hidden sm:block">Commercio Locale
+                        </h1>
+                        <p class="text-xl md:text-2xl opacity-90 mb-8">
+                            Trova quello che cerchi con l'aiuto di Clemente, il tuo assistente AI personale
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button data-tab="create" class="bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Pubblica una Richiesta
+                            </button>
+                            <button data-tab="browse" class="border-2 border-white text-white px-6 py-3 rounded-xl font-semibold hover:bg-white hover:text-primary transition-colors">
+                                <i class="fas fa-search mr-2"></i>
+                                Esplora Richieste
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-primary/10 rounded-xl">
+                                <i class="fas fa-handshake text-primary text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Richieste Attive</p>
+                                <p class="text-2xl font-bold text-slate-900" data-mock="true">1,247</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-secondary/10 rounded-xl">
+                                <i class="fas fa-store text-secondary text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Negozianti</p>
+                                <p class="text-2xl font-bold text-slate-900" data-mock="true">892</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-accent/10 rounded-xl">
+                                <i class="fas fa-chart-line text-accent text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Match Riusciti</p>
+                                <p class="text-2xl font-bold text-slate-900" data-mock="true">3,419</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-900">Le Tue Richieste Recenti</h2>
+                    </div>
+                    <div class="divide-y divide-slate-200">
+                        <!-- @MAP: userRequests.map(request => ( -->
+                        <div class="p-6 hover:bg-slate-50 cursor-pointer" data-mock="true">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-slate-900">iPhone 13 Pro 256GB Grafite</h3>
+                                    <p class="text-sm text-slate-500 mt-1">€600 - €750 • Milano, MI</p>
+                                    <div class="flex items-center mt-2 space-x-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Aperta
+                                        </span>
+                                        <span class="text-xs text-slate-500">3 offerte ricevute</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-slate-500">2 ore fa</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 hover:bg-slate-50 cursor-pointer" data-mock="true">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-slate-900">Bicicletta da Città Vintage</h3>
+                                    <p class="text-sm text-slate-500 mt-1">€150 - €250 • Roma, RM</p>
+                                    <div class="flex items-center mt-2 space-x-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            In Negoziazione
+                                        </span>
+                                        <span class="text-xs text-slate-500">1 offerta attiva</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-slate-500">1 giorno fa</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP -->
+                    </div>
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200">
+                        <button class="text-primary text-sm font-medium hover:underline">
+                            Visualizza tutte le richieste
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: BrowseRequests [request listing and search] -->
+            <div id="browse-tab" class="tab-content hidden">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Filters Sidebar -->
+                    <div class="lg:w-1/4">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4">Filtri</h3>
+                            
+                            <!-- Location Filter -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Posizione</label>
+                                <div class="relative">
+                                    <input type="text" placeholder="Inserisci città" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" value="Milano, MI" data-mock="true">
+                                    <i class="fas fa-map-marker-alt text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                                </div>
+                            </div>
+
+                            <!-- Category Filter -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
+                                <select class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                    <option>Tutte le categorie</option>
+                                    <option selected data-mock="true">Elettronica</option>
+                                    <option>Casa e Giardino</option>
+                                    <option>Sport e Tempo Libero</option>
+                                    <option>Veicoli</option>
+                                    <option>Abbigliamento</option>
+                                </select>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Fascia di Prezzo</label>
+                                <div class="flex gap-2">
+                                    <input type="number" placeholder="Min" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                    <input type="number" placeholder="Max" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                </div>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Stato</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="rounded border-slate-300 text-primary focus:ring-primary/20" data-mock="true">
+                                        <span class="ml-2 text-sm text-slate-600">Aperte</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-slate-300 text-primary focus:ring-primary/20">
+                                        <span class="ml-2 text-sm text-slate-600">In negoziazione</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
+                                <i class="fas fa-search mr-2"></i>
+                                Applica Filtri
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div class="lg:w-3/4">
+                        <!-- Search Bar -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+                            <div class="relative">
+                                <input type="text" placeholder="Cosa stai cercando?" class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-lg" value="smartphone apple iphone" data-mock="true">
+                                <i class="fas fa-search text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2 text-lg"></i>
+                                <button class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                                    Cerca
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-semibold text-slate-900">Richieste Trovate</h2>
+                                <p class="text-sm text-slate-500" data-mock="true">47 risultati per "smartphone apple iphone" a Milano, MI</p>
+                            </div>
+                            <select class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <option>Più recenti</option>
+                                <option>Prezzo più alto</option>
+                                <option>Prezzo più basso</option>
+                                <option>Distanza</option>
+                            </select>
+                        </div>
+
+                        <!-- Request Cards Grid -->
+                        <div class="space-y-4">
+                            <!-- @MAP: filteredRequests.map(request => ( -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer" data-mock="true">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Aperta
+                                            </span>
+                                            <span class="text-xs text-slate-500">Pubblicata 3 ore fa</span>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-slate-900 mb-2">iPhone 13 Pro 256GB Grafite, ottime condizioni</h3>
+                                        <p class="text-sm text-slate-600 mb-3">Cerco iPhone 13 Pro da 256GB in colorazione grafite, preferibilmente in ottime condizioni con tutti gli accessori originali. Valuto anche permuta con il mio iPhone 12.</p>
+                                        
+                                        <div class="flex items-center gap-6 text-sm text-slate-500 mb-3">
+                                            <span><i class="fas fa-euro-sign mr-1"></i>€600 - €750</span>
+                                            <span><i class="fas fa-map-marker-alt mr-1"></i>Milano, MI (2.1 km)</span>
+                                            <span><i class="fas fa-tag mr-1"></i>Elettronica • Telefonia</span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-4">
+                                                <div class="flex items-center gap-2">
+                                                    <!-- Profile image of the requester -->
+                                                    <img class="h-6 w-6 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=24&h=24" alt="Richiedente" data-mock-image="true">
+                                                    <span class="text-xs text-slate-600" data-mock="true">Marco T.</span>
+                                                    <div class="flex items-center">
+                                                        <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                        <span class="text-xs text-slate-500 ml-1" data-mock="true">4.8</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <button class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                                                    <i class="fas fa-heart mr-1"></i>
+                                                    Salva
+                                                </button>
+                                                <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+                                                    <i class="fas fa-paper-plane mr-1"></i>
+                                                    Invia Offerta
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer" data-mock="true">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                In Negoziazione
+                                            </span>
+                                            <span class="text-xs text-slate-500">Pubblicata 1 giorno fa</span>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-slate-900 mb-2">iPhone 12 128GB Blu, con scatola originale</h3>
+                                        <p class="text-sm text-slate-600 mb-3">Cerco iPhone 12 da 128GB in colorazione blu, con scatola e caricatore originali. Il telefono deve essere in buone condizioni, senza graffi significativi.</p>
+                                        
+                                        <div class="flex items-center gap-6 text-sm text-slate-500 mb-3">
+                                            <span><i class="fas fa-euro-sign mr-1"></i>€450 - €550</span>
+                                            <span><i class="fas fa-map-marker-alt mr-1"></i>Milano, MI (1.7 km)</span>
+                                            <span><i class="fas fa-tag mr-1"></i>Elettronica • Telefonia</span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-4">
+                                                <div class="flex items-center gap-2">
+                                                    <!-- Profile image of the requester -->
+                                                    <img class="h-6 w-6 rounded-full object-cover" src="https://pixabay.com/get/gc0ec8b3cbcc943ef6ed02a88cab700e5882778fa12c5fd6af2ac0c0776b229d127d5aa96836ad6698727ef49f47378873630286c6a46193c75560ceeb230f4ed_1280.jpg" alt="Richiedente" data-mock-image="true">
+                                                    <span class="text-xs text-slate-600" data-mock="true">Sara M.</span>
+                                                    <div class="flex items-center">
+                                                        <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                        <span class="text-xs text-slate-500 ml-1" data-mock="true">4.9</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <button class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                                                    <i class="fas fa-heart mr-1"></i>
+                                                    Salva
+                                                </button>
+                                                <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+                                                    <i class="fas fa-paper-plane mr-1"></i>
+                                                    Invia Offerta
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between mt-8">
+                            <p class="text-sm text-slate-500" data-mock="true">Mostrando 1-10 di 47 risultati</p>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="px-3 py-2 bg-primary text-white rounded-lg">1</button>
+                                <button class="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">2</button>
+                                <button class="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">3</button>
+                                <button class="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: CreateRequest [request creation with AI assistance] -->
+            <div id="create-tab" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-primary to-secondary text-white">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <i class="fas fa-robot mr-3"></i>
+                                Crea la tua richiesta con l'aiuto di Clemente
+                            </h2>
+                            <p class="text-sm opacity-90 mt-1">Il tuo assistente AI ti guiderà passo dopo passo per creare la richiesta perfetta</p>
+                        </div>
+
+                        <div class="flex flex-col lg:flex-row">
+                            <!-- Chat Interface with Clemente -->
+                            <div class="lg:w-1/2 border-r border-slate-200">
+                                <div class="p-4 bg-slate-50 border-b border-slate-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                            <i class="fas fa-robot text-white text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium text-slate-900">Clemente</h3>
+                                            <p class="text-xs text-slate-500">Il tuo assistente AI</p>
+                                        </div>
+                                        <div class="ml-auto">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                                <i class="fas fa-circle text-green-500 text-xs mr-1"></i>
+                                                Online
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chat Messages -->
+                                <div class="h-96 overflow-y-auto p-4 space-y-4" id="chat-messages">
+                                    <!-- @MAP: chatMessages.map(message => ( -->
+                                    <div class="flex gap-3" data-mock="true">
+                                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-robot text-white text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-slate-100 rounded-xl p-3 max-w-sm">
+                                                <p class="text-sm text-slate-900">Ciao! Sono Clemente, il tuo assistente per trovare quello che cerchi. Cosa vorresti acquistare oggi?</p>
+                                            </div>
+                                            <p class="text-xs text-slate-500 mt-1">Ora</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex gap-3 justify-end" data-mock="true">
+                                        <div class="flex-1 flex justify-end">
+                                            <div class="bg-primary rounded-xl p-3 max-w-sm">
+                                                <p class="text-sm text-white">Sto cercando un iPhone 13 Pro usato, possibilmente in buone condizioni</p>
+                                            </div>
+                                        </div>
+                                        <div class="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-user text-slate-600 text-sm"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex gap-3" data-mock="true">
+                                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-robot text-white text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-slate-100 rounded-xl p-3 max-w-sm">
+                                                <p class="text-sm text-slate-900">Perfetto! Per aiutarti meglio, potresti dirmi:</p>
+                                                <ul class="text-sm text-slate-900 mt-2 list-disc list-inside">
+                                                    <li>Quale capacità di storage preferisci?</li>
+                                                    <li>Hai un budget in mente?</li>
+                                                    <li>Preferisci un colore specifico?</li>
+                                                </ul>
+                                            </div>
+                                            <p class="text-xs text-slate-500 mt-1">Adesso</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP -->
+
+                                    <!-- Typing Indicator -->
+                                    <div class="flex gap-3" id="typing-indicator" style="display: none;">
+                                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-robot text-white text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-slate-100 rounded-xl p-3 max-w-sm">
+                                                <div class="flex space-x-1">
+                                                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                                                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chat Input -->
+                                <div class="p-4 border-t border-slate-200">
+                                    <div class="flex gap-2">
+                                        <input type="text" placeholder="Scrivi la tua risposta..." class="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary" id="chat-input">
+                                        <button class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors" id="send-message">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex gap-2 mt-2">
+                                        <button class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs hover:bg-slate-200 transition-colors" data-mock="true">
+                                            256GB
+                                        </button>
+                                        <button class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs hover:bg-slate-200 transition-colors" data-mock="true">
+                                            €600-750
+                                        </button>
+                                        <button class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs hover:bg-slate-200 transition-colors" data-mock="true">
+                                            Grafite
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Request Preview -->
+                            <div class="lg:w-1/2 p-6">
+                                <h3 class="text-lg font-semibold text-slate-900 mb-4">Anteprima della tua richiesta</h3>
+                                
+                                <div class="space-y-4" id="request-preview">
+                                    <!-- @STATE: requestData:object = {} -->
+                                    <div class="border border-slate-200 rounded-lg p-4" data-mock="true">
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Titolo</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" value="iPhone 13 Pro 256GB Grafite, ottime condizioni" data-bind="requestData.title">
+                                    </div>
+
+                                    <div class="border border-slate-200 rounded-lg p-4" data-mock="true">
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
+                                        <select class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" data-bind="requestData.category">
+                                            <option>Elettronica • Telefonia • Smartphone</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="border border-slate-200 rounded-lg p-4" data-mock="true">
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Fascia di prezzo</label>
+                                        <div class="flex gap-2">
+                                            <input type="number" placeholder="Min €" class="w-1/2 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" value="600" data-bind="requestData.priceMin">
+                                            <input type="number" placeholder="Max €" class="w-1/2 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" value="750" data-bind="requestData.priceMax">
+                                        </div>
+                                    </div>
+
+                                    <div class="border border-slate-200 rounded-lg p-4" data-mock="true">
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Caratteristiche richieste</label>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+                                                <span class="text-sm">Marca: Apple</span>
+                                                <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Obbligatorio</span>
+                                            </div>
+                                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+                                                <span class="text-sm">Modello: iPhone 13 Pro</span>
+                                                <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Obbligatorio</span>
+                                            </div>
+                                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+                                                <span class="text-sm">Storage: 256GB</span>
+                                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Preferito</span>
+                                            </div>
+                                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+                                                <span class="text-sm">Colore: Grafite</span>
+                                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Preferito</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border border-slate-200 rounded-lg p-4" data-mock="true">
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Posizione</label>
+                                        <div class="relative">
+                                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary" value="Milano, MI" data-bind="requestData.location">
+                                            <i class="fas fa-map-marker-alt text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-6 border-t border-slate-200">
+                                    <button class="w-full bg-secondary text-white py-3 px-4 rounded-xl hover:bg-secondary/90 transition-colors font-semibold" data-event="click:publishRequest">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Pubblica Richiesta
+                                    </button>
+                                    <p class="text-xs text-slate-500 text-center mt-2">La tua richiesta sarà visibile ai negozianti della zona</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: MessagesInterface [chat and negotiations] -->
+            <div id="messages-tab" class="tab-content hidden">
+                <div class="flex h-96 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <!-- Conversations List -->
+                    <div class="w-1/3 border-r border-slate-200">
+                        <div class="p-4 border-b border-slate-200 bg-slate-50">
+                            <h3 class="text-lg font-semibold text-slate-900">Messaggi</h3>
+                            <div class="relative mt-2">
+                                <input type="text" placeholder="Cerca conversazioni..." class="w-full pl-8 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                                <i class="fas fa-search text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2 text-sm"></i>
+                            </div>
+                        </div>
+
+                        <div class="overflow-y-auto h-full">
+                            <!-- @MAP: conversations.map(conversation => ( -->
+                            <div class="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer active-conversation" data-mock="true">
+                                <div class="flex items-start gap-3">
+                                    <!-- Merchant profile image -->
+                                    <img class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40" alt="Venditore" data-mock-image="true">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium text-slate-900 truncate">TechStore Milano</h4>
+                                            <span class="text-xs text-slate-500">10:30</span>
+                                        </div>
+                                        <p class="text-xs text-slate-600 mt-1">iPhone 13 Pro 256GB Grafite</p>
+                                        <p class="text-xs text-slate-500 truncate mt-1">Ho quello che cerchi, posso fartelo vedere...</p>
+                                        <div class="flex items-center justify-between mt-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                                                <i class="fas fa-handshake mr-1"></i>
+                                                Offerta ricevuta
+                                            </span>
+                                            <span class="inline-flex items-center justify-center w-4 h-4 bg-primary text-white text-xs rounded-full">2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer" data-mock="true">
+                                <div class="flex items-start gap-3">
+                                    <!-- Merchant profile image -->
+                                    <img class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40" alt="Venditore" data-mock-image="true">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium text-slate-900 truncate">CycleShop Roma</h4>
+                                            <span class="text-xs text-slate-500">Ieri</span>
+                                        </div>
+                                        <p class="text-xs text-slate-600 mt-1">Bicicletta da Città Vintage</p>
+                                        <p class="text-xs text-slate-500 truncate mt-1">Perfetto, quando possiamo vederci?</p>
+                                        <div class="flex items-center justify-between mt-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                                <i class="fas fa-message mr-1"></i>
+                                                In chat
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Interface -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Chat Header -->
+                        <div class="p-4 border-b border-slate-200 bg-slate-50">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <!-- Merchant profile image -->
+                                    <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" alt="TechStore Milano" data-mock-image="true">
+                                    <div>
+                                        <h4 class="font-medium text-slate-900">TechStore Milano</h4>
+                                        <p class="text-xs text-slate-500">iPhone 13 Pro 256GB Grafite</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="p-2 text-slate-400 hover:text-slate-600">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-slate-600">
+                                        <i class="fas fa-video"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-slate-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages -->
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="conversation-messages">
+                            <!-- @MAP: messages.map(message => ( -->
+                            <div class="flex gap-3" data-mock="true">
+                                <!-- Merchant profile image -->
+                                <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" alt="TechStore Milano" data-mock-image="true">
+                                <div class="flex-1">
+                                    <div class="bg-slate-100 rounded-xl p-3 max-w-sm">
+                                        <p class="text-sm text-slate-900">Ciao! Ho visto la tua richiesta per l'iPhone 13 Pro. Ne ho uno in perfette condizioni, grafite 256GB con tutti gli accessori originali.</p>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">10:15</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 justify-end" data-mock="true">
+                                <div class="flex-1 flex justify-end">
+                                    <div class="bg-primary rounded-xl p-3 max-w-sm">
+                                        <p class="text-sm text-white">Interessante! Puoi mostrarmi alcune foto? E a che prezzo lo vendi?</p>
+                                    </div>
+                                </div>
+                                <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" alt="Tu" data-mock-image="true">
+                            </div>
+
+                            <!-- Formal Offer -->
+                            <div class="flex gap-3" data-mock="true">
+                                <!-- Merchant profile image -->
+                                <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" alt="TechStore Milano" data-mock-image="true">
+                                <div class="flex-1">
+                                    <div class="bg-gradient-to-r from-accent to-orange-400 rounded-xl p-4 max-w-md">
+                                        <div class="bg-white rounded-lg p-4">
+                                            <div class="flex items-center gap-2 mb-3">
+                                                <i class="fas fa-handshake text-accent"></i>
+                                                <span class="font-semibold text-slate-900">Offerta Formale</span>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <div class="flex justify-between">
+                                                    <span class="text-sm text-slate-600">Prodotto:</span>
+                                                    <span class="text-sm font-medium">iPhone 13 Pro 256GB Grafite</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-sm text-slate-600">Condizioni:</span>
+                                                    <span class="text-sm font-medium">Eccellenti (9/10)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-sm text-slate-600">Prezzo:</span>
+                                                    <span class="text-lg font-bold text-accent">€720</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-sm text-slate-600">Garanzia:</span>
+                                                    <span class="text-sm font-medium">6 mesi</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2 mt-4">
+                                                <button class="flex-1 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors text-sm font-medium">
+                                                    <i class="fas fa-check mr-1"></i>
+                                                    Accetta
+                                                </button>
+                                                <button class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
+                                                    <i class="fas fa-comment mr-1"></i>
+                                                    Negozia
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">10:28</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+
+                        <!-- Chat Input -->
+                        <div class="p-4 border-t border-slate-200">
+                            <div class="flex gap-2">
+                                <button class="p-2 text-slate-400 hover:text-slate-600">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <input type="text" placeholder="Scrivi un messaggio..." class="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <button class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: MainContent -->
+        </main>
+
+        <!-- @COMPONENT: MobileNavigation [bottom navigation for mobile] -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2">
+            <div class="flex justify-around">
+                <button data-tab="home" class="flex flex-col items-center py-2 px-3 text-primary">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </button>
+                <button data-tab="browse" class="flex flex-col items-center py-2 px-3 text-slate-400">
+                    <i class="fas fa-search text-lg"></i>
+                    <span class="text-xs mt-1">Cerca</span>
+                </button>
+                <button data-tab="create" class="flex flex-col items-center py-2 px-3 text-slate-400">
+                    <i class="fas fa-plus-circle text-lg"></i>
+                    <span class="text-xs mt-1">Crea</span>
+                </button>
+                <button data-tab="messages" class="flex flex-col items-center py-2 px-3 text-slate-400 relative">
+                    <i class="fas fa-message text-lg"></i>
+                    <span class="text-xs mt-1">Messaggi</span>
+                    <span class="absolute -top-1 -right-1 h-4 w-4 bg-accent text-white text-xs rounded-full flex items-center justify-center" data-mock="true">3</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MobileNavigation -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <script>
+    (function() {
+        // TODO: Implement proper state management and API calls
+        // This is a mockup with basic interactivity for demonstration
+
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function switchTab(targetTab) {
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active state from all buttons
+            tabButtons.forEach(button => {
+                button.classList.remove('text-primary', 'border-b-2', 'border-primary');
+                button.classList.add('text-slate-500');
+            });
+
+            // Show target tab content
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+            }
+
+            // Add active state to clicked button
+            const activeButton = document.querySelector(`[data-tab="${targetTab}"]`);
+            if (activeButton) {
+                activeButton.classList.remove('text-slate-500');
+                activeButton.classList.add('text-primary', 'border-b-2', 'border-primary');
+            }
+        }
+
+        // Add click event listeners to tab buttons
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = button.getAttribute('data-tab');
+                switchTab(targetTab);
+            });
+        });
+
+        // Chat functionality for Clemente interface
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-message');
+        const chatMessages = document.getElementById('chat-messages');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        function addMessage(content, isUser = false, showTyping = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'flex gap-3 justify-end' : 'flex gap-3';
+
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="flex-1 flex justify-end">
+                        <div class="bg-primary rounded-xl p-3 max-w-sm">
+                            <p class="text-sm text-white">${content}</p>
+                        </div>
+                    </div>
+                    <div class="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-slate-600 text-sm"></i>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-slate-100 rounded-xl p-3 max-w-sm">
+                            <p class="text-sm text-slate-900">${content}</p>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">Adesso</p>
+                    </div>
+                `;
+            }
+
+            if (showTyping) {
+                typingIndicator.style.display = 'flex';
+                setTimeout(() => {
+                    typingIndicator.style.display = 'none';
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 1500);
+            } else {
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                chatInput.value = '';
+
+                // Simulate Clemente's response
+                setTimeout(() => {
+                    const responses = [
+                        "Perfetto! Ho aggiornato la tua richiesta con queste informazioni. Vedo che hai specificato tutte le caratteristiche principali.",
+                        "Ottimo! Basandomi su quello che mi hai detto, ho creato una richiesta dettagliata che dovrebbe attirare i migliori negozianti della zona.",
+                        "Grazie per i dettagli! Ho organizzato la tua richiesta in modo che sia facile da trovare per chi ha quello che cerchi."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, false, true);
+                }, 500);
+            }
+        }
+
+        if (sendButton) {
+            sendButton.addEventListener('click', sendMessage);
+        }
+
+        if (chatInput) {
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // Initialize with home tab active
+        switchTab('home');
+
+        // Mock suggestion buttons
+        document.querySelectorAll('[data-mock="true"] button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (chatInput) {
+                    chatInput.value = button.textContent.trim();
+                    sendMessage();
+                }
+            });
+        });
+
+        // TODO: Implement real-time messaging
+        // TODO: Implement request creation and validation
+        // TODO: Implement search and filtering
+        // TODO: Implement user authentication
+        // TODO: Implement offer management
+    })();
+    </script>
+</body>
+</html>

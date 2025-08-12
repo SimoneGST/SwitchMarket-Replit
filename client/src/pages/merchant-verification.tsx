@@ -71,8 +71,46 @@ const validatePartitaIva = (piva: string): boolean => {
 const verificationSchema = z.object({
   businessName: z.string().min(2, "Nome attività richiesto"),
   taxType: z.enum(["piva", "cf"], { required_error: "Seleziona tipo di identificativo fiscale" }),
-  piva: z.string().optional(),
-  codiceFiscale: z.string().optional(),
+  const handleSubmit = async (data: VerificationForm) => {
+    // Validazione client: mostra errore specifico prima di inviare
+    const requiredFields = [
+      { key: 'businessName', label: 'Nome attività' },
+      { key: 'businessAddress', label: 'Indirizzo attività' },
+      { key: 'city', label: 'Città' },
+      { key: 'province', label: 'Provincia' },
+      { key: 'cap', label: 'CAP' },
+      { key: 'legalForm', label: 'Forma giuridica' }
+    ];
+    for (const field of requiredFields) {
+      if (!data[field.key] || typeof data[field.key] !== 'string' || data[field.key].trim().length === 0) {
+        showToast('verification', 'error', `Campo obbligatorio mancante: ${field.label}`);
+        return;
+      }
+    }
+    if (!data.taxType || !['piva', 'cf'].includes(data.taxType)) {
+      showToast('verification', 'error', 'Tipo identificativo fiscale non valido');
+      return;
+    }
+    if (data.taxType === 'piva') {
+      if (!data.piva || data.piva.length !== 11) {
+        showToast('verification', 'error', 'Partita IVA non valida (11 cifre)');
+        return;
+      }
+    } else {
+      if (!data.codiceFiscale || data.codiceFiscale.length !== 16) {
+        showToast('verification', 'error', 'Codice Fiscale non valido (16 caratteri)');
+        return;
+      }
+    }
+    setIsVerifying(true);
+    showToast('verification', 'processing');
+    setTimeout(() => {
+      verificationMutation.mutate({
+        ...data,
+      });
+      setIsVerifying(false);
+    }, 2000);
+}
   businessAddress: z.string().min(5, "Indirizzo completo richiesto"),
   city: z.string().min(2, "Città richiesta"),
   province: z.string().min(2, "Provincia richiesta"),

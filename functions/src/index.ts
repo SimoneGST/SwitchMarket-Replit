@@ -80,8 +80,35 @@ app.post("/api/merchant/verify", async (req: any, res) => {
     
     const verificationData = req.body;
     
-    // Update user document with verification data
-    await admin.firestore().collection("users").doc(userId).update({
+    // Validazione campi obbligatori
+    const requiredFields = [
+      'businessName', 'businessAddress', 'city', 'province', 'cap', 'legalForm'
+    ];
+    for (const field of requiredFields) {
+      if (!verificationData[field] || typeof verificationData[field] !== 'string' || verificationData[field].trim().length === 0) {
+        return res.status(400).json({ error: `Campo obbligatorio mancante o non valido: ${field}` });
+      }
+    }
+    // Validazione identificativo fiscale
+    if (!verificationData.taxType || !['piva', 'cf'].includes(verificationData.taxType)) {
+      return res.status(400).json({ error: 'Tipo identificativo fiscale non valido' });
+    }
+    if (verificationData.taxType === 'piva') {
+      if (!verificationData.partitaIva || verificationData.partitaIva.length !== 11) {
+        return res.status(400).json({ error: 'Partita IVA non valida' });
+      }
+    } else {
+      if (!verificationData.codiceFiscale || verificationData.codiceFiscale.length !== 16) {
+        return res.status(400).json({ error: 'Codice Fiscale non valido' });
+      }
+    }
+    // Controlla che il documento utente esista prima di aggiornare
+    const userRef = admin.firestore().collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    await userRef.update({
       businessName: verificationData.businessName,
       businessAddress: verificationData.businessAddress,
       city: verificationData.city,

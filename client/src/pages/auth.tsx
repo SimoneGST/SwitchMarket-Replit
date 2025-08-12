@@ -66,7 +66,7 @@ export default function Auth() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6">
             <img 
-              src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                src="/assets/SWITCHMARKET_logo_1754845138370.png" 
               alt="Switch Market Logo" 
               className="h-12 w-auto mr-3"
             />
@@ -104,7 +104,7 @@ export default function Auth() {
               >
                 <div className="text-center">
                   <img 
-                    src="/attached_assets/Clemente foto profilo_1754847201275.png" 
+                    src="/assets/Clemente foto profilo_1754847201275.png" 
                     alt="Clemente AI" 
                     className="w-8 h-8 rounded-full mx-auto mb-2"
                   />
@@ -124,7 +124,7 @@ export default function Auth() {
               >
                 <div className="text-center">
                   <img 
-                    src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                    src="/assets/leonardo foto profilo_1754851361956.png" 
                     alt="Leonardo AI" 
                     className="w-8 h-8 rounded-full mx-auto mb-2"
                   />
@@ -149,7 +149,6 @@ export default function Auth() {
               <i className={`fas ${userType === 'customer' ? 'fa-shopping-cart' : 'fa-store'} mr-2`}></i>
               {isLogin ? 'Accedi' : 'Registrati'} come {userType === 'customer' ? 'Cliente' : 'Negoziante'}
             </CardTitle>
-
             {/* Google Sign In */}
             <Button 
               onClick={handleGoogleAuth}
@@ -172,22 +171,8 @@ export default function Auth() {
                 </>
               )}
             </Button>
-            
-            <div className="text-center text-xs text-gray-600 bg-blue-50 border border-blue-200 p-2 rounded">
-              <i className="fas fa-info-circle mr-1"></i>
-              <strong>Deploy Required:</strong> L'autenticazione Google funziona completamente dopo il deploy su Replit
-            </div>
-            
-
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-300" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-4 text-slate-500 font-medium">Accesso Email</span>
-              </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-4 text-slate-500 font-medium">Accesso Email</span>
             </div>
           </CardHeader>
 

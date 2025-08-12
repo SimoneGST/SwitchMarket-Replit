@@ -22,6 +22,15 @@ interface Message {
 }
 
 export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
+  const { user } = require("@/hooks/useAuth").useAuth();
+  if (!user) {
+    return (
+      <div className="p-4 text-center">
+        <div className="mb-4 text-red-600 font-semibold">Devi essere autenticato per usare la chat AI Clemente.</div>
+        <Button onClick={() => window.location.href = "/login"} variant="outline">Accedi</Button>
+      </div>
+    );
+  }
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -41,13 +50,16 @@ export default function ClementeChat({ onDataUpdate }: ClementeChatProps) {
 
   const chatMutation = useMutation({
     mutationFn: async ({ message, attachedFile }: { message: string, attachedFile?: { url: string, name: string, type: string } }) => {
-      return apiRequest("POST", "/api/clemente/chat", {
-        message,
-        context: {
-          ...chatContext,
-          conversationHistory: messages
-        },
-        attachedFile
+      return apiRequest("/api/clemente/chat", {
+        method: "POST",
+        body: JSON.stringify({
+          message,
+          context: {
+            ...chatContext,
+            conversationHistory: messages
+          },
+          attachedFile
+        })
       });
     },
     onSuccess: (data: any) => {

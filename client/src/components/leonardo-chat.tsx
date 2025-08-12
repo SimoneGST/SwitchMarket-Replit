@@ -169,6 +169,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
         <CharacterIntro
           character="leonardo"
           onComplete={completeIntro}
+          show={showIntro}
         />
       )}
       {!showIntro && (
@@ -176,7 +177,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
           <CardHeader className="border-b bg-blue-50">
             <CardTitle className="flex items-center gap-2 text-blue-600">
               <img 
-                src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                  src="/assets/leonardo foto profilo_1754851361956.png" 
                 alt="Leonardo AI" 
                 className="w-6 h-6"
               />
@@ -192,7 +193,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
             <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-4">
               <div className="flex-1 flex items-center justify-center w-full max-h-64">
                 <img 
-                  src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                    src="/assets/leonardo foto profilo_1754851361956.png" 
                   alt="Leonardo AI" 
                   className="max-w-full max-h-full object-contain"
                 />
@@ -221,7 +222,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
                     <User className="w-4 h-4" />
                   ) : (
                     <img 
-                      src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                          src="/assets/leonardo foto profilo_1754851361956.png" 
                       alt="Leonardo AI" 
                       className="w-5 h-5 object-contain"
                     />
@@ -254,7 +255,7 @@ export default function LeonardoChat({ context = {}, sessionId }: LeonardoChatPr
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="bg-blue-100 text-blue-600 p-1">
                   <img 
-                    src="/attached_assets/leonardo foto profilo_1754851361956.png" 
+                        src="/assets/leonardo foto profilo_1754851361956.png" 
                     alt="Leonardo AI" 
                     className="w-5 h-5 object-contain"
                   />
