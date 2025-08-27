@@ -366,7 +366,7 @@ export default function BrowseRequests() {
         currentSchema: productSchema
       };
 
-      const response = await clemente.chatWithUser(currentInput, context, undefined);
+  const response = await clemente.chatWithUser(currentInput, context, undefined);
 
       const aiMessage: ChatMessage = {
         role: 'assistant',
@@ -377,15 +377,18 @@ export default function BrowseRequests() {
 
       setChatMessages(prev => [...prev, aiMessage]);
       
-      // Aggiorna automaticamente la richiesta in costruzione con nuovi dati raccolti
-      if (response.collectedData) {
+    // Aggiorna automaticamente la richiesta in costruzione con nuovi dati raccolti o draft
+    const collected = response.collectedData || {};
+    const draft = (response as any).requestDraft || {};
+    const mergeSource = { ...collected, ...draft } as Record<string, any>;
+    if (Object.keys(mergeSource).length) {
         setRequestData(prev => ({
           ...prev,
-          ...response.collectedData,
+      ...mergeSource,
           // Assicurati che i campi essenziali non vengano sovrascritti accidentalmente
-          urgencyLevel: response.collectedData.urgencyLevel || prev.urgencyLevel || 'few_days',
-          deliveryPreference: response.collectedData.deliveryPreference || prev.deliveryPreference || 'both',
-          actionRadius: response.collectedData.actionRadius || prev.actionRadius || 10
+      urgencyLevel: mergeSource.urgencyLevel || prev.urgencyLevel || 'few_days',
+      deliveryPreference: mergeSource.deliveryPreference || prev.deliveryPreference || 'both',
+      actionRadius: mergeSource.actionRadius || prev.actionRadius || 10
         }));
       }
 
@@ -649,9 +652,35 @@ export default function BrowseRequests() {
                     ref={fileInputRef}
                     className="hidden"
                     accept="image/*,.pdf,.doc,.docx"
-                    onChange={(e) => {
-                      // TODO: Handle file upload
-                      console.log('File selezionato:', e.target.files?.[0]);
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        setIsClementeTyping(true);
+                        const buf = await file.arrayBuffer();
+                        const uint8Arr = new Uint8Array(buf);
+                        const base64 = btoa(String.fromCharCode.apply(null, Array.from(uint8Arr)));
+                        const attachedFile = { base64, mimeType: file.type, name: file.name };
+                        const context = {
+                          conversationHistory: chatMessages.map(msg => ({ isAI: msg.role === 'assistant', content: msg.content, timestamp: msg.timestamp })),
+                          collectedData: requestData,
+                          currentSchema: productSchema
+                        };
+                        const resp = await fetch('/api/clemente/chat', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ message: '', context, attachedFile })
+                        });
+                        const data = await resp.json();
+                        const draft = data?.response?.requestDraft;
+                        if (draft) setRequestData(prev => ({ ...prev, ...draft }));
+                        setChatMessages(prev => [...prev, { role: 'assistant', content: data?.response?.message || 'Ho analizzato il file e aggiornato la scheda.', timestamp: new Date() }]);
+                      } catch (err) {
+                        console.error('Errore analisi file:', err);
+                      } finally {
+                        setIsClementeTyping(false);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }
                     }}
                   />
                 </div>

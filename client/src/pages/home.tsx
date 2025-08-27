@@ -35,12 +35,7 @@ export default function Home() {
                 Pubblica una Richiesta
               </Button>
             </Link>
-            <Link href="/browse">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary px-6 py-3 rounded-xl font-semibold">
-                <i className="fas fa-search mr-2"></i>
-                Esplora Richieste
-              </Button>
-            </Link>
+            {/* Browse removed for customers */}
           </div>
         </div>
       </div>
@@ -145,15 +140,7 @@ export default function Home() {
             ))
           )}
         </div>
-        {(Array.isArray(userRequests) ? userRequests.length : 0) > 0 && (
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
-            <Link href="/browse">
-              <button className="text-primary text-sm font-medium hover:underline">
-                Visualizza tutte le richieste
-              </button>
-            </Link>
-          </div>
-        )}
+  {/* Browse list link removed for customers */}
       </Card>
     </main>
   );

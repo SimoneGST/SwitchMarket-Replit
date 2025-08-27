@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import LeonardoChat from "@/components/leonardo-chat";
+import { CopilotConfig } from "@shared/schema";
 
 const daysOfWeek = [
   { key: 'monday', label: 'Lunedì' },
@@ -27,7 +28,7 @@ export default function CopilotDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: config, isLoading } = useQuery({
+  const { data: config, isLoading } = useQuery<CopilotConfig | null>({
     queryKey: ['/api/copilot/config'],
   });
 
@@ -38,6 +39,11 @@ export default function CopilotDashboard() {
   const { data: analytics = [] } = useQuery({
     queryKey: ['/api/copilot/analytics', { days: 7 }],
   });
+
+  // Local typed aliases to avoid wide "unknown" typing from untyped API responses
+  const typedAnalytics: any[] = analytics as any[];
+  const typedSessions: any[] = sessions as any[];
+  const configVal: CopilotConfig | null = config || null;
 
   const updateConfigMutation = useMutation({
     mutationFn: (data: any) => apiRequest('PUT', '/api/copilot/config', data),
@@ -57,7 +63,7 @@ export default function CopilotDashboard() {
     }
   });
 
-  const [localConfig, setLocalConfig] = useState(config || {});
+  const [localConfig, setLocalConfig] = useState<any>(config || {});
 
   useEffect(() => {
     if (config) {
@@ -67,8 +73,8 @@ export default function CopilotDashboard() {
 
   const updateLocalConfig = (path: string, value: any) => {
     const keys = path.split('.');
-    const newConfig = { ...localConfig };
-    let current = newConfig;
+    const newConfig: any = { ...localConfig };
+    let current: any = newConfig;
     
     for (let i = 0; i < keys.length - 1; i++) {
       current[keys[i]] = { ...current[keys[i]] };
@@ -76,7 +82,7 @@ export default function CopilotDashboard() {
     }
     current[keys[keys.length - 1]] = value;
     
-    setLocalConfig(newConfig);
+  setLocalConfig(newConfig);
   };
 
   const saveConfig = () => {
@@ -91,10 +97,10 @@ export default function CopilotDashboard() {
     );
   }
 
-  const totalChats = analytics.reduce((sum: number, day: any) => sum + (day.totalChats || 0), 0);
-  const completedChats = analytics.reduce((sum: number, day: any) => sum + (day.completedChats || 0), 0);
-  const avgSatisfaction = analytics.length > 0 ? 
-    analytics.reduce((sum: number, day: any) => sum + (parseFloat(day.customerSatisfaction) || 0), 0) / analytics.length : 0;
+  const totalChats = typedAnalytics.reduce((sum: number, day: any) => sum + (day.totalChats || 0), 0);
+  const completedChats = typedAnalytics.reduce((sum: number, day: any) => sum + (day.completedChats || 0), 0);
+  const avgSatisfaction = typedAnalytics.length > 0 ? 
+    typedAnalytics.reduce((sum: number, day: any) => sum + (parseFloat(day.customerSatisfaction) || 0), 0) / typedAnalytics.length : 0;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -117,11 +123,11 @@ export default function CopilotDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Badge variant={config?.isEnabled ? "default" : "secondary"} className="px-4 py-2">
-              {config?.isEnabled ? "Attivo" : "Disattivo"}
+            <Badge variant={configVal?.isActive ? "default" : "secondary"} className="px-4 py-2">
+              {configVal?.isActive ? "Attivo" : "Disattivo"}
             </Badge>
             <div className="text-right">
-              <div className="text-2xl font-bold">{sessions.length}</div>
+              <div className="text-2xl font-bold">{typedSessions.length}</div>
               <div className="text-blue-100">Chat Attive</div>
             </div>
           </div>
@@ -149,8 +155,8 @@ export default function CopilotDashboard() {
                   <Label htmlFor="enabled">Abilita Copilot</Label>
                   <Switch
                     id="enabled"
-                    checked={localConfig.isEnabled}
-                    onCheckedChange={(checked) => updateLocalConfig('isEnabled', checked)}
+                    checked={localConfig.isActive}
+                    onCheckedChange={(checked) => updateLocalConfig('isActive', checked)}
                   />
                 </div>
 
@@ -159,7 +165,7 @@ export default function CopilotDashboard() {
                   <Input
                     type="number"
                     value={localConfig.maxConcurrentChats || 5}
-                    onChange={(e) => updateLocalConfig('maxConcurrentChats', parseInt(e.target.value))}
+                      onChange={(e) => updateLocalConfig('maxConcurrentChats', parseInt(e.target.value))}
                     min="1"
                     max="20"
                   />
@@ -189,7 +195,7 @@ export default function CopilotDashboard() {
                   <Label>Tono di Voce</Label>
                   <Select
                     value={localConfig.personalitySettings?.tone}
-                    onValueChange={(value) => updateLocalConfig('personalitySettings.tone', value)}
+                      onValueChange={(value) => updateLocalConfig('personalitySettings.tone', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleziona il tono" />
@@ -344,14 +350,14 @@ export default function CopilotDashboard() {
         {/* Chat Attive */}
         <TabsContent value="sessions">
           <div className="grid gap-4">
-            {sessions.length === 0 ? (
+            {typedSessions.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center text-gray-500">
                   Nessuna chat attiva al momento
                 </CardContent>
               </Card>
             ) : (
-              sessions.map((session: any) => (
+              typedSessions.map((session: any) => (
                 <Card key={session.id}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -412,7 +418,7 @@ export default function CopilotDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analytics.map((day: any, index: number) => (
+                {typedAnalytics.map((day: any, index: number) => (
                   <div key={day.date} className="flex items-center justify-between p-3 border rounded">
                     <div className="font-medium">
                       {new Date(day.date).toLocaleDateString('it-IT', { 

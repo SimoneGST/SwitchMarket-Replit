@@ -33,9 +33,9 @@ const SEO_CONFIG = {
     keywords: 'crea richiesta prodotto, Clemente AI assistente, cerca prodotti locali, richiesta negozi zona, assistente acquisti AI'
   },
   '/browse': {
-    title: 'Esplora Prodotti Locali - Trova Negozi nella Tua Zona | Switch Market',
-    description: 'Esplora prodotti e servizi nei negozi della tua zona. Marketplace locale geolocalizzato con ricerca intelligente AI.',
-    keywords: 'esplora prodotti locali, negozi zona, ricerca geolocalizzata, prodotti vicini, marketplace geografico'
+  title: 'Trova Richieste Clienti - Per Negozianti | Switch Market',
+  description: 'Sfoglia e filtra le richieste dei clienti nella tua zona e invia offerte rapidamente. Strumenti smart per negozianti locali.',
+  keywords: 'richieste clienti, trova richieste, negozianti, offerte prodotti, vendita locale, lead locali, marketplace negozianti'
   },
   '/customer-dashboard': {
     title: 'Dashboard Cliente - Le Tue Richieste e Acquisti | Switch Market',

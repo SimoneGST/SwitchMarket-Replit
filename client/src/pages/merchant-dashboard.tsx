@@ -8,22 +8,22 @@ import { useQuery } from "@tanstack/react-query";
 export default function MerchantDashboard() {
   const { user } = useAuth();
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<any>({
     queryKey: ["/api/merchant/stats"],
     enabled: !!user,
   });
 
-  const { data: recentRequests } = useQuery({
+  const { data: recentRequests } = useQuery<any[]>({
     queryKey: ["/api/requests/nearby"],
     enabled: !!user?.pivaVerified,
   });
 
-  const { data: myProducts } = useQuery({
+  const { data: myProducts } = useQuery<any[]>({
     queryKey: ["/api/products/my"],
     enabled: !!user?.pivaVerified,
   });
 
-  const { data: conversations } = useQuery({
+  const { data: conversations } = useQuery<any[]>({
     queryKey: ["/api/conversations/my"],
     enabled: !!user?.pivaVerified,
   });
@@ -198,10 +198,11 @@ export default function MerchantDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {recentRequests?.length > 0 ? (
+            {Array.isArray(recentRequests) && recentRequests.length > 0 ? (
               <div className="space-y-3">
-                {recentRequests?.slice(0, 3).map((request: any) => (
-                  <div key={request.id} className="p-3 border rounded-lg hover:bg-slate-50">
+                {Array.isArray(recentRequests) && recentRequests.slice(0, 3).map((request: any) => (
+                  <Link key={request.id} href={`/browse?request=${encodeURIComponent(request.id)}`}>
+                  <div className="p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium text-sm line-clamp-1">{request.title}</h4>
                       <Badge variant="outline" className="text-xs">
@@ -218,6 +219,7 @@ export default function MerchantDashboard() {
                       </span>
                     </div>
                   </div>
+                  </Link>
                 ))}
                 <Link href="/browse">
                   <Button variant="outline" size="sm" className="w-full">

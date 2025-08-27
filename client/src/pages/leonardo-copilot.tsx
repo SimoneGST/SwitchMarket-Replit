@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { CopilotConfig } from "@shared/schema";
 
 const copilotConfigSchema = z.object({
   personality: z.string().min(10, "Descrizione personalità richiesta"),
@@ -36,20 +37,31 @@ const copilotConfigSchema = z.object({
 
 type CopilotConfigForm = z.infer<typeof copilotConfigSchema>;
 
+interface CopilotAnalyticsSummary {
+  todayChats?: number;
+  avgResponseTime?: number;
+  satisfaction?: number;
+  conversions?: number;
+}
+
 export default function LeonardoCopilot() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  const { data: config, isLoading } = useQuery({
+  const { data: config, isLoading } = useQuery<CopilotConfig | null>({
     queryKey: ["/api/copilot/config"],
     enabled: !!user,
   });
 
-  const { data: analytics } = useQuery({
+  const { data: analytics } = useQuery<CopilotAnalyticsSummary | null>({
     queryKey: ["/api/copilot/analytics"],
     enabled: !!user,
   });
+
+  // typed accessors with safe fallback
+  const configVal: CopilotConfig | null = config || null;
+  const analyticsVal: CopilotAnalyticsSummary = analytics || ({} as CopilotAnalyticsSummary);
 
   const form = useForm<CopilotConfigForm>({
     resolver: zodResolver(copilotConfigSchema),
@@ -153,12 +165,12 @@ export default function LeonardoCopilot() {
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <img 
-              src="/attached_assets/leonardo_avatar_1754851387216.png" 
-              alt="Leonardo" 
+            <img
+              src="/attached_assets/leonardo_avatar_1754851387216.png"
+              alt="Leonardo"
               className="h-12 w-12 rounded-full"
               onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face";
+                (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face";
               }}
             />
             <div>
@@ -166,8 +178,9 @@ export default function LeonardoCopilot() {
               <p className="text-slate-600">Configura il tuo assistente AI per gestire le conversazioni con i clienti</p>
             </div>
           </div>
+
           <div className="flex items-center gap-3">
-            {config?.isEnabled ? (
+            {configVal?.isActive ? (
               <Badge variant="default" className="bg-green-100 text-green-800">
                 <i className="fas fa-circle text-green-600 text-xs mr-1"></i>
                 Attivo
@@ -178,12 +191,13 @@ export default function LeonardoCopilot() {
                 Inattivo
               </Badge>
             )}
+
             <Button
-              variant={config?.isEnabled ? "destructive" : "default"}
-              onClick={() => toggleCopilotMutation.mutate(!config?.isEnabled)}
+              variant={configVal?.isActive ? "destructive" : "default"}
+              onClick={() => toggleCopilotMutation.mutate(!configVal?.isActive)}
               disabled={toggleCopilotMutation.isPending}
             >
-              {config?.isEnabled ? (
+              {(configVal?.isActive) ? (
                 <>
                   <i className="fas fa-pause mr-2"></i>
                   Disattiva
@@ -209,7 +223,7 @@ export default function LeonardoCopilot() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Chat Oggi</p>
-                  <p className="text-xl font-bold text-blue-600">{analytics.todayChats || 0}</p>
+                  <p className="text-xl font-bold text-blue-600">{analyticsVal.todayChats || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -223,7 +237,7 @@ export default function LeonardoCopilot() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Tempo Risposta</p>
-                  <p className="text-xl font-bold text-green-600">{analytics.avgResponseTime || 0}s</p>
+                  <p className="text-xl font-bold text-green-600">{analyticsVal.avgResponseTime || 0}s</p>
                 </div>
               </div>
             </CardContent>
@@ -237,7 +251,7 @@ export default function LeonardoCopilot() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Soddisfazione</p>
-                  <p className="text-xl font-bold text-purple-600">{analytics.satisfaction || 0}/5</p>
+                  <p className="text-xl font-bold text-purple-600">{analyticsVal.satisfaction || 0}/5</p>
                 </div>
               </div>
             </CardContent>
@@ -251,7 +265,7 @@ export default function LeonardoCopilot() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Conversioni</p>
-                  <p className="text-xl font-bold text-orange-600">{analytics.conversions || 0}</p>
+                  <p className="text-xl font-bold text-orange-600">{analyticsVal.conversions || 0}</p>
                 </div>
               </div>
             </CardContent>

@@ -1,21 +1,81 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from "@/hooks/useAuth";
 import CharacterIntro from "@/components/character-intro";
 import { useCharacterIntro } from "@/hooks/useCharacterIntro";
+import { auth } from "@/lib/firebase";
+import { sendEmailVerification } from "firebase/auth";
 
 export default function CustomerDashboard() {
-  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState<any | null>(null);
+  const [form, setForm] = useState<{ title: string; description: string; priceMin?: string; priceMax?: string; location?: string }>({ title: '', description: '' });
+  const startEdit = (r: any) => {
+    setEditing(r);
+    setForm({
+      title: r.title || '',
+      description: r.description || '',
+      priceMin: r.priceMin != null ? String(r.priceMin) : '',
+      priceMax: r.priceMax != null ? String(r.priceMax) : '',
+      location: r.location || '',
+    });
+  };
+  const updateReq = useMutation({
+    mutationFn: async () => apiRequest('PUT', `/api/requests/${editing.id}`, {
+      title: form.title,
+      description: form.description,
+      priceMin: form.priceMin ? Number(form.priceMin) : undefined,
+      priceMax: form.priceMax ? Number(form.priceMax) : undefined,
+      location: form.location || undefined,
+    }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["/api/requests/my"] });
+      setEditing(null);
+    }
+  });
+  const deleteReq = useMutation({
+    mutationFn: async () => apiRequest('DELETE', `/api/requests/${editing.id}`),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["/api/requests/my"] });
+      setEditing(null);
+    }
+  });
+  const { user, firebaseUser } = useAuth();
+  const emailNotVerified = !!firebaseUser && firebaseUser.email && !firebaseUser.emailVerified;
+  const resendVerification = async () => {
+    if (!firebaseUser) return;
+    try { await sendEmailVerification(firebaseUser); alert('Email di verifica inviata. Controlla la casella.'); } catch {}
+  };
   const { data: userRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/requests/my"],
+  });
+  const { data: receivedOffers = [] } = useQuery<any[]>({
+    queryKey: ["/api/offers/received"],
   });
   
   const { showIntro, completeIntro, neverShowAgain } = useCharacterIntro('clemente');
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {emailNotVerified && (
+        <div className="mb-4 p-4 border border-amber-300 bg-amber-50 rounded">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-amber-900 font-semibold">Verifica email richiesta</p>
+              <p className="text-amber-800 text-sm">Per pubblicare richieste e interagire coi negozianti, verifica la tua email.</p>
+            </div>
+            <button onClick={resendVerification} className="px-3 py-2 bg-amber-600 text-white rounded">Invia link</button>
+          </div>
+        </div>
+      )}
       {/* Character Introduction */}
       {showIntro && (
         <div className="fixed inset-0 z-50">
@@ -81,7 +141,7 @@ export default function CustomerDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-slate-600">Offerte Ricevute</p>
-                <p className="text-2xl font-bold text-slate-900">0</p>
+                <p className="text-2xl font-bold text-slate-900">{Array.isArray(receivedOffers) ? receivedOffers.length : 0}</p>
               </div>
             </div>
           </CardContent>
@@ -136,7 +196,7 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
-      {/* Recent Requests */}
+  {/* Recent Requests */}
       <Card>
         <div className="px-6 py-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">Le Tue Richieste Recenti</h2>
@@ -157,13 +217,15 @@ export default function CustomerDashboard() {
               </Link>
             </div>
           ) : (
-            userRequests.map((request: any) => (
+            userRequests.map((request: any) => {
+              const count = (Array.isArray(receivedOffers) ? receivedOffers.filter((o: any) => o.requestId === request.id).length : 0);
+        return (
               <div key={request.id} className="p-6 hover:bg-slate-50 cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="text-sm font-medium text-slate-900">{request.title}</h3>
                     <p className="text-sm text-slate-500 mt-1">
-                      €{request.priceMin} - €{request.priceMax} • {request.location}
+          €{request.priceMin} - €{request.priceMax} • {request.location}
                     </p>
                     <div className="flex items-center mt-2 space-x-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -171,26 +233,100 @@ export default function CustomerDashboard() {
                           ? 'bg-green-100 text-green-800' 
                           : request.status === 'negotiating'
                           ? 'bg-yellow-100 text-yellow-800'
+                          : request.status === 'accepted'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-slate-100 text-slate-700'
                       }`}>
                         <i className={`fas ${
                           request.status === 'open' ? 'fa-check-circle' :
-                          request.status === 'negotiating' ? 'fa-clock' : 'fa-times-circle'
+                          request.status === 'negotiating' ? 'fa-clock' :
+                          request.status === 'accepted' ? 'fa-badge-check' : 'fa-times-circle'
                         } mr-1`}></i>
                         {request.status === 'open' ? 'Aperta' : 
-                         request.status === 'negotiating' ? 'In Negoziazione' : 'Chiusa'}
+                         request.status === 'negotiating' ? 'In Negoziazione' :
+                         request.status === 'accepted' ? 'Accettata' : 'Chiusa'}
                       </span>
-                      <span className="text-xs text-slate-500">0 offerte ricevute</span>
+                      <span className="text-xs text-slate-500">{count} offerte ricevute</span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right space-y-2">
                     <p className="text-xs text-slate-500">
-                      {new Date(request.createdAt).toLocaleDateString('it-IT')}
+                      {request.createdAt ? new Date(request.createdAt).toLocaleString('it-IT') : ''}
                     </p>
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" size="sm" onClick={() => startEdit(request)}>
+                        <i className="fas fa-edit mr-1" /> Modifica
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => { setEditing(request); }}>
+                        <i className="fas fa-trash mr-1" /> Elimina
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
+            );
+            })
+          )}
+        </div>
+      </Card>
+
+      {/* Edit/Delete Dialog */}
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifica richiesta</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <Input placeholder="Titolo" value={form.title} onChange={(e)=>setForm({...form, title:e.target.value})} />
+              <Textarea placeholder="Descrizione" value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})} />
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="Prezzo min" inputMode="numeric" value={form.priceMin||''} onChange={(e)=>setForm({...form, priceMin:e.target.value})} />
+                <Input placeholder="Prezzo max" inputMode="numeric" value={form.priceMax||''} onChange={(e)=>setForm({...form, priceMax:e.target.value})} />
+              </div>
+              <Input placeholder="Località" value={form.location||''} onChange={(e)=>setForm({...form, location:e.target.value})} />
+            </div>
+          )}
+          <DialogFooter className="flex items-center justify-between gap-2">
+            <Button variant="destructive" onClick={()=>deleteReq.mutate()} disabled={deleteReq.isPending}>
+              <i className="fas fa-trash mr-2" /> Elimina
+            </Button>
+            <div className="space-x-2">
+              <Button variant="outline" onClick={()=>setEditing(null)}>Annulla</Button>
+              <Button onClick={()=>updateReq.mutate()} disabled={updateReq.isPending}>
+                <i className="fas fa-save mr-2" /> Salva
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Offers received */}
+      <Card className="mt-8">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900">Offerte Ricevute</h2>
+          <span className="text-sm text-slate-500">{Array.isArray(receivedOffers) ? receivedOffers.length : 0} totali</span>
+        </div>
+        <div className="divide-y divide-slate-200">
+          {Array.isArray(receivedOffers) && receivedOffers.length > 0 ? (
+            receivedOffers.slice(0, 8).map((o: any) => (
+              <Link key={o.id} href={`/messages?conv=${o.conversationId || ''}`}>
+                <div className="p-6 hover:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">{o.title || o.requestTitle || 'Offerta'}</div>
+                      <div className="text-xs text-slate-600 mt-1">Richiesta: {o.requestTitle || o.requestId}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-accent">€{o.price ?? '-'}</div>
+                      <div className="text-xs text-slate-500 mt-1">{o.status || 'active'}</div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
             ))
+          ) : (
+            <div className="p-8 text-center text-slate-500">Al momento non ci sono offerte.</div>
           )}
         </div>
       </Card>
