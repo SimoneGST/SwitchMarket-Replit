@@ -5,6 +5,11 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Default to Firestore storage in Firebase-hosted environments unless overridden
+if (typeof process.env.USE_FIRESTORE === 'undefined') {
+  process.env.USE_FIRESTORE = 'true';
+}
+
 // CORS middleware per risolvere problemi di comunicazione
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -18,8 +23,17 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Increase body size limits to support image/document uploads from the client (align with Functions)
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: false, limit: '20mb' }));
+
+// Error handler to convert body size errors into friendly messages
+app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({ error: 'FILE_TOO_LARGE', message: 'File troppo grande. Limite 20MB.', maxMB: 20 });
+  }
+  next(err);
+});
 
 // Serve attached assets
 app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
@@ -81,8 +95,8 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: process.platform === 'win32' ? '127.0.0.1' : '0.0.0.0',
+    // reusePort non supportato su Windows
   }, () => {
     log(`serving on port ${port}`);
   });

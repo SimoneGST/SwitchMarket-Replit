@@ -5,36 +5,22 @@ export function setupGlobalErrorHandling() {
   // Handle unhandled JavaScript errors
   window.addEventListener('error', (event) => {
     console.error('Global error:', event.error);
-    
     toast({
       title: "Errore Imprevisto",
-      description: "Si è verificato un problema. La pagina verrà ricaricata.",
+      description: "Si è verificato un problema.",
       variant: "destructive",
     });
-
-    // Redirect to home after a short delay
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 2000);
   });
 
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-    
-    // Prevent the default browser error page
     event.preventDefault();
-    
     toast({
       title: "Errore di Caricamento",
-      description: "Problema durante il caricamento. Ritorno alla home.",
+      description: "Problema durante il caricamento.",
       variant: "destructive",
     });
-
-    // Redirect to home
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 1500);
   });
 
   // Handle navigation errors (like Firebase auth redirects that fail)

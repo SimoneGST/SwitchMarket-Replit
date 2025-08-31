@@ -1,6 +1,11 @@
 import { storage } from "./storage";
 import { generateText } from "./gemini";
-import type { CopilotConfig, CopilotSession, User, Product } from "@shared/schema";
+import { User, Product, CopilotConfig } from "@shared/schema";
+// CopilotSession runtime shape may vary; keep as any for now during triage
+type CopilotSession = any;
+
+// Note: shared/schema exports specific table objects (copilotSessions, users, products).
+// For runtime typing here we use any casts when pulling configs from storage as a safe triage.
 
 interface CopilotContext {
   merchant: User;
@@ -13,16 +18,19 @@ export class CopilotService {
   
   // Verifica se il copilot è disponibile per un merchant
   async isCopilotAvailable(merchantId: string): Promise<boolean> {
-    const config = await storage.getCopilotConfig(merchantId);
-    if (!config || !config.isEnabled) return false;
-    
+    const config = await storage.getCopilotConfig(merchantId) as CopilotConfig | null;
+    const cfgAny: any = config;
+    if (!cfgAny || !cfgAny.isEnabled) return false;
+
     // Controlla orari di lavoro
     const now = new Date();
-    const dayName = now.toLocaleLowerCase('it-IT', { weekday: 'long' }) as keyof typeof config.businessHours;
-    const dayConfig = config.businessHours[dayName] as any;
-    
+    // Use an English weekday name to match stored keys like 'monday', 'tuesday', etc.
+    const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const businessHours = (cfgAny.businessHours || {}) as Record<string, any>;
+    const dayConfig = (businessHours[dayName] as any) || { enabled: false, start: '00:00', end: '00:00' };
+
     if (!dayConfig.enabled) return false;
-    
+
     const currentTime = now.toTimeString().slice(0, 5);
     return currentTime >= dayConfig.start && currentTime <= dayConfig.end;
   }
@@ -52,18 +60,20 @@ export class CopilotService {
     const session = await storage.getCopilotSession(sessionId);
     if (!session) throw new Error('Session not found');
     
-    const context = await this.buildContext(session);
+  const context: any = await this.buildContext(session);
     
     // Costruisci il prompt per Leonardo
     const systemPrompt = this.buildSystemPrompt(context);
+    const personalityTone = context?.config?.personality || 'Professionale e cordiale';
+    const autonomy = context?.config?.autonomyLevel || 'medium';
     const userPrompt = `Cliente: "${customerMessage}"
-    
+
     Analizza il messaggio e:
     1. Rispondi come Leonardo, l'assistente AI di ${context.merchant.businessName}
-    2. Usa un tono ${context.config.personalitySettings.tone}
-    3. Sii ${context.config.personalitySettings.proactivity} nella proattività
+    2. Usa un tono: ${personalityTone}
+    3. Livello di autonomia configurato: ${autonomy}
     4. Se non riesci a rispondere adeguatamente, suggerisci di trasferire a un umano
-    
+
     Formato risposta JSON:
     {
       "response": "risposta al cliente",
@@ -93,7 +103,7 @@ export class CopilotService {
       
       // Risposta di fallback
       return {
-        response: context.config.autoResponses.unavailable,
+        response: context?.config?.unavailableMessage || 'Mi dispiace, non posso rispondere ora.',
         shouldTransferToHuman: true,
         confidence: 0.1
       };
@@ -149,7 +159,7 @@ export class CopilotService {
     const { merchant, config, products } = context;
     
     const productInfo = products?.length ? 
-      `Prodotti disponibili: ${products.map(p => `${p.name} - €${p.price}`).join(', ')}` : 
+      `Prodotti disponibili: ${products.map(p => `${p.name} - €${Number((p as any).price || 0).toFixed(2)}`).join(', ')}` : 
       'Nessun prodotto sincronizzato dal gestionale.';
     
     return `Sei Leonardo, l'assistente AI intelligente di ${merchant.businessName || merchant.firstName}.
@@ -160,10 +170,9 @@ export class CopilotService {
     - Tipo: ${merchant.userType === 'merchant' ? 'Negoziante verificato' : 'Merchant'}
     - ${productInfo}
     
-    PERSONALITÀ:
-    - Tono: ${config.personalitySettings.tone}
-    - Expertise: ${config.personalitySettings.expertise} 
-    - Proattività: ${config.personalitySettings.proactivity}
+  PERSONALITÀ:
+  - Descrizione: ${config.personality || 'Professionale e cordiale'}
+  - Livello Autonomia: ${config.autonomyLevel || 'medium'}
     
     COMPITI:
     1. Assistere i clienti con informazioni sui prodotti

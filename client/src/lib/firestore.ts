@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   getDoc,
@@ -23,7 +24,6 @@ import type {
   Product,
   Integration,
   CopilotConfig,
-  CopilotSession,
 } from "@shared/schema";
 
 // User operations
@@ -36,12 +36,17 @@ export const users = {
 
   async create(userData: Partial<User>): Promise<User> {
     const docRef = doc(db, "users", userData.id!);
+    // Build payload without undefined values
     const user = {
       ...userData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
-    await updateDoc(docRef, user);
+    const filtered = Object.fromEntries(
+      Object.entries(user).filter(([_, v]) => v !== undefined)
+    );
+    // Ensure document exists and merge fields
+    await setDoc(docRef, filtered as any, { merge: true });
     
     // Return user with proper types
     const createdUser: User = {
@@ -54,10 +59,14 @@ export const users = {
 
   async update(id: string, data: Partial<User>): Promise<void> {
     const docRef = doc(db, "users", id);
-    await updateDoc(docRef, {
+    const payload = {
       ...data,
       updatedAt: serverTimestamp(),
-    });
+    } as Record<string, unknown>;
+    const filtered = Object.fromEntries(
+      Object.entries(payload).filter(([_, v]) => v !== undefined)
+    );
+  await updateDoc(docRef, filtered as any);
   },
 };
 

@@ -7,28 +7,46 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> {
+// Flexible API helper supporting both signatures:
+// - apiRequest(url, options)
+// - apiRequest(method, url, bodyOrOptions)
+export async function apiRequest(arg1: string, arg2?: any, arg3?: any): Promise<Response> {
   const { auth } = await import("./firebase");
   const token = await auth.currentUser?.getIdToken();
-  
-  // Use local server in development, Firebase Functions in production
-  const baseUrl = import.meta.env.PROD 
-    ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net/api`
-    : "";
-  
+
+  let url = "";
+  let options: RequestInit = {};
+
+  const isMethod = ["GET","POST","PUT","PATCH","DELETE"].includes(arg1?.toUpperCase?.());
+  if (isMethod && typeof arg2 === 'string') {
+    url = arg2;
+    const maybeBody = arg3;
+    options = { method: arg1.toUpperCase() } as RequestInit;
+    if (maybeBody && typeof maybeBody === 'object' && !('headers' in maybeBody) && !('method' in maybeBody)) {
+      options.body = JSON.stringify(maybeBody);
+    } else if (maybeBody) {
+      options = { ...options, ...(maybeBody as RequestInit) };
+    }
+  } else {
+    url = arg1;
+    options = (arg2 as RequestInit) || {};
+  }
+
+  // Auto-JSON stringify if body is object
+  if (options.body && typeof options.body === 'object') {
+    options.body = JSON.stringify(options.body);
+  }
+
+  // Prefer same-origin calls to use Hosting rewrites in production
+  const baseUrl = ""; // same-origin
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
-  
-  console.log('API Request:', { fullUrl, method: options?.method || 'GET', env: import.meta.env.PROD ? 'PROD' : 'DEV' });
-  
+
   const res = await fetch(fullUrl, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
+      ...(options.headers || {}),
     },
   });
 
@@ -42,18 +60,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const { auth } = await import("./firebase");
-    const token = await auth.currentUser?.getIdToken();
-    
-    // Use local server in development, Firebase Functions in production
-    const baseUrl = import.meta.env.PROD 
-      ? `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net`
-      : "";
-    
-    const fullUrl = queryKey.join("/") as string;
-    const finalUrl = fullUrl.startsWith('http') ? fullUrl : `${baseUrl}${fullUrl}`;
-    
-    const res = await fetch(finalUrl, {
+  const { auth } = await import("./firebase");
+  const token = await auth.currentUser?.getIdToken();
+
+  const finalUrl = queryKey.join("/") as string; // use same-origin
+
+  const res = await fetch(finalUrl, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
 

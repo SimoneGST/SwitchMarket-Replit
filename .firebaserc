@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "switchmarket-pro": {
+      "hosting": {
+        "switchmarket-pro-test": [
+          "switchmarket-pro-test"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

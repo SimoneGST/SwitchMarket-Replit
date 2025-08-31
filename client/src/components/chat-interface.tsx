@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
+import { storage } from "@/lib/firebase";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ChatInterfaceProps {
@@ -12,6 +14,8 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ conversation }: ChatInterfaceProps) {
   const [newMessage, setNewMessage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -50,6 +54,35 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
     }
   };
 
+  // Attach image handler
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const path = `chats/${conversation.id}/${Date.now()}_${file.name}`;
+      const objRef = storageRef(storage, path);
+      const snap = await uploadBytes(objRef, file);
+      const url = await getDownloadURL(snap.ref);
+      // Send a message that references the image URL
+      await apiRequest("POST", `/api/conversations/${conversation.id}/messages`, {
+        content: "[immagine]",
+        imageUrl: url,
+        messageType: "image",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/api/conversations", conversation.id, "messages"] });
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <>
       {/* Chat Header */}
@@ -58,12 +91,14 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
           <div className="flex items-center gap-3">
             <img 
               className="w-8 h-8 rounded-full object-cover bg-slate-200" 
-              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" 
-              alt="TechStore Milano"
+              src={(user?.id === conversation?.sellerId ? conversation?.buyerPhotoUrl : conversation?.sellerPhotoUrl) || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32"}
+              alt="Avatar"
             />
             <div>
-              <h4 className="font-medium text-slate-900">TechStore Milano</h4>
-              <p className="text-xs text-slate-500">iPhone 13 Pro 256GB Grafite</p>
+              <h4 className="font-medium text-slate-900 flex items-center gap-2">
+                {conversation?.requestTitle || 'Conversazione'}
+              </h4>
+              <p className="text-xs text-slate-500">Richiesta: {conversation?.requestTitle || conversation?.requestId}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -97,7 +132,7 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
               {message.senderId !== user?.id && (
                 <img 
                   className="w-8 h-8 rounded-full object-cover bg-slate-200" 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32" 
+                  src={(message.senderId === conversation?.buyerId ? conversation?.buyerPhotoUrl : conversation?.sellerPhotoUrl) || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32"}
                   alt="Contatto"
                 />
               )}
@@ -108,41 +143,13 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
                     : 'bg-slate-100 text-slate-900'
                 }`}>
                   {message.messageType === 'offer' ? (
-                    <div className="bg-gradient-to-r from-accent to-orange-400 rounded-xl p-4">
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <i className="fas fa-handshake text-accent"></i>
-                          <span className="font-semibold text-slate-900">Offerta Formale</span>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-slate-600">Prodotto:</span>
-                            <span className="text-sm font-medium">iPhone 13 Pro 256GB Grafite</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-slate-600">Condizioni:</span>
-                            <span className="text-sm font-medium">Eccellenti (9/10)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-slate-600">Prezzo:</span>
-                            <span className="text-lg font-bold text-accent">€720</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-slate-600">Garanzia:</span>
-                            <span className="text-sm font-medium">6 mesi</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 mt-4">
-                          <Button className="flex-1 bg-secondary hover:bg-secondary/90 text-sm">
-                            <i className="fas fa-check mr-1"></i>
-                            Accetta
-                          </Button>
-                          <Button variant="outline" className="flex-1 text-sm">
-                            <i className="fas fa-comment mr-1"></i>
-                            Negozia
-                          </Button>
-                        </div>
-                      </div>
+                    <div className="text-xs opacity-70">[Proposta aggiornata nella scheda laterale]</div>
+                  ) : message.messageType === 'image' && message.imageUrl ? (
+                    <div className="space-y-2">
+                      <img src={message.imageUrl} alt="Allegato" className="max-w-full max-h-64 rounded-md border" />
+                      {message.content && message.content !== '[immagine]' && (
+                        <p className="text-xs opacity-80">{message.content}</p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-sm">{message.content}</p>
@@ -164,9 +171,10 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
       {/* Chat Input */}
       <div className="p-4 border-t border-slate-200">
         <div className="flex gap-2">
-          <button className="p-2 text-slate-400 hover:text-slate-600">
+          <button className="p-2 text-slate-400 hover:text-slate-600 disabled:opacity-50" onClick={handleAttachClick} disabled={isUploading}>
             <i className="fas fa-paperclip"></i>
           </button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

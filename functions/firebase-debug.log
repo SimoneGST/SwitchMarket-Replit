@@ -1,0 +1,225 @@
+[debug] [2025-08-16T16:14:24.236Z] ----------------------------------------------------------------------
+[debug] [2025-08-16T16:14:24.239Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\guast\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2025-08-16T16:14:24.239Z] CLI Version:   14.12.0
+[debug] [2025-08-16T16:14:24.239Z] Platform:      win32
+[debug] [2025-08-16T16:14:24.239Z] Node Version:  v22.17.1
+[debug] [2025-08-16T16:14:24.240Z] Time:          Sat Aug 16 2025 18:14:24 GMT+0200 (Ora legale dell’Europa centrale)
+[debug] [2025-08-16T16:14:24.240Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-16T16:14:24.455Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-16T16:14:24.456Z] > authorizing via signed-in user (guastellasimone@gmail.com)
+[debug] [2025-08-16T16:14:24.456Z] [iam] checking project switchmarket-pro for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-08-16T16:14:24.457Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:24.457Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:24.458Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions [none]
+[debug] [2025-08-16T16:14:24.458Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions x-goog-quota-user=projects/switchmarket-pro
+[debug] [2025-08-16T16:14:24.458Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-08-16T16:14:24.889Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions 200
+[debug] [2025-08-16T16:14:24.889Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-08-16T16:14:24.890Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:24.890Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:24.890Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-08-16T16:14:24.890Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-08-16T16:14:25.849Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions 404
+[debug] [2025-08-16T16:14:25.850Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}}
+[debug] [2025-08-16T16:14:25.851Z] [functions] service account IAM check errored, deploy may fail: Request to https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account","status":404}
+[info] 
+[info] === Deploying to 'switchmarket-pro'...
+[info] 
+[info] i  deploying functions 
+[debug] [2025-08-16T16:14:25.859Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:25.860Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:25.860Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro [none]
+[debug] [2025-08-16T16:14:26.069Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro 200
+[debug] [2025-08-16T16:14:26.070Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro {"projectNumber":"109828295995","projectId":"switchmarket-pro","lifecycleState":"ACTIVE","name":"switchmarket-pro","labels":{"firebase":"enabled","firebase-core":"disabled","generative-language":"enabled"},"createTime":"2025-07-27T10:35:20.175231Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-08-16T16:14:26.079Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:26.079Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:26.080Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig [none]
+[debug] [2025-08-16T16:14:26.573Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig 200
+[debug] [2025-08-16T16:14:26.573Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig {"projectId":"switchmarket-pro","storageBucket":"switchmarket-pro.firebasestorage.app"}
+[debug] [2025-08-16T16:14:26.574Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:26.574Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:26.575Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs [none]
+[debug] [2025-08-16T16:14:27.522Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs 200
+[debug] [2025-08-16T16:14:27.522Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs {}
+[debug] [2025-08-16T16:14:27.524Z] Validating nodejs source
+[debug] [2025-08-16T16:14:28.882Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google/genai": "^1.13.0",
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2025-08-16T16:14:28.882Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2025-08-16T16:14:28.884Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-08-16T16:14:28.894Z] Found firebase-functions binary at 'C:\Users\guast\Desktop\SwitchMarket-Replit\SwitchMarket\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8117
+
+[debug] [2025-08-16T16:14:29.797Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","secretEnvironmentVariables":[{"key":"GEMINI_API_KEY"},{"key":"GOOGLE_API_KEY"},{"key":"RESEND_API_KEY"}],"labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{},"params":[{"type":"secret","name":"RESEND_API_KEY"},{"type":"secret","name":"GEMINI_API_KEY"},{"type":"secret","name":"GOOGLE_API_KEY"}]}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2025-08-16T16:14:33.849Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-16T16:14:33.850Z] > authorizing via signed-in user (guastellasimone@gmail.com)
+[debug] [2025-08-16T16:14:33.850Z] [iam] checking project switchmarket-pro for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2025-08-16T16:14:33.850Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:33.850Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:33.850Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions [none]
+[debug] [2025-08-16T16:14:33.850Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions x-goog-quota-user=projects/switchmarket-pro
+[debug] [2025-08-16T16:14:33.850Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-08-16T16:14:34.650Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions 200
+[debug] [2025-08-16T16:14:34.651Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-08-16T16:14:34.651Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:34.651Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:34.652Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances pageSize=100&pageToken=
+[debug] [2025-08-16T16:14:35.665Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances 200
+[debug] [2025-08-16T16:14:35.665Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances {}
+[debug] [2025-08-16T16:14:35.667Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:35.667Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:14:35.667Z] >>> [apiv2][query] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY [none]
+[debug] [2025-08-16T16:14:36.122Z] <<< [apiv2][status] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY 404
+[debug] [2025-08-16T16:14:36.122Z] <<< [apiv2][body] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY {"error":{"code":404,"message":"Secret [projects/109828295995/secrets/RESEND_API_KEY] not found.","status":"NOT_FOUND"}}
+[debug] [2025-08-16T16:32:12.000Z] ----------------------------------------------------------------------
+[debug] [2025-08-16T16:32:12.005Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\guast\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2025-08-16T16:32:12.006Z] CLI Version:   14.12.0
+[debug] [2025-08-16T16:32:12.006Z] Platform:      win32
+[debug] [2025-08-16T16:32:12.007Z] Node Version:  v22.17.1
+[debug] [2025-08-16T16:32:12.007Z] Time:          Sat Aug 16 2025 18:32:12 GMT+0200 (Ora legale dell’Europa centrale)
+[debug] [2025-08-16T16:32:12.008Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-16T16:32:12.299Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-16T16:32:12.300Z] > authorizing via signed-in user (guastellasimone@gmail.com)
+[debug] [2025-08-16T16:32:12.300Z] [iam] checking project switchmarket-pro for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-08-16T16:32:12.301Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:12.301Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:12.302Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions [none]
+[debug] [2025-08-16T16:32:12.302Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions x-goog-quota-user=projects/switchmarket-pro
+[debug] [2025-08-16T16:32:12.302Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-08-16T16:32:13.490Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions 200
+[debug] [2025-08-16T16:32:13.490Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-08-16T16:32:13.491Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:13.491Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:13.491Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-08-16T16:32:13.491Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-08-16T16:32:14.517Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions 404
+[debug] [2025-08-16T16:32:14.517Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}}
+[debug] [2025-08-16T16:32:14.519Z] [functions] service account IAM check errored, deploy may fail: Request to https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://iam.googleapis.com/v1/projects/switchmarket-pro/serviceAccounts/switchmarket-pro@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account","status":404}
+[info] 
+[info] === Deploying to 'switchmarket-pro'...
+[info] 
+[info] i  deploying functions 
+[debug] [2025-08-16T16:32:14.531Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:14.531Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:14.532Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro [none]
+[debug] [2025-08-16T16:32:14.825Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro 200
+[debug] [2025-08-16T16:32:14.825Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro {"projectNumber":"109828295995","projectId":"switchmarket-pro","lifecycleState":"ACTIVE","name":"switchmarket-pro","labels":{"firebase":"enabled","firebase-core":"disabled","generative-language":"enabled"},"createTime":"2025-07-27T10:35:20.175231Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-08-16T16:32:14.831Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:14.831Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:14.831Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig [none]
+[debug] [2025-08-16T16:32:15.334Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig 200
+[debug] [2025-08-16T16:32:15.334Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro/adminSdkConfig {"projectId":"switchmarket-pro","storageBucket":"switchmarket-pro.firebasestorage.app"}
+[debug] [2025-08-16T16:32:15.335Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:15.336Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:15.336Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs [none]
+[debug] [2025-08-16T16:32:15.747Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs 200
+[debug] [2025-08-16T16:32:15.747Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/switchmarket-pro/configs {}
+[debug] [2025-08-16T16:32:15.750Z] Validating nodejs source
+[debug] [2025-08-16T16:32:17.531Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google/genai": "^1.13.0",
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2025-08-16T16:32:17.531Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2025-08-16T16:32:17.534Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-08-16T16:32:17.546Z] Found firebase-functions binary at 'C:\Users\guast\Desktop\SwitchMarket-Replit\SwitchMarket\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8337
+
+[debug] [2025-08-16T16:32:18.516Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","secretEnvironmentVariables":[{"key":"GEMINI_API_KEY"},{"key":"GOOGLE_API_KEY"},{"key":"RESEND_API_KEY"}],"labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{},"params":[{"type":"secret","name":"RESEND_API_KEY"},{"type":"secret","name":"GEMINI_API_KEY"},{"type":"secret","name":"GOOGLE_API_KEY"}]}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2025-08-16T16:32:22.605Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-16T16:32:22.606Z] > authorizing via signed-in user (guastellasimone@gmail.com)
+[debug] [2025-08-16T16:32:22.606Z] [iam] checking project switchmarket-pro for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2025-08-16T16:32:22.606Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:22.606Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:22.606Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions [none]
+[debug] [2025-08-16T16:32:22.607Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions x-goog-quota-user=projects/switchmarket-pro
+[debug] [2025-08-16T16:32:22.607Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-08-16T16:32:23.447Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions 200
+[debug] [2025-08-16T16:32:23.448Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-08-16T16:32:23.449Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:23.449Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:23.450Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances pageSize=100&pageToken=
+[debug] [2025-08-16T16:32:24.481Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances 200
+[debug] [2025-08-16T16:32:24.481Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/switchmarket-pro/instances {}
+[debug] [2025-08-16T16:32:24.485Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:24.485Z] Checked if tokens are valid: true, expires at: 1755362926825
+[debug] [2025-08-16T16:32:24.485Z] >>> [apiv2][query] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY [none]
+[debug] [2025-08-16T16:32:24.847Z] <<< [apiv2][status] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY 404
+[debug] [2025-08-16T16:32:24.847Z] <<< [apiv2][body] GET https://secretmanager.googleapis.com/v1/projects/switchmarket-pro/secrets/RESEND_API_KEY {"error":{"code":404,"message":"Secret [projects/109828295995/secrets/RESEND_API_KEY] not found.","status":"NOT_FOUND"}}
+[debug] [2025-08-16T16:41:12.165Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (C:\Users\guast\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\@inquirer\core\dist\commonjs\lib\create-prompt.js:101:37)
+    at Interface.emit (node:events:518:28)
+    at Interface.emit (node:domain:489:12)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1132:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:271:20)
+    at ReadStream.emit (node:events:530:35)
+    at ReadStream.emit (node:domain:489:12)
+    at emitKeys (node:internal/readline/utils:370:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+[error] 
+[error] Error: An unexpected error has occurred.

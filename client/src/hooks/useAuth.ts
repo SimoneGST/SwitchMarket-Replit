@@ -51,7 +51,7 @@ export function useAuth() {
               firstName,
               lastName,
               profileImageUrl: firebaseUser.photoURL || "",
-              userType: undefined, // Will be set during onboarding
+              // userType intentionally omitted; set during onboarding
             });
           } else {
             // Update existing user with Google data if missing
@@ -68,7 +68,8 @@ export function useAuth() {
             }
             
             if (Object.keys(updates).length > 0) {
-              userData = await users.update(firebaseUser.uid, updates);
+              await users.update(firebaseUser.uid, updates);
+              userData = { ...userData, ...updates } as User;
             }
           }
           

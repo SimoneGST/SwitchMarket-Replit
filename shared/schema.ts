@@ -339,6 +339,16 @@ export const copilotAnalytics = pgTable("copilot_analytics", {
   conversionsCount: integer("conversions_count").default(0),
 });
 
+// Copilot events (fine-grained telemetry for suggestions/actions)
+export const copilotEvents = pgTable("copilot_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // suggestionAccepted, suggestionRejected, suggestionModified, suggestionClarifyRequested, autofillApplied, etc.
+  suggestionId: varchar("suggestion_id"),
+  payload: jsonb("payload"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 export type Request = typeof requests.$inferSelect;
 export type InsertOffer = z.infer<typeof insertOfferSchema>;

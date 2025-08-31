@@ -217,49 +217,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clemente AI endpoint with Gemini e memoria
+  // Clemente AI endpoint: proxy to Cloud Function if available, else fallback to local implementation
   app.post('/api/clemente/chat', async (req: any, res) => {
+    const functionsApi = process.env.FUNCTIONS_API_URL || 'https://api-6r7kwgihra-uc.a.run.app';
     try {
-      const { message, context, attachedFile } = req.body;
-      const { clementeAI } = await import('./clemente');
-      
-      // Passa il context completo al chat per mantenere la memoria
-      const result = await clementeAI.chatWithUser(message, context, attachedFile);
-      res.json({
-        response: result.text,
-        generatedImage: result.generatedImage,
-        collectedData: result.collectedData,
-        productSchema: result.productSchema
+      // Prefer deployed Functions for consistent AI behavior and attachments
+      const upstream = await fetch(`${functionsApi}/api/clemente/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body),
       });
+      const text = await upstream.text();
+      res.status(upstream.status).type(upstream.headers.get('content-type') || 'application/json').send(text);
+      return;
+    } catch (proxyErr) {
+      console.warn('Proxy to Functions failed, using local Clemente:', proxyErr);
+      try {
+        const { message, context, attachedFile } = req.body;
+        const { clementeAI } = await import('./clemente');
+        const result = await clementeAI.chatWithUser(message, context, attachedFile);
+        res.json({
+          response: result.text,
+          generatedImage: result.generatedImage,
+          collectedData: result.collectedData,
+          productSchema: result.productSchema
+        });
+      } catch (error) {
+        console.error("Error processing Clemente chat (local):", error);
+        res.status(500).json({ 
+          response: "Mi dispiace, ho avuto un problema tecnico. Puoi riprovare?",
+          message: "Failed to process chat" 
+        });
+      }
+    }
+  });
+
+  // New assistant endpoint (Clemente enhanced) - returns structured suggestion + price hints
+  app.post('/api/assistant', async (req: any, res) => {
+    try {
+      const { assistantHandler } = await import('./assistant');
+      return assistantHandler(req, res);
     } catch (error) {
-      console.error("Error processing Clemente chat:", error);
-      res.status(500).json({ 
-        response: "Mi dispiace, ho avuto un problema tecnico. Puoi riprovare?",
-        message: "Failed to process chat" 
-      });
+      console.error('Error in /api/assistant route:', error);
+      return res.status(500).json({ error: 'assistant route error' });
     }
   });
 
   // Genera richiesta dalla conversazione con Clemente
   app.post("/api/clemente/generate-request", async (req, res) => {
+    const functionsApi = process.env.FUNCTIONS_API_URL || 'https://api-6r7kwgihra-uc.a.run.app';
     try {
-      const { conversationHistory } = req.body;
-      const { clementeAI } = await import('./clemente');
-      
-      if (!conversationHistory || !Array.isArray(conversationHistory)) {
-        return res.status(400).json({ error: 'Cronologia conversazione richiesta' });
+      const upstream = await fetch(`${functionsApi}/api/clemente/generate-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body),
+      });
+      const text = await upstream.text();
+      res.status(upstream.status).type(upstream.headers.get('content-type') || 'application/json').send(text);
+      return;
+    } catch (proxyErr) {
+      console.warn('Proxy generate-request failed, using local:', proxyErr);
+      try {
+        const { conversationHistory } = req.body;
+        const { clementeAI } = await import('./clemente');
+        if (!conversationHistory || !Array.isArray(conversationHistory)) {
+          return res.status(400).json({ error: 'Cronologia conversazione richiesta' });
+        }
+        const requestData = await clementeAI.generateRequestFromChat(conversationHistory);
+        if (!requestData) {
+          return res.status(400).json({ error: 'Non riesco a generare una richiesta dalla conversazione' });
+        }
+        res.json({ requestData });
+      } catch (error: any) {
+        console.error('Errore generazione richiesta da chat (local):', error);
+        res.status(500).json({ error: error.message || 'Errore interno del server' });
       }
-      
-      const requestData = await clementeAI.generateRequestFromChat(conversationHistory);
-      
-      if (!requestData) {
-        return res.status(400).json({ error: 'Non riesco a generare una richiesta dalla conversazione' });
-      }
-      
-      res.json({ requestData });
-    } catch (error: any) {
-      console.error('Errore generazione richiesta da chat:', error);
-      res.status(500).json({ error: error.message || 'Errore interno del server' });
     }
   });
 
@@ -324,17 +356,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { createGestionaleService } = await import('./integrations/gestionaleService');
       
       const mockIntegration = {
-        id: 0,
-        userId: req.user.uid,
-        gestionaleType,
-        apiKey,
-        companyId,
-        baseUrl,
-        isActive: true,
-        syncFrequency: 'daily',
-        lastSync: null,
+        id: "test",
+        type: gestionaleType,
+        name: "Test Integration",
         createdAt: new Date(),
         updatedAt: new Date(),
+        isActive: true,
+        sellerId: req.user.uid,
+        apiKey: apiKey || null,
+        apiSecret: null,
+        endpoint: baseUrl || null,
+        config: {},
+        lastSync: null,
+        companyId: companyId || null,
+        syncFrequency: 'daily',
       };
 
       const service = createGestionaleService(mockIntegration);
@@ -371,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sync integration data
   app.post('/api/integrations/:id/sync', authenticate, async (req: any, res) => {
     try {
-      const integrationId = parseInt(req.params.id);
+      const integrationId = req.params.id;
       const userId = req.user.uid;
       
       const integration = await storage.getIntegrationById(integrationId);
@@ -383,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { syncIntegrationProducts } = await import('./integrations/syncService');
       
       const service = createGestionaleService(integration);
-      await syncIntegrationProducts(integration, service, storage);
+      await syncIntegrationProducts(integration, service, storage as any); // Cast to any to bypass type error, or use the actual DatabaseStorage instance if available
       
       res.json({ success: true, message: "Sincronizzazione avviata" });
     } catch (error) {
@@ -458,6 +493,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating copilot config:", error);
       res.status(500).json({ message: "Failed to update copilot config" });
+    }
+  });
+
+  // Record a copilot event (suggestionAccepted, suggestionRejected, suggestionModified, etc.)
+  app.post('/api/copilot/event', authenticate, async (req: any, res) => {
+    try {
+      const userId = req.user.uid;
+      const { eventType, suggestionId, payload } = req.body;
+      if (!eventType) return res.status(400).json({ error: 'eventType required' });
+      const ev = await storage.createCopilotEvent({ userId, eventType, suggestionId: suggestionId || null, payload: payload || null });
+      res.json(ev);
+    } catch (error) {
+      console.error('Error recording copilot event:', error);
+      res.status(500).json({ error: 'failed to record event' });
+    }
+  });
+
+  // Fetch copilot events for dashboard
+  app.get('/api/copilot/events', authenticate, async (req: any, res) => {
+    try {
+      const userId = req.user.uid;
+      const events = await storage.getCopilotEvents(userId, { from: req.query.from, to: req.query.to, eventType: req.query.eventType });
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching copilot events:', error);
+      res.status(500).json({ error: 'failed to fetch events' });
     }
   });
 

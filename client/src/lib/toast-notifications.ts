@@ -1,4 +1,6 @@
+import * as React from 'react';
 import { toast } from "@/hooks/use-toast";
+import { ToastAction } from '@/components/ui/toast';
 
 // Tipi di notifiche standardizzate per Switch Market
 export type NotificationType = 
@@ -170,15 +172,17 @@ const TOAST_CONFIGS = {
 
 // Funzione principale per mostrare toast con configurazioni predefinite
 export function showToast(category: keyof typeof TOAST_CONFIGS, action: string, customMessage?: string) {
-  const config = TOAST_CONFIGS[category]?.[action as keyof typeof TOAST_CONFIGS[typeof category]];
-  
+  // Use safe any lookup to avoid complex inferred union types causing "never" errors
+  const anyConfigs: any = TOAST_CONFIGS;
+  const config = anyConfigs[category]?.[action];
+
   if (!config) {
     console.warn(`Toast configuration not found for ${category}.${action}`);
     return;
   }
-  
+
   const description = customMessage || config.description;
-  
+
   toast({
     title: config.title,
     description,
@@ -268,13 +272,13 @@ export function showActionToast(
   actionText: string, 
   onAction: () => void
 ) {
+  // Build a ToastAction React element so it matches the expected ToastActionElement type
+  const actionElement = React.createElement(ToastAction, { onClick: onAction, altText: actionText }, actionText);
   toast({
     title,
     description,
-    action: {
-      altText: actionText,
-      onClick: onAction
-    }
+    // cast to any because ToastActionElement typing is strict in our primitives
+    action: actionElement as any
   });
 }
 

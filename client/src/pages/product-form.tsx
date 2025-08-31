@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import LeonardoAssist from "@/components/leonardo-assist";
 
 const productSchema = z.object({
   name: z.string().min(2, "Nome prodotto richiesto"),
@@ -71,22 +72,23 @@ export default function ProductFormPage({ productId }: ProductFormPageProps) {
 
   useEffect(() => {
     if (product && isEdit) {
+      const p: any = product as any;
       form.reset({
-        name: product.name,
-        description: product.description,
-        category: product.category,
-        subcategory: product.subcategory || "",
-        price: parseFloat(product.price),
-        condition: product.condition,
-        stock: product.stock,
-        sku: product.sku || "",
-        brand: product.brand || "",
-        model: product.model || "",
-        weight: product.weight ? parseFloat(product.weight) : 0,
-        warranty: product.warranty || "",
-        keywords: product.keywords?.join(", ") || "",
+        name: p.name,
+        description: p.description,
+        category: p.category,
+        subcategory: p.subcategory || "",
+        price: p.price != null ? parseFloat(String(p.price)) : 0,
+        condition: p.condition,
+        stock: p.stock,
+        sku: p.sku || "",
+        brand: p.brand || "",
+        model: p.model || "",
+        weight: p.weight ? parseFloat(String(p.weight)) : 0,
+        warranty: p.warranty || "",
+        keywords: Array.isArray(p.keywords) ? p.keywords.join(", ") : (p.keywords || ""),
       });
-      setImages(product.images || []);
+      setImages((p.images as string[]) || []);
     }
   }, [product, isEdit, form]);
 
@@ -479,7 +481,28 @@ export default function ProductFormPage({ productId }: ProductFormPageProps) {
           </Card>
         </div>
 
-        <div>
+        <div className="space-y-6">
+          <LeonardoAssist 
+            title="Compila Prodotto con Leonardo"
+            allowedFields={[
+              'name','description','category','subcategory','price','condition','stock','brand','model','weight','warranty','keywords'
+            ]}
+            onApply={(updates) => {
+              if (updates.name) form.setValue('name', updates.name as any, { shouldValidate: true });
+              if (updates.description) form.setValue('description', updates.description as any, { shouldValidate: true });
+              if (updates.category) form.setValue('category', updates.category as any, { shouldValidate: true });
+              if (updates.subcategory) form.setValue('subcategory', updates.subcategory as any, { shouldValidate: true });
+              if (updates.price) form.setValue('price', parseFloat(String(updates.price)) || 0, { shouldValidate: true });
+              if (updates.condition) form.setValue('condition', updates.condition as any, { shouldValidate: true });
+              if (updates.stock) form.setValue('stock', parseInt(String(updates.stock)) || 1, { shouldValidate: true });
+              if (updates.brand) form.setValue('brand', updates.brand as any);
+              if (updates.model) form.setValue('model', updates.model as any);
+              if (updates.weight) form.setValue('weight', parseFloat(String(updates.weight)) || 0);
+              if (updates.warranty) form.setValue('warranty', updates.warranty as any);
+              if (updates.keywords) form.setValue('keywords', updates.keywords as any);
+            }}
+          />
+
           <Card>
             <CardHeader>
               <CardTitle className="text-blue-700">Immagini Prodotto</CardTitle>

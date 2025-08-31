@@ -1,0 +1,45 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build and Deploy Firebase Hosting + Functions",
+			"type": "shell",
+			"command": "npm run build ; npm --prefix functions run build ; firebase deploy --only hosting,functions",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Deploy Firebase Hosting + Functions (PS compat)",
+			"type": "shell",
+			"command": "npm run build ; npm --prefix functions run build ; firebase deploy --only \"hosting,functions\"",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Deploy Functions then Hosting (PS safe)",
+			"type": "shell",
+			"command": "npm run build ; npm --prefix functions run build ; firebase deploy --only functions ; firebase deploy --only hosting",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build + Deploy Assist Feature",
+			"type": "shell",
+			"command": "npm run build ; npm --prefix functions run build ; firebase deploy --only functions:api ; firebase deploy --only hosting",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}

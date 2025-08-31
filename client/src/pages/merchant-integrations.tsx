@@ -8,6 +8,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import LeonardoAssist from "@/components/leonardo-assist";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ export default function MerchantIntegrations() {
   const [selectedIntegration, setSelectedIntegration] = useState<string>("");
   const [isAddingIntegration, setIsAddingIntegration] = useState(false);
 
-  const { data: integrations, isLoading } = useQuery({
+  const { data: integrations = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/integrations"],
     enabled: !!user,
   });
@@ -180,6 +181,14 @@ export default function MerchantIntegrations() {
           </div>
         </div>
 
+        <LeonardoAssist 
+          title="Compila con Leonardo"
+          allowedFields={["apiKey","apiSecret","companyId","endpoint","username","password","database"]}
+          onApply={(updates) => {
+            setFormData(prev => ({ ...prev, ...updates }));
+          }}
+        />
+
         {integration.fields.map((field: any) => (
           <div key={field.key}>
             <label className="block text-sm font-medium mb-1">
@@ -313,7 +322,7 @@ export default function MerchantIntegrations() {
             </Card>
           ))}
         </div>
-      ) : integrations?.length === 0 ? (
+  ) : integrations.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center">
             <div className="h-24 w-24 bg-slate-100 rounded-full mx-auto flex items-center justify-center mb-4">
@@ -334,7 +343,7 @@ export default function MerchantIntegrations() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {integrations?.map((integration: Integration) => (
+          {integrations.map((integration: Integration) => (
             <Card key={integration.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">

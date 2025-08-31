@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   User as FirebaseUser,
+  fetchSignInMethodsForEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -17,6 +18,14 @@ import { showToast } from "./toast-notifications";
 const googleProvider = new GoogleAuthProvider();
 
 export const authService = {
+  async getSignInMethods(email: string): Promise<string[]> {
+    try {
+      return await fetchSignInMethodsForEmail(auth, email);
+    } catch (error) {
+      console.error('getSignInMethods error:', error);
+      return [];
+    }
+  },
   async signInWithGoogle(): Promise<FirebaseUser | null> {
     try {
       // Configure provider

@@ -1,0 +1,108 @@
+[debug] [2025-08-31T16:54:46.697Z] ----------------------------------------------------------------------
+[debug] [2025-08-31T16:54:46.703Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\guast\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting:switchmarket-pro-test --project switchmarket-pro --debug
+[debug] [2025-08-31T16:54:46.704Z] CLI Version:   14.12.0
+[debug] [2025-08-31T16:54:46.704Z] Platform:      win32
+[debug] [2025-08-31T16:54:46.704Z] Node Version:  v22.17.1
+[debug] [2025-08-31T16:54:46.704Z] Time:          Sun Aug 31 2025 18:54:46 GMT+0200 (Ora legale dell’Europa centrale)
+[debug] [2025-08-31T16:54:46.704Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-31T16:54:46.827Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-31T16:54:46.828Z] > authorizing via signed-in user (guastellasimone@gmail.com)
+[debug] [2025-08-31T16:54:46.829Z] [iam] checking project switchmarket-pro for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-08-31T16:54:46.830Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:46.830Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:46.831Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions [none]
+[debug] [2025-08-31T16:54:46.831Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions x-goog-quota-user=projects/switchmarket-pro
+[debug] [2025-08-31T16:54:46.831Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-08-31T16:54:47.415Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions 200
+[debug] [2025-08-31T16:54:47.416Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/switchmarket-pro:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-08-31T16:54:47.418Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:47.418Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:47.419Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro [none]
+[debug] [2025-08-31T16:54:47.959Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro 200
+[debug] [2025-08-31T16:54:47.962Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/switchmarket-pro {"projectId":"switchmarket-pro","projectNumber":"109828295995","displayName":"switchmarket-pro","name":"projects/switchmarket-pro","resources":{"hostingSite":"switchmarket-pro"},"state":"ACTIVE","etag":"1_23b41406-556f-4fd5-9487-cb009b6e821c"}
+[info] 
+[info] === Deploying to 'switchmarket-pro'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2025-08-31T16:54:47.976Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:47.977Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:47.978Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions [none]
+[debug] [2025-08-31T16:54:47.978Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-08-31T16:54:49.340Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions 200
+[debug] [2025-08-31T16:54:49.343Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions {"name":"projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[switchmarket-pro-test]: beginning deploy... 
+[info] i  hosting[switchmarket-pro-test]: found 25 files in dist/public 
+[debug] [2025-08-31T16:54:49.390Z] [hosting] uploading with 200 concurrency
+[debug] [2025-08-31T16:54:49.400Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:49.400Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:49.403Z] [hosting] hash cache [ZGlzdFxwdWJsaWM] stored for 25 files
+[debug] [2025-08-31T16:54:49.404Z] [hosting][hash queue][FINAL] {"max":7,"min":1,"avg":1.24,"active":0,"complete":25,"success":25,"errored":0,"retried":0,"total":25,"elapsed":12}
+[debug] [2025-08-31T16:54:49.404Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754:populateFiles [none]
+[debug] [2025-08-31T16:54:49.405Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754:populateFiles {"files":{"/sitemap.xml":"9ab46a0ca07d27228068866efe46764fb018504d2184298545855e6c3f1838b7","/robots.txt":"25af90406cd9532bc5542fd7b34986a132b6ba5f7ae7f2eed61ba3ba99af415b","/favicon.ico":"d8c8b6a266fddb254f191d9863d2ea7a65837f765546da982e6178ba420b8dce","/attached_assets/SWITCHMARKET_logo_1754845138370.png":"de90fbfbc39bbecbe956aadaf613c1c9fa2b80599579f5201bddb26a2d8eb17d","/attached_assets/leonardo_avatar_1754851387216.png":"5eba1adf1ee1b411db21c87a2cf11c621985ffeaf3700859132265e031febddd","/attached_assets/leonardo_avatar_1754845138372.png":"94e3277f5acc67f8b4eaec71f3f385a121a41e0c73f842b699e8e1b3952fb5b0","/attached_assets/leonardo foto profilo_1754851361956.png":"258f57211e226c58c31a4ae7f495cd0c1824268b017fd4fb0e2a743278e1e4ab","/attached_assets/favicon_1754852387966.ico":"d8c8b6a266fddb254f191d9863d2ea7a65837f765546da982e6178ba420b8dce","/attached_assets/clemente_avatar_1754845138372.png":"210d81c7ac6cc9b0465368b938fde1bb850dbfde1dd8d47e4ad5cdd1072ad028","/attached_assets/Clemente foto profilo_1754847201275.png":"89d6598e5efb448ce603bedef5492f33b308652fbb8f7143ff002cfaf359b639","/attached_assets/clemente a busto intero_1754847733100.png":"4afd9c47b1eb57b0129c1921ef0ff097c1eb9bca3d3755a338964159942b3564","/attached_assets/clemente a busto intero_1754847541661.png":"030e17443f3d12a6c0f71a0a09a47c4aec16c7c1a041c6418097942ba53a27ea","/assets/SWITCHMARKET_logo_1754845138370.png":"de90fbfbc39bbecbe956aadaf613c1c9fa2b80599579f5201bddb26a2d8eb17d","/assets/SWITCHMARKET_logo_1754845138370-CW1WScBO.png":"de90fbfbc39bbecbe956aadaf613c1c9fa2b80599579f5201bddb26a2d8eb17d","/assets/leonardo_avatar_1754851387216.png":"5eba1adf1ee1b411db21c87a2cf11c621985ffeaf3700859132265e031febddd","/assets/leonardo_avatar_1754845138372.png":"94e3277f5acc67f8b4eaec71f3f385a121a41e0c73f842b699e8e1b3952fb5b0","/assets/leonardo foto profilo_1754851361956.png":"258f57211e226c58c31a4ae7f495cd0c1824268b017fd4fb0e2a743278e1e4ab","/assets/index-C99h0gtk.css":"e6532031b2df816695fb8b23de46483a3e8101697d6895b6b52e3c077ba86e27","/assets/index-BTFI2VLD.js":"e4551610dee1503b0827edf6cea0277f2b0ee7b61be3345bad8ffbe9d21a818f","/assets/favicon_1754852387966.ico":"d8c8b6a266fddb254f191d9863d2ea7a65837f765546da982e6178ba420b8dce","/assets/clemente_avatar_1754845138372.png":"210d81c7ac6cc9b0465368b938fde1bb850dbfde1dd8d47e4ad5cdd1072ad028","/assets/Clemente foto profilo_1754847201275.png":"89d6598e5efb448ce603bedef5492f33b308652fbb8f7143ff002cfaf359b639","/assets/clemente a busto intero_1754847733100.png":"4afd9c47b1eb57b0129c1921ef0ff097c1eb9bca3d3755a338964159942b3564","/assets/clemente a busto intero_1754847541661.png":"030e17443f3d12a6c0f71a0a09a47c4aec16c7c1a041c6418097942ba53a27ea","/index.html":"d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca"}}
+[debug] [2025-08-31T16:54:49.954Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754:populateFiles 200
+[debug] [2025-08-31T16:54:49.955Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754:populateFiles {"uploadRequiredHashes":["d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/switchmarket-pro-test/versions/ed88b007e826b754/files"}
+[debug] [2025-08-31T16:54:49.957Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:49.957Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:49.958Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/switchmarket-pro-test/versions/ed88b007e826b754/files/d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca [none]
+[debug] [2025-08-31T16:54:49.958Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/switchmarket-pro-test/versions/ed88b007e826b754/files/d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca [stream]
+[debug] [2025-08-31T16:54:49.962Z] [hosting][populate queue][FINAL] {"max":559,"min":559,"avg":559,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":563}
+[debug] [2025-08-31T16:54:49.964Z] [hosting] uploads queued: 1
+[info] i  hosting: uploading new files [0/1] (0%) 
+[debug] [2025-08-31T16:54:51.672Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/switchmarket-pro-test/versions/ed88b007e826b754/files/d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca 200
+[debug] [2025-08-31T16:54:51.673Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/switchmarket-pro-test/versions/ed88b007e826b754/files/d811f33a571aa80d145c66d9228a9ebc4e1682b49eeb3adf00394285f0554dca [stream]
+[debug] [2025-08-31T16:54:51.673Z] [hosting][upload queue][FINAL] {"max":1717,"min":1717,"avg":1717,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1717}
+[info] i  hosting: upload complete 
+[info] +  hosting[switchmarket-pro-test]: file upload complete 
+[debug] [2025-08-31T16:54:51.674Z] [hosting] deploy completed after 2320ms
+[debug] [2025-08-31T16:54:51.675Z] [
+  {
+    "config": {
+      "public": "dist/public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "function": {
+            "functionId": "api"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "switchmarket-pro-test"
+    },
+    "version": "projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754"
+  }
+]
+[info] i  hosting[switchmarket-pro-test]: finalizing version... 
+[debug] [2025-08-31T16:54:51.678Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:51.678Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:51.678Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/switchmarket-pro/locations/-/functions [none]
+[debug] [2025-08-31T16:54:52.461Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/switchmarket-pro/locations/-/functions 200
+[debug] [2025-08-31T16:54:52.462Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/switchmarket-pro/locations/-/functions {}
+[debug] [2025-08-31T16:54:52.463Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:52.463Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:52.465Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/switchmarket-pro/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2025-08-31T16:54:53.552Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/switchmarket-pro/locations/-/functions 200
+[debug] [2025-08-31T16:54:53.555Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/switchmarket-pro/locations/-/functions {"functions":[{"name":"projects/switchmarket-pro/locations/us-central1/functions/api","buildConfig":{"build":"projects/109828295995/locations/us-central1/builds/f047da05-812b-49e4-842b-e2fa5cef381d","runtime":"nodejs20","entryPoint":"api","source":{"storageSource":{"bucket":"gcf-v2-sources-109828295995-us-central1","object":"api/function-source.zip","generation":"1755437691614308"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/switchmarket-pro/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-109828295995-us-central1","object":"api/function-source.zip","generation":"1755437691614308"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/switchmarket-pro/serviceAccounts/109828295995-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/switchmarket-pro/locations/us-central1/services/api","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"switchmarket-pro\",\"storageBucket\":\"switchmarket-pro.firebasestorage.app\"}","GCLOUD_PROJECT":"switchmarket-pro","EVENTARC_CLOUD_EVENT_SOURCE":"projects/switchmarket-pro/locations/us-central1/services/api","FUNCTION_TARGET":"api","LOG_EXECUTION_ID":"true"},"maxInstanceCount":20,"ingressSettings":"ALLOW_ALL","uri":"https://api-6r7kwgihra-uc.a.run.app","serviceAccountEmail":"109828295995-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"secretEnvironmentVariables":[{"key":"GEMINI_API_KEY","projectId":"switchmarket-pro","secret":"GEMINI_API_KEY","version":"2"},{"key":"GOOGLE_API_KEY","projectId":"switchmarket-pro","secret":"GOOGLE_API_KEY","version":"2"}],"revision":"api-00056-jod","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2025-08-17T13:35:52.112392142Z","labels":{"firebase-functions-hash":"ecaaf8cd835152d91480fbeb27d64bf818825517","deployment-tool":"cli-firebase"},"environment":"GEN_2","url":"https://us-central1-switchmarket-pro.cloudfunctions.net/api","createTime":"2025-08-12T06:38:18.185502452Z","satisfiesPzi":true}]}
+[debug] [2025-08-31T16:54:53.560Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:53.562Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:53.562Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions/ed88b007e826b754 updateMask=status%2Cconfig
+[debug] [2025-08-31T16:54:53.563Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions/ed88b007e826b754 {"status":"FINALIZED","config":{"rewrites":[{"glob":"/api/**","run":{"serviceId":"api","region":"us-central1"}},{"glob":"**","path":"/index.html"}]}}
+[debug] [2025-08-31T16:54:54.108Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions/ed88b007e826b754 200
+[debug] [2025-08-31T16:54:54.109Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/versions/ed88b007e826b754 {"name":"projects/109828295995/sites/switchmarket-pro-test/versions/ed88b007e826b754","status":"FINALIZED","config":{"rewrites":[{"glob":"/api/**","run":{"serviceId":"api","region":"us-central1"}},{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-08-31T16:54:48.925721Z","createUser":{"email":"guastellasimone@gmail.com"},"finalizeTime":"2025-08-31T16:54:53.983447Z","finalizeUser":{"email":"guastellasimone@gmail.com"}}
+[debug] [2025-08-31T16:54:54.109Z] [hosting] finalized version for switchmarket-pro-test:[object Object]
+[info] +  hosting[switchmarket-pro-test]: version finalized 
+[info] i  hosting[switchmarket-pro-test]: releasing new version... 
+[debug] [2025-08-31T16:54:54.112Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:54.112Z] Checked if tokens are valid: true, expires at: 1756661116717
+[debug] [2025-08-31T16:54:54.113Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/channels/live/releases versionName=projects%2F109828295995%2Fsites%2Fswitchmarket-pro-test%2Fversions%2Fed88b007e826b754
+[debug] [2025-08-31T16:54:54.113Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/channels/live/releases {}
+[debug] [2025-08-31T16:54:54.454Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/switchmarket-pro-test/channels/live/releases 200

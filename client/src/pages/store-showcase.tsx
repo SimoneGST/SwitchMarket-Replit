@@ -6,25 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Product } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  price: number;
-  condition: string;
-  stock: number;
-  images: string[];
-  isActive: boolean;
-  sku?: string;
-  brand?: string;
-  model?: string;
-  createdAt: string;
-}
 
 export default function StoreShowcase() {
   const { user } = useAuth();
@@ -33,10 +18,12 @@ export default function StoreShowcase() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [conditionFilter, setConditionFilter] = useState("all");
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products/my"],
     enabled: !!user,
   });
+
+  const productsList: Product[] = products || [];
 
   const toggleProductMutation = useMutation({
     mutationFn: async ({ productId, isActive }: { productId: string; isActive: boolean }) => {
@@ -69,7 +56,7 @@ export default function StoreShowcase() {
     },
   });
 
-  const filteredProducts = products?.filter((product: Product) => {
+  const filteredProducts = productsList.filter((product: Product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
@@ -78,8 +65,10 @@ export default function StoreShowcase() {
     return matchesSearch && matchesCategory && matchesCondition;
   }) || [];
 
-  const categories = [...new Set(products?.map((p: Product) => p.category) || [])];
-  const conditions = [...new Set(products?.map((p: Product) => p.condition) || [])];
+  const allCategories = productsList.map((p: Product) => p.category || '');
+  const categories = allCategories.filter((v, i, a) => v && a.indexOf(v) === i);
+  const allConditions = productsList.map((p: Product) => p.condition || '');
+  const conditions = allConditions.filter((v, i, a) => v && a.indexOf(v) === i);
 
   const getConditionBadge = (condition: string) => {
     const variants: Record<string, any> = {
@@ -216,7 +205,7 @@ export default function StoreShowcase() {
             </div>
             <h3 className="text-lg font-semibold text-slate-800 mb-2">Nessun prodotto trovato</h3>
             <p className="text-slate-600 mb-4">
-              {products?.length === 0 
+              {productsList.length === 0
                 ? "Inizia ad aggiungere prodotti alla tua vetrina"
                 : "Nessun prodotto corrisponde ai filtri selezionati"
               }
@@ -286,7 +275,7 @@ export default function StoreShowcase() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl font-bold text-blue-600">
-                      €{product.price.toFixed(2)}
+                      €{Number(product.price || 0).toFixed(2)}
                     </span>
                     <span className="text-sm text-slate-500">
                       Stock: {product.stock}

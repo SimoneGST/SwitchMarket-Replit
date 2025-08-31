@@ -4,13 +4,16 @@ import { cn } from "@/lib/utils"
 import { toast as baseToast } from "@/hooks/use-toast"
 
 // Toast migliorato con icone e animazioni
+import { ToastAction } from '@/components/ui/toast';
+
 interface EnhancedToastProps {
   title: string;
   description?: string;
   type?: 'success' | 'error' | 'warning' | 'info' | 'loading';
   duration?: number;
+  // action will be rendered as a ToastAction element
   action?: {
-    altText: string;
+    text: string;
     onClick: () => void;
   };
 }
@@ -48,25 +51,32 @@ export function enhancedToast({
 }: EnhancedToastProps) {
   const Icon = toastIcons[type];
   
-  return baseToast({
-    title: (
-      <div className="flex items-center gap-2">
-        <Icon 
-          className={cn(
-            "h-4 w-4",
-            iconColors[type],
-            type === 'loading' && "animate-spin"
-          )} 
-        />
-        <span className="font-medium">{title}</span>
+  // baseToast expects a plain title string in its API, so keep title as string
+  // and render the richer UI inside the description to avoid typing mismatch.
+  const titleStr = title || '';
+  const richDescription = (
+    <div className="flex items-center gap-2">
+      <Icon
+        className={cn(
+          "h-4 w-4",
+          iconColors[type],
+          type === 'loading' && "animate-spin"
+        )}
+      />
+      <div>
+        <div className="font-medium">{titleStr}</div>
+        {description && <div className="text-sm opacity-90">{description}</div>}
       </div>
-    ),
-    description,
+    </div>
+  );
+
+  return baseToast({
+    title: titleStr,
+    description: richDescription,
     duration,
-    action: action ? {
-      altText: action.altText,
-      onClick: action.onClick
-    } : undefined,
+    action: action ? (
+      <ToastAction altText={action.text} onClick={action.onClick}>{action.text}</ToastAction>
+    ) : undefined,
     className: cn(
       "border-l-4 transition-all duration-300 ease-in-out",
       toastColors[type],

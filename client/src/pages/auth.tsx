@@ -16,6 +16,8 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [emailHint, setEmailHint] = useState<string>("");
 
   // Controlla se c'è un tipo di utente pending dal localStorage
   useEffect(() => {
@@ -31,12 +33,41 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
+      // Rileva metodi di accesso per l'email (single-flow intelligente)
+      const methods = await authService.getSignInMethods(email);
+
+      if (methods.includes('google.com')) {
+        setEmailHint('Questa email è collegata a Google. Usa "Accedi con Google".');
+        setIsLoading(false);
+        return;
+      }
+
+      if (methods.length === 0) {
+        // Email non registrata: se siamo in login, trasformiamo in registrazione chiedendo conferma password
+        if (isLogin) {
+          if (!confirmPassword) {
+            setEmailHint('Nuovo account: conferma la password per registrarti.');
+            setIsLogin(false);
+            setIsLoading(false);
+            return;
+          }
+          if (password !== confirmPassword) {
+            throw new Error('Le password non coincidono.');
+          }
+          await authService.signUpWithEmail(email, password, userType);
+          showToast('auth', 'loginSuccess', 'Account creato con successo!');
+        } else {
+          // Già su registrazione: prosegui normalmente
+          if (password !== confirmPassword) {
+            throw new Error('Le password non coincidono.');
+          }
+          await authService.signUpWithEmail(email, password, userType);
+          showToast('auth', 'loginSuccess', 'Account creato con successo!');
+        }
+      } else {
+        // Email esistente senza Google: normale sign-in
         await authService.signInWithEmail(email, password);
         showToast('auth', 'loginSuccess');
-      } else {
-        await authService.signUpWithEmail(email, password, userType);
-        showToast('auth', 'loginSuccess', "Account creato con successo!");
       }
       setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {
@@ -187,7 +218,16 @@ export default function Auth() {
                   type="email"
                   placeholder="la-tua-email@esempio.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setEmailHint(''); }}
+                  onBlur={async () => {
+                    if (!email) return;
+                    const methods = await authService.getSignInMethods(email);
+                    if (methods.includes('google.com')) {
+                      setEmailHint('Questa email è collegata a Google. Premi sopra su "Accedi con Google".');
+                    } else if (methods.length === 0 && isLogin) {
+                      setEmailHint('Nuovo account: puoi registrarti con questa email.');
+                    }
+                  }}
                   required
                   className="h-12 text-lg border-slate-300 focus:border-slate-500 focus:ring-slate-500"
                 />
@@ -207,6 +247,28 @@ export default function Auth() {
                   className="h-12 text-lg border-slate-300 focus:border-slate-500 focus:ring-slate-500"
                 />
               </div>
+              {/* Conferma password solo se in registrazione o se l'email non esiste */}
+              {!isLogin && (
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-2">
+                    Conferma Password
+                  </label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Ripeti la password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="h-12 text-lg border-slate-300 focus:border-slate-500 focus:ring-slate-500"
+                  />
+                </div>
+              )}
+              {emailHint && (
+                <div className="text-xs text-slate-600 -mt-2">
+                  {emailHint}
+                </div>
+              )}
 
               <Button 
                 type="submit"

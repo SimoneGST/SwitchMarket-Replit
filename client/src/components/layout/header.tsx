@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import logoUrl from '@assets/SWITCHMARKET_logo_1754845138370.png';
 
 export default function Header() {
   const [location] = useLocation();
@@ -40,7 +41,7 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center hover:opacity-80 transition-opacity">
               <img 
-                src="/attached_assets/SWITCHMARKET_logo_1754845138370.png" 
+                src={logoUrl} 
                 alt="Switch Market" 
                 className="h-12 w-auto"
                 onError={(e) => {
@@ -59,17 +60,7 @@ export default function Header() {
                   {user?.userType === 'customer' ? 'Dashboard' : 'Attività'}
                 </button>
               </Link>
-              {user?.userType === 'customer' ? (
-                <Link href="/browse">
-                  <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
-                    isActive('/browse') 
-                      ? `${primaryColor} ${borderColor}` 
-                      : 'text-slate-500 hover:text-slate-700 border-transparent'
-                  }`}>
-                    Cerca Prodotti
-                  </button>
-                </Link>
-              ) : (
+              {user?.userType === 'merchant' && (
                 <Link href="/browse">
                   <button className={`px-1 pb-4 text-sm font-medium border-b-2 ${
                     isActive('/browse') 

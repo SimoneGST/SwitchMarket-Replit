@@ -180,7 +180,7 @@ export function generateOpenGraphData(type: string, data: any) {
     'og:url': data.url || baseUrl,
     'og:site_name': 'Switch Market',
     'og:locale': 'it_IT',
-    'og:image': data.image || `${baseUrl}/attached_assets/SWITCHMARKET_logo_1754845138370.png`,
+  'og:image': data.image || `${baseUrl}/favicon.ico`,
     'og:image:width': '1200',
     'og:image:height': '630',
     'og:image:alt': data.imageAlt || 'Switch Market - Marketplace Locale con AI'

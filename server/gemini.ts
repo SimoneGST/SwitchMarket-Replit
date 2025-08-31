@@ -1,13 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY must be set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null as unknown as GoogleGenAI;
 
 export async function generateText(prompt: string): Promise<string> {
   try {
+  if (!ai) { return "(locale) AI non disponibile"; }
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
@@ -26,6 +24,7 @@ export async function clementeChat(message: string, context: any = {}, attachedF
   isComplete: boolean;
 }> {
   try {
+  if (!ai) { return { response: "(locale) Dimmi cosa cerchi e compiliamo la richiesta.", extractedData: {}, isComplete: false }; }
     const systemPrompt = `Sei Clemente, l'assistente AI di Switch Market, una piattaforma di commercio locale italiana.
 
 PERSONALITÀ E STILE:
@@ -136,7 +135,8 @@ export async function leonardoChat(message: string, context: any = {}, attachedF
   suggestions: any[];
 }> {
   try {
-    const systemPrompt = `Sei Leonardo, l'assistente AI per i negozianti di Switch Market.
+  if (!ai) { return { response: "(locale) Posso aiutarti con suggerimenti base.", suggestions: [] }; }
+  const systemPrompt = `Sei Leonardo, l'assistente AI per i negozianti di Switch Market.
 
 PERSONALITÀ:
 - Professionale e competente nel business

@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import LeonardoAssist from "@/components/leonardo-assist";
 
 const GESTIONALE_TYPES = [
   {
@@ -56,12 +57,12 @@ export default function IntegrationSetup() {
   });
   const { toast } = useToast();
 
-  const { data: integrations = [], isLoading } = useQuery({
+  const { data: integrations = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/integrations'],
   });
 
   const testConnectionMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/integrations/test", data),
+    mutationFn: (data: any) => apiRequest("/api/integrations/test", { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
       toast({
         title: "✅ Connessione riuscita!",
@@ -78,7 +79,7 @@ export default function IntegrationSetup() {
   });
 
   const createIntegrationMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/integrations", data),
+    mutationFn: (data: any) => apiRequest("/api/integrations", { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
       toast({
         title: "🎉 Integrazione creata!",
@@ -98,7 +99,7 @@ export default function IntegrationSetup() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: (integrationId: number) => apiRequest("POST", `/api/integrations/${integrationId}/sync`),
+    mutationFn: (integrationId: number) => apiRequest(`/api/integrations/${integrationId}/sync`, { method: 'POST' }),
     onSuccess: () => {
       toast({
         title: "🔄 Sincronizzazione avviata",
@@ -252,6 +253,19 @@ export default function IntegrationSetup() {
                   📖 Documentazione
                 </a>
               </div>
+
+              <LeonardoAssist
+                title="Compila credenziali con Leonardo"
+                allowedFields={["apiKey","companyId","baseUrl","endpoint"]}
+                onApply={(updates) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    apiKey: updates.apiKey ?? prev.apiKey,
+                    companyId: updates.companyId ?? prev.companyId,
+                    baseUrl: (updates.baseUrl || updates.endpoint || prev.baseUrl) as string,
+                  }));
+                }}
+              />
 
               {selectedGestionaleInfo.setupFields.includes('apiKey') && (
                 <div className="space-y-2">

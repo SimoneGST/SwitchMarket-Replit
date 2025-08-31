@@ -35,21 +35,17 @@ class ClementeAI {
 
   constructor() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log('🔑 API Key disponibile:', !!apiKey, 'Lunghezza:', apiKey?.length);
-    
-    if (!apiKey) {
-      console.warn('❌ VITE_GEMINI_API_KEY non configurata');
-      this.genAI = null as any;
-      this.model = null;
-      return;
-    }
-    
     try {
-      this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      console.log('✅ Clemente AI inizializzato correttamente');
+      if (apiKey) {
+        this.genAI = new GoogleGenerativeAI(apiKey);
+        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // Uso opzionale altrove; la chat passa sempre dal server
+      } else {
+        this.genAI = null as any;
+        this.model = null;
+      }
     } catch (error) {
-      console.error('❌ Errore inizializzazione Gemini:', error);
+      console.warn('Gemini non inizializzato, procedo solo con server:', error);
       this.genAI = null as any;
       this.model = null;
     }
@@ -98,15 +94,9 @@ class ClementeAI {
   }
 
   // Sistema di chat per ottenere dettagli (ora con supporto file e memoria)
-  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string, collectedData?: any, productSchema?: any}> {
-    if (!this.model) {
-      return { text: 'Mi dispiace, il servizio AI non è disponibile al momento. Prova la compilazione manuale.' };
-    }
-
+  async chatWithUser(userMessage: string, context?: any, attachedFile?: {url: string, name: string, type: string}): Promise<{text: string, generatedImage?: string, collectedData?: any, productSchema?: any, requestDraft?: any, readyToGenerate?: boolean}> {
     try {
-      console.log('🤖 Clemente sta elaborando:', userMessage);
-      
-      // Invia al server con il contesto completo
+      // La chat passa sempre dal backend, che applica regole e precompila la richiesta
       const response = await fetch('/api/clemente/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,27 +107,20 @@ class ClementeAI {
         })
       });
 
-      if (!response.ok) throw new Error('Errore comunicazione server');
-      
+      if (!response.ok) throw new Error(`Errore comunicazione server (${response.status})`);
       const result = await response.json();
-      console.log('✅ Risposta Clemente:', result.response);
-      return { 
-        text: result.response, 
-        generatedImage: result.generatedImage,
-        collectedData: result.collectedData,
-        productSchema: result.productSchema
+      const r = result?.response || result || {};
+      return {
+        text: r.message || result.message || 'Ok.',
+        generatedImage: r.generatedImage || null,
+        collectedData: r.collectedData || null,
+        productSchema: r.productSchema || null,
+        requestDraft: r.requestDraft || null,
+        readyToGenerate: !!r.readyToGenerate,
       };
     } catch (error: any) {
       console.error('❌ Errore chat Clemente:', error);
-      
-      // Risposta di fallback più informativa
-      if (error?.message?.includes('API key')) {
-        return { text: 'Problema con la chiave API. Controlla la configurazione di VITE_GEMINI_API_KEY.' };
-      } else if (error?.message?.includes('quota')) {
-        return { text: 'Quota API esaurita. Riprova più tardi.' };
-      } else {
-        return { text: `Errore tecnico: ${error?.message || 'Sconosciuto'}. Prova la compilazione manuale.` };
-      }
+      return { text: `Errore tecnico: ${error?.message || 'Errore comunicazione server'}. Prova la compilazione manuale.` };
     }
   }
 

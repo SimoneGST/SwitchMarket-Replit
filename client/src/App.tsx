@@ -14,8 +14,9 @@ import Auth from "@/pages/auth";
 import Onboarding from "@/pages/onboarding";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import MerchantDashboard from "@/pages/merchant-dashboard";
-import BrowseRequests from "@/pages/browse-requests";
+import MerchantBrowse from "@/pages/merchant-browse";
 import CreateRequest from "@/pages/create-request";
+import SupplierSearchPage from "@/pages/supplier-search";
 import IntegrationSetup from "@/pages/integration-setup";
 import CopilotDashboard from "@/pages/copilot-dashboard";
 import ProfileVerification from "@/pages/profile-verification";
@@ -49,7 +50,7 @@ function Router() {
   }, []);
 
   return (
-    <div className="min-h-full">
+    <div className="min-h-full pb-20 md:pb-0">
       <SEOHead />
       <ConversionTracking />
       {isAuthenticated && !needsOnboarding && <Header />}
@@ -92,9 +93,21 @@ function Router() {
                 <MerchantDashboard />
               )}
             </Route>
-            <Route path="/browse" component={BrowseRequests} />
+            <Route path="/browse">
+              {!isAuthenticated ? (
+                <Auth />
+              ) : user?.userType === 'merchant' ? (
+                <MerchantBrowse />
+              ) : (
+                <CustomerDashboard />
+              )}
+            </Route>
             <Route path="/create">
-              {!isAuthenticated ? <Auth /> : <CreateRequest />}
+              {!isAuthenticated ? <Auth /> : user?.userType === 'customer' ? (
+                <CreateRequest />
+              ) : (
+                <SupplierSearchPage />
+              )}
             </Route>
             <Route path="/integration-setup">
               {!isAuthenticated ? <Auth /> : <IntegrationSetup />}
@@ -131,7 +144,7 @@ function Router() {
               {!isAuthenticated ? <Auth /> : <ProductForm />}
             </Route>
             <Route path="/product/edit/:id">
-              {({ params }) => !isAuthenticated ? <Auth /> : <ProductForm productId={params.id} />}
+              {(params) => !isAuthenticated ? <Auth /> : <ProductForm productId={(params as any).id} />}
             </Route>
             <Route path="/merchant-integrations">
               {!isAuthenticated ? <Auth /> : <MerchantIntegrations />}
